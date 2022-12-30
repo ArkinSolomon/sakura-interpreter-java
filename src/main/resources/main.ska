@@ -17,7 +17,7 @@ if opt {
 }
 
 $var = TRUE
-while $var {
+while $var == TRUE {
     print($var)
     $var = FALSE
 }

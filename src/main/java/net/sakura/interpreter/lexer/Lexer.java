@@ -113,6 +113,8 @@ public class Lexer {
                     currentType = TokenType.QUOTE;
                 else if (thisChar == '/')
                     tokens.add(new Token(TokenType.SLASH, currentPos, "/"));
+                else if (thisChar == '\\')
+                    tokens.add(new Token(TokenType.BACKSLASH, currentPos, "\\"));
                 else if (thisChar == '?')
                     tokens.add(new Token(TokenType.QUESTION, currentPos, "?"));
                 else if (thisChar == '&')
@@ -162,6 +164,7 @@ public class Lexer {
                         case "func" -> currentType = TokenType.FUNC;
                         case "in" -> currentType = TokenType.IN;
                         case "for" -> currentType = TokenType.FOR;
+                        case "return" -> currentType = TokenType.RETURN;
                     }
 
                     tokens.add(new Token(currentType, startPos, value));

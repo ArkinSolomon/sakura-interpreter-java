@@ -51,7 +51,9 @@ public enum TokenType {
     FOR, // for (loop)
 
     IN, // in
+    RETURN, // return
 
+    BACKSLASH, // \ (escaping)
     SLASH, // / (path values or division)
     QUESTION, // ? (optional variables)
 
