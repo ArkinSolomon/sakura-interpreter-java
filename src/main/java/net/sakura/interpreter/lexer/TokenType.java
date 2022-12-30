@@ -68,5 +68,5 @@ public enum TokenType {
     CLOSE_BRACE, // }
 
     NUM_LITERAL, // floats and integers
-    LITERAL // any other text
+    SYMBOL // any other text
 }

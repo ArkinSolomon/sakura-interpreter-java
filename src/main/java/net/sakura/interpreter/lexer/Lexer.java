@@ -140,7 +140,7 @@ public class Lexer {
                 else if (thisChar == ',')
                     tokens.add(new Token(TokenType.COMMA, currentPos, ","));
                 else {
-                    currentType = TokenType.LITERAL;
+                    currentType = TokenType.SYMBOL;
                     currentValue.append(thisChar);
                 }
             } else {
