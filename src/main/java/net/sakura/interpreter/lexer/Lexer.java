@@ -144,7 +144,7 @@ public class Lexer {
                     currentValue.append(thisChar);
                 }
             } else {
-                if ((currentType != TokenType.QUOTE && thisCharStr.isBlank()) || !scanner.hasNext() || (next !=null && !Character.isLetterOrDigit(nextChar))) {
+                if ((currentType != TokenType.QUOTE && (thisCharStr.isBlank() || (next !=null && !Character.isLetterOrDigit(nextChar)))) || !scanner.hasNext()) {
 
                     if ((!scanner.hasNext()|| (next !=null && !Character.isLetterOrDigit(nextChar))) && !thisCharStr.isBlank() )
                         currentValue.append(thisChar);
@@ -165,12 +165,18 @@ public class Lexer {
                         case "in" -> currentType = TokenType.IN;
                         case "for" -> currentType = TokenType.FOR;
                         case "return" -> currentType = TokenType.RETURN;
+                        default -> {
+                            if (isNumeric(value))
+                                currentType = TokenType.NUM_LITERAL;
+                        }
                     }
 
                     tokens.add(new Token(currentType, startPos, value));
                     currentType = null;
                     currentValue = new StringBuilder();
                 } else {
+
+                    // If we're currently looking at a quote
                     if (thisChar == '"') {
                         currentType = null;
                         tokens.add(new Token(TokenType.QUOTE, startPos, currentValue.toString()));
@@ -185,5 +191,14 @@ public class Lexer {
         // End of file should be the index of the character after the last character in the file
         tokens.add(new Token(TokenType.EOF, currentPos, "<EOF>"));
         return tokens;
+    }
+
+    private static boolean isNumeric(String s){
+        try {
+            Double.parseDouble(s);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
     }
 }

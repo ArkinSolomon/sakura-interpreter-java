@@ -1,6 +1,8 @@
 $var = @default
 %var = var/const
 
+%pi = 3.14
+
 func printTwoOrThree($arg1, $arg2, $arg3?){
     print(arg1);
     print(arg2)
