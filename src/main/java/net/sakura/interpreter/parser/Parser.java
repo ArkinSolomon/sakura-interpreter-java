@@ -83,7 +83,7 @@ public class Parser {
                 case OR -> null;
                 case NOT -> null;
                 case PLUS -> new AdditionOperator(token);
-                case MINUS -> null;
+                case MINUS -> new SubtractionOperator(token);
                 case MULTIPLY -> new MultiplicationOperator(token);
                 case QUOTE -> new StringLiteral(token);
                 case COMMA -> null;
@@ -99,7 +99,6 @@ public class Parser {
                 case RETURN -> null;
                 case BACKSLASH -> null;
                 case SLASH -> new SlashOperator(token);
-                case QUESTION -> null;
                 case TRUE -> null;
                 case FALSE -> null;
                 case FUNC -> null;

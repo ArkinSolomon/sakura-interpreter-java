@@ -55,7 +55,6 @@ public enum TokenType {
 
     BACKSLASH, // \ (escaping)
     SLASH, // / (path values or division)
-    QUESTION, // ? (optional variables)
 
     TRUE, // TRUE
     FALSE, // FALSE

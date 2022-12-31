@@ -140,8 +140,6 @@ public class Lexer {
                     tokens.add(new Token(TokenType.SLASH, currentPos, "/"));
                 else if (thisChar == '\\')
                     tokens.add(new Token(TokenType.BACKSLASH, currentPos, "\\"));
-                else if (thisChar == '?')
-                    tokens.add(new Token(TokenType.QUESTION, currentPos, "?"));
                 else if (thisChar == '&')
                     tokens.add(new Token(TokenType.AND, currentPos, "&"));
                 else if (thisChar == '|')
