@@ -15,43 +15,34 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.Datatype;
 import net.sakura.interpreter.ExecutionContext;
 import net.sakura.interpreter.Value;
 import net.sakura.interpreter.lexer.Token;
 
 /**
- * A symbol node.
+ * A node for multiplying.
  */
-public class Symbol extends Node {
-
-    private final String identifier;
+public class MultiplicationOperator extends Operator {
 
     /**
-     * Create a symbol using the token.
+     * Create a new node from a token.
      */
-    public Symbol(Token token){
-        super(token, 0);
-        identifier = token.value();
-    }
-
-    @Override
-    public void assign(ExecutionContext ctx, Value val) {
-        boolean hasId = ctx.hasIdentifier(identifier);
-
-        if (hasId && !ctx.getIdentifier(identifier).isMutable())
-            throw new UnsupportedOperationException("Can not assign to immutable variable");
-        ctx.assignIdentifier(identifier, val);
+    public MultiplicationOperator(Token token){
+        super(token);
     }
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        boolean hasId = ctx.hasIdentifier(identifier);
+        Value leftVal = leftChild().evaluate(ctx);
+        Value rightVal = rightChild().evaluate(ctx);
 
-        return hasId ? ctx.getIdentifier(identifier) : Value.NULL;
+        double val = ((double) leftVal.value()) * ((double) rightVal.value());
+        return new Value(Datatype.NUMBER, val, false);
     }
 
     @Override
     public int getPrecedence() {
-        return 100;
+        return 35;
     }
 }

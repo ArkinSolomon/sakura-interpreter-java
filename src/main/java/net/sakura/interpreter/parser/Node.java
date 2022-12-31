@@ -23,13 +23,15 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * A node of the tree.
+ * A node of the tree. An expression.
  */
 public class Node {
 
     protected final int childCount;
     protected final Node[] children;
     protected final Token token;
+
+    private Node parent;
 
     /**
      * Create a new node with a specific amount of children.
@@ -73,6 +75,7 @@ public class Node {
         if (i >= childCount)
             throw new IndexOutOfBoundsException("Index i is greater than children in node");
         children[i] = child;
+        children[i].parent = this;
     }
 
     /**
@@ -81,11 +84,25 @@ public class Node {
      * @param i The index of the child to get
      * @return The child node.
      */
-    public Node getChild(int i){
+    public Node getChild(int i) {
         if (i >= childCount)
             throw new IndexOutOfBoundsException("Index i is greater than children in node");
         return children[i];
     }
+
+    /**
+     * Find the index of a specific node.
+     *
+     * @return The index of the node in this node's children, or -1 if the node is not a child.
+     */
+    public int findChild(Node node) {
+        for (int i = 0; i < childCount; ++i) {
+           if (children[i] == node)
+               return i;
+        }
+        return -1;
+    }
+
 
     /**
      * Insert value as the next child of the node.
@@ -93,11 +110,42 @@ public class Node {
     public void insertChild(Node child) {
         for (int i = 0; i < childCount; i++) {
             if (children[i] == null) {
-                children[i] = child;
+                setChild(i, child);
                 return;
             }
         }
         throw new IndexOutOfBoundsException("Node is full");
+    }
+
+    /**
+     * Get the parent of the node.
+     *
+     * @return The parent node, or null if there is no parent.
+     */
+    public Node getParent() {
+        return this.parent;
+    }
+
+    /**
+     * The precedence of the node.
+     *
+     * @return The precedence of the node.
+     */
+    public int getPrecedence() {
+        throw new UnsupportedOperationException("Precedence not set");
+    }
+
+    /**
+     * Check if the node and all it's children are full.
+     */
+    public boolean isCompletelyFull() {
+        if (!isFull())
+            return false;
+
+        for (Node child : children)
+            if (!child.isCompletelyFull())
+                return false;
+        return true;
     }
 
     /**
@@ -116,7 +164,7 @@ public class Node {
     public void print(int indentCount) {
         System.out.println("-".repeat(indentCount) + token);
         for (Node child : children) {
-            if (child == null){
+            if (child == null) {
                 System.out.println("-".repeat(indentCount + 4) + "<NULL CHILD>");
                 continue;
             }

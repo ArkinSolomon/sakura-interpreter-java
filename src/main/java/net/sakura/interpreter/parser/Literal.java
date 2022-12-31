@@ -42,4 +42,9 @@ public class Literal extends Node {
     public final void assign(ExecutionContext ctx, Value val) {
         throw new UnsupportedOperationException("Can not assign to literal");
     }
+
+    @Override
+    public final int getPrecedence() {
+        return 100;
+    }
 }

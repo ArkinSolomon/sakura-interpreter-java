@@ -16,6 +16,7 @@
 package net.sakura.interpreter.parser;
 
 import net.sakura.interpreter.ExecutionContext;
+import net.sakura.interpreter.lexer.Lexer;
 import net.sakura.interpreter.lexer.Token;
 import net.sakura.interpreter.lexer.TokenType;
 
@@ -27,32 +28,51 @@ import java.util.List;
  */
 public class Parser {
 
-    private final Token[] tokens;
-
-    private List<Node> sentences;
+    private final Lexer lexer;
+    private final List<Node> expressions;
 
     /**
-     * Create a parse tree from a list of tokens.
+     * Create a parse tree using the lexer
      *
-     * @param tokens The tokens to create the tree from.
+     * @param lexer The lexer that tokenized the input.
      */
-    public Parser(Token[] tokens) {
-        this.tokens = tokens;
-        this.sentences = new ArrayList<>();
+    public Parser(Lexer lexer) {
+        this.lexer = lexer;
+        this.expressions = new ArrayList<>();
     }
 
     /**
      * Create the tree.
      */
-    public void createTree() {
+    public void parse() {
 
-        Node currentSentence = null;
+        Node root = null;
+        Node currentNode = null;
 
-        for (Token token : tokens) {
+        while (true) {
+            Token token = lexer.consume();
+            if (token.type() == TokenType.EOF && root != null) {
+                expressions.add(root);
+                break;
+            } else if (token.type() == TokenType.SEMI) {
+                if (root != null) {
+                    expressions.add(root);
+                    root = null;
+                    currentNode = null;
+                }
+                continue;
+            } else if (token.type() == TokenType.EOL) {
+                if (root != null && root.isCompletelyFull()) {
+                    expressions.add(root);
+                    root = null;
+                    currentNode = null;
+                }
+                continue;
+            }
+
             TokenType type = token.type();
 
             Node newNode = switch (type) {
-                case EOF, EOS -> null;
                 case DOUBLE_EQUALS -> null;
                 case LT -> null;
                 case LTE -> null;
@@ -62,9 +82,9 @@ public class Parser {
                 case AND -> null;
                 case OR -> null;
                 case NOT -> null;
-                case PLUS -> null;
+                case PLUS -> new AdditionOperator(token);
                 case MINUS -> null;
-                case MULTIPLY -> null;
+                case MULTIPLY -> new MultiplicationOperator(token);
                 case QUOTE -> new StringLiteral(token);
                 case COMMA -> null;
                 case VARIABLE -> new Variable(token);
@@ -89,39 +109,52 @@ public class Parser {
                 case CLOSE_BRACE -> null;
                 case NUM_LITERAL -> new NumberLiteral(token);
                 case SYMBOL -> new Symbol(token);
+                default ->
+                        throw new IllegalStateException("Unexpected value: " + type);
             };
 
-            // Node is null if it's an end of sentence or end of file
-            if (newNode == null) {
-                if (currentSentence != null) {
-                    sentences.add(currentSentence);
-                    currentSentence = null;
-                }
-            } else {
-                if (currentSentence == null)
-                    currentSentence = newNode;
-                else if (newNode instanceof Operator) {
-                    if (!(currentSentence instanceof Operator)){
-                        newNode.insertChild(currentSentence);
-                        currentSentence = newNode;
-                    } else {
-                        Node lhs = currentSentence.getChild(1);
-                        currentSentence.setChild(1, newNode);
-                        newNode.insertChild(lhs);
-                        currentSentence.print();
-                    }
-                } else
-                    currentSentence.insertChild(newNode);
+            if (newNode != null && newNode.token.tokenPos() == 16) {
+                System.out.println("");
             }
+
+            if (root == null)
+                root = newNode;
+            else {
+                Node insertionPoint = currentNode;
+                Node replacementChild = null;
+
+                System.out.println("*****");
+                root.print();
+                System.out.println("*****");
+
+                assert newNode != null;
+                while (insertionPoint != null && insertionPoint.getPrecedence() > newNode.getPrecedence()) {
+                    replacementChild = insertionPoint;
+                    insertionPoint = insertionPoint.getParent();
+                }
+
+                // Insert at root
+                if (insertionPoint == null) {
+                    newNode.insertChild(root);
+                    root = newNode;
+                } else {
+                    if (replacementChild != null) {
+                        int replacementIndex = insertionPoint.findChild(replacementChild);
+                        newNode.insertChild(replacementChild);
+                        insertionPoint.setChild(replacementIndex, newNode);
+                    } else
+                        insertionPoint.insertChild(newNode);
+                }
+            }
+            currentNode = newNode;
         }
     }
-
 
     /**
      * Execute every sentence.
      */
     public void execute(ExecutionContext rootContext) {
-        for (Node sentence : sentences) {
+        for (Node sentence : expressions) {
             sentence.print();
             sentence.evaluate(rootContext);
         }

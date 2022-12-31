@@ -17,7 +17,8 @@ package net.sakura.interpreter.lexer;
 
 public enum TokenType {
     EOF, // End of file
-    EOS, // End of sentence (semicolon or new line)
+    EOL, // End of line
+    SEMI, // A semi colon
 
     DOUBLE_EQUALS, // == (equality)
     LT, // <
@@ -35,7 +36,7 @@ public enum TokenType {
     MULTIPLY, // * (multiplication)
     // Division is handled by slash
 
-    QUOTE, // "
+    QUOTE, // " (string literal)
     COMMA, // ,
 
     VARIABLE, // $var

@@ -29,9 +29,14 @@ public class Variable extends Node {
     /**
      * Create a new variable node.
      */
-    public Variable(Token token){
+    public Variable(Token token) {
         super(token, 0);
         identifier = token.value();
+    }
+
+    @Override
+    public final int getPrecedence() {
+        return 100;
     }
 
     @Override

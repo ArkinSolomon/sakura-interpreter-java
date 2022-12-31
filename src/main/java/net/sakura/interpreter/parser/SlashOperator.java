@@ -44,4 +44,9 @@ public class SlashOperator extends Operator {
             return new Value(Datatype.STRING, "NOT IMPLEMENTED", false);
         }
     }
+
+    @Override
+    public int getPrecedence() {
+        return 35;
+    }
 }

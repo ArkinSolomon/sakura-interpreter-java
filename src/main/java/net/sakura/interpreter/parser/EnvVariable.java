@@ -35,6 +35,11 @@ public class EnvVariable extends Node {
     }
 
     @Override
+    public int getPrecedence() {
+        return 100;
+    }
+
+    @Override
     public void assign(ExecutionContext ctx, Value val) {
         throw new UnsupportedOperationException("Can not assign to environment variable");
     }

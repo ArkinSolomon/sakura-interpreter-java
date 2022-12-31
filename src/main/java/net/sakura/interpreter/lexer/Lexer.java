@@ -24,7 +24,10 @@ import java.util.List;
  */
 public class Lexer {
 
-    String input;
+    private final String input;
+
+    private final List<Token> tokens = new ArrayList<>();
+    private int current = -1;
 
     /**
      * Create a new instance which will perform lexical analysis on a string.
@@ -57,11 +60,8 @@ public class Lexer {
     /**
      * Analyze the lexer text.
      */
-    public List<Token> analyze() {
-        List<Token> tokens = new ArrayList<>();
-
+    public void analyze() {
         final PeekableScanner scanner = new PeekableScanner(input);
-        //        scanner.useDelimiter("");
         int currentPos = 0;
         int startPos = -1;
 
@@ -84,7 +84,8 @@ public class Lexer {
             if (currentType == null) {
 
                 if (thisChar == '\n' || thisChar == ';') {
-                    tokens.add(new Token(TokenType.EOS, currentPos, thisCharStr));
+                    TokenType type = thisChar == '\n' ? TokenType.EOL : TokenType.SEMI;
+                    tokens.add(new Token(type, currentPos, thisCharStr));
                     currentPos++;
                     continue;
 
@@ -229,6 +230,64 @@ public class Lexer {
 
         // End of file should be the index of the character after the last character in the file
         tokens.add(new Token(TokenType.EOF, currentPos, "<EOF>"));
-        return tokens;
+
+        // Group FUNC then SYMBOL into one token
+        for (int i = 0; i < tokens.size(); i++) {
+            Token thisToken = tokens.get(i);
+            if (thisToken.type() == TokenType.EOF)
+                break;
+            else if (thisToken.type() != TokenType.FUNC)
+                continue;
+
+            Token nextToken = tokens.get(i + 1);
+            if (nextToken.type() != TokenType.SYMBOL)
+                throw new RuntimeException("Invalid function declaration");
+
+            Token newToken = new Token(TokenType.FUNC, thisToken.tokenPos(), nextToken.value());
+            tokens.set(i, newToken);
+
+            // This is ok, because we'll break at EOF anyway
+            tokens.remove(++i);
+        }
+    }
+
+    /**
+     * Consume and move to the next token.
+     *
+     * @return The next token.
+     */
+    public Token consume() {
+        ++current;
+        return tokens.get(current);
+    }
+
+    /**
+     * Get the next token without moving forward.
+     *
+     * @return The next token.
+     */
+    public Token peek() {
+        if (current == tokens.size() - 1)
+            return null;
+        return tokens.get(current + 1);
+    }
+
+    /**
+     * Get the current token.
+     *
+     * @return The current token.
+     */
+    public Token currentToken() {
+        if (current < 0)
+            return null;
+        return tokens.get(current);
+    }
+
+    /**
+     * Print all tokens.
+     */
+    public void printTokens() {
+        for (Token token : tokens)
+            System.out.println(token);
     }
 }

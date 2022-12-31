@@ -33,4 +33,18 @@ public record Token(TokenType type, int tokenPos, String value) {
     public String toString() {
         return "[%d] %s: %s".formatted(tokenPos, type, value.replaceAll("\n", "\\\\n"));
     }
+
+    public double[] getPrecedence() {
+        return switch (type){
+            case EQUALS -> new double[]{6, 6};
+            case PLUS, MINUS -> new double[]{8, 8.5};
+            case MULTIPLY, SLASH -> new double[]{12, 12.5};
+            default -> new double[]{1, 1};
+        };
+    }
+
+    public boolean isOperator() {
+        double[] precedence = getPrecedence();
+        return precedence[0] + precedence[1] > 2;
+    }
 }

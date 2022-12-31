@@ -39,4 +39,9 @@ public class AssignmentOperator extends Operator {
         leftChild().assign(ctx, new Value(assignmentValue.type(), assignmentValue.value(), true));
         return Value.NULL;
     }
+
+    @Override
+    public int getPrecedence() {
+        return 2;
+    }
 }
