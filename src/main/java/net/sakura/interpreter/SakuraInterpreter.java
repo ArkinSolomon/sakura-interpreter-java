@@ -17,6 +17,7 @@ package net.sakura.interpreter;
 
 import net.sakura.interpreter.lexer.Lexer;
 import net.sakura.interpreter.lexer.Token;
+import net.sakura.interpreter.parser.Parser;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,16 +29,25 @@ import java.util.List;
 public class SakuraInterpreter {
 
     public static void main(String[] args) throws IOException, URISyntaxException {
-//        String input = "$var = @default here a NULL";
-        URL url = SakuraInterpreter.class.getResource("/main.ska");
+        URL url = SakuraInterpreter.class.getResource("/test.ska");
         File file = new File(url.toURI());
         String input = Files.readString(file.toPath());
 
         Lexer lexer = new Lexer(input);
         List<Token> tokens = lexer.analyze();
 
-        for (Token token : tokens){
+        for (Token token : tokens) {
             System.out.println(token);
         }
+        System.out.println();
+
+        Parser parser = new Parser(tokens.toArray(Token[]::new));
+        parser.createTree();
+
+        ExecutionContext ctx = new ExecutionContext();
+        parser.execute(ctx);
+
+        System.out.println("\n--Execution context--\n");
+        ctx.printContext();
     }
 }

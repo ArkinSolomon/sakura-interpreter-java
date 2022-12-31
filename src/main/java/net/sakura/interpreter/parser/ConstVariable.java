@@ -13,24 +13,28 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.lexer;
+package net.sakura.interpreter.parser;
+
+import net.sakura.interpreter.ExecutionContext;
+import net.sakura.interpreter.Value;
+import net.sakura.interpreter.lexer.Token;
 
 /**
- * A single token created by the lexer.
- *
- * @param type The type of the token.
- * @param tokenPos The position of the token.
- * @param value The text value of the token.
+ * A constant variable node.
  */
-public record Token(TokenType type, int tokenPos, String value) {
+public class ConstVariable extends Variable {
 
     /**
-     * Get the string representation of this token.
+     * Create a constant variable from a token.
      *
-     * @return The string representation of this token.
+     * @param token The token to create the variable from.
      */
+    public ConstVariable(Token token){
+        super(token);
+    }
+
     @Override
-    public String toString() {
-        return "[%d] %s: %s".formatted(tokenPos, type, value.replaceAll("\n", "\\\\n"));
+    public void assign(ExecutionContext ctx, Value val) {
+        throw new UnsupportedOperationException("Can not assign to constant variable");
     }
 }

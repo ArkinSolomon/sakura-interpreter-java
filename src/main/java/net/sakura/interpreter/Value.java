@@ -13,24 +13,15 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.lexer;
+package net.sakura.interpreter;
 
 /**
- * A single token created by the lexer.
+ * A single value, consisting of its type and actual value.
  *
- * @param type The type of the token.
- * @param tokenPos The position of the token.
- * @param value The text value of the token.
+ * @param type The type of the variable.
+ * @param value The value of the variable.
+ * @param isMutable True if the variable is mutable.
  */
-public record Token(TokenType type, int tokenPos, String value) {
-
-    /**
-     * Get the string representation of this token.
-     *
-     * @return The string representation of this token.
-     */
-    @Override
-    public String toString() {
-        return "[%d] %s: %s".formatted(tokenPos, type, value.replaceAll("\n", "\\\\n"));
-    }
+public record Value(Datatype type, Object value, boolean isMutable) {
+    public static final Value NULL = new Value(Datatype.NULL, null, false);
 }

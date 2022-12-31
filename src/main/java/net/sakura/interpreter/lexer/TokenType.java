@@ -17,8 +17,7 @@ package net.sakura.interpreter.lexer;
 
 public enum TokenType {
     EOF, // End of file
-
-    NULL, // Null value
+    EOS, // End of sentence (semicolon or new line)
 
     DOUBLE_EQUALS, // == (equality)
     LT, // <

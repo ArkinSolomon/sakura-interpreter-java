@@ -13,24 +13,29 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.lexer;
+package net.sakura.interpreter.parser;
+
+import net.sakura.interpreter.Datatype;
+import net.sakura.interpreter.ExecutionContext;
+import net.sakura.interpreter.Value;
+import net.sakura.interpreter.lexer.Token;
 
 /**
- * A single token created by the lexer.
- *
- * @param type The type of the token.
- * @param tokenPos The position of the token.
- * @param value The text value of the token.
+ * A number literal.
  */
-public record Token(TokenType type, int tokenPos, String value) {
+public class NumberLiteral extends Literal {
 
     /**
-     * Get the string representation of this token.
+     * Create a new literal from a token.
      *
-     * @return The string representation of this token.
+     * @param token The token to create the literal from.
      */
+    public NumberLiteral(Token token){
+        super(token);
+    }
+
     @Override
-    public String toString() {
-        return "[%d] %s: %s".formatted(tokenPos, type, value.replaceAll("\n", "\\\\n"));
+    public Value evaluate(ExecutionContext ctx) {
+        return new Value(Datatype.NUMBER, Double.parseDouble(token.value()), false);
     }
 }

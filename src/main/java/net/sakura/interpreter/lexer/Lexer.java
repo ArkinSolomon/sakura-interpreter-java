@@ -35,6 +35,25 @@ public class Lexer {
         this.input = input;
     }
 
+    private static boolean isNumeric(String s) {
+        try {
+            Double.parseDouble(s);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if the character can be used in an identifier.
+     *
+     * @param c The character to check.
+     * @return True if the character can be used in an identifier.
+     */
+    private static boolean isIdentifierChar(char c) {
+        return Character.isLetterOrDigit(c) || c == '_';
+    }
+
     /**
      * Analyze the lexer text.
      */
@@ -63,7 +82,13 @@ public class Lexer {
             Character nextChar = next == null ? null : next.charAt(0);
 
             if (currentType == null) {
-                if (thisCharStr.isBlank() || thisChar == ';') {
+
+                if (thisChar == '\n' || thisChar == ';') {
+                    tokens.add(new Token(TokenType.EOS, currentPos, thisCharStr));
+                    currentPos++;
+                    continue;
+
+                } else if (thisCharStr.isBlank()) {
                     currentPos++;
                     continue;
                 }
@@ -98,7 +123,7 @@ public class Lexer {
                         currentPos++;
                     } else
                         tokens.add(new Token(TokenType.LT, currentPos, "<"));
-                }else if (thisChar == '>') {
+                } else if (thisChar == '>') {
                     if (nextChar == null)
                         throw new RuntimeException("Dangling greater than");
 
@@ -142,16 +167,27 @@ public class Lexer {
                 else {
                     currentType = TokenType.SYMBOL;
                     currentValue.append(thisChar);
+
+                    // Current value must be one character long
+                    if (next == null) {
+                        if (isNumeric(thisCharStr))
+                            currentType = TokenType.NUM_LITERAL;
+                        else if (!isIdentifierChar(thisChar))
+                            throw new RuntimeException("Invalid character");
+
+                        tokens.add(new Token(currentType, currentPos, thisCharStr));
+                        ++currentPos;
+                        break;
+                    }
                 }
             } else {
-                if ((currentType != TokenType.QUOTE && (thisCharStr.isBlank() || (next !=null && !Character.isLetterOrDigit(nextChar)))) || !scanner.hasNext()) {
+                if (currentType != TokenType.QUOTE && (thisCharStr.isBlank() || (next != null && !isIdentifierChar(nextChar)) || !scanner.hasNext())) {
 
-                    if ((!scanner.hasNext()|| (next !=null && !Character.isLetterOrDigit(nextChar))) && !thisCharStr.isBlank() )
+                    if ((!scanner.hasNext() || (next != null && !isIdentifierChar(nextChar))) && !thisCharStr.isBlank())
                         currentValue.append(thisChar);
 
                     String value = currentValue.toString();
                     switch (value) {
-                        case "NULL" -> currentType = TokenType.NULL;
                         case "if" -> {
                             currentType = TokenType.IF;
                             if (tokens.get(tokens.size() - 1).type() == TokenType.ELSE)
@@ -176,8 +212,11 @@ public class Lexer {
                     currentValue = new StringBuilder();
                 } else {
 
-                    // If we're currently looking at a quote
-                    if (thisChar == '"') {
+                    // We can use whatever char and just skip the check for the first value
+                    final char lastVal = currentValue.length() > 1 ? currentValue.charAt(currentValue.length() - 1) : 'a';
+
+                    // If we're currently looking at a quote (make sure we check for escaped endings)
+                    if (thisChar == '"' && lastVal != '\\') {
                         currentType = null;
                         tokens.add(new Token(TokenType.QUOTE, startPos, currentValue.toString()));
                         currentValue = new StringBuilder();
@@ -191,14 +230,5 @@ public class Lexer {
         // End of file should be the index of the character after the last character in the file
         tokens.add(new Token(TokenType.EOF, currentPos, "<EOF>"));
         return tokens;
-    }
-
-    private static boolean isNumeric(String s){
-        try {
-            Double.parseDouble(s);
-            return true;
-        }catch (Exception e){
-            return false;
-        }
     }
 }

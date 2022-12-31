@@ -1,5 +1,6 @@
-$var = @default
-%var = var/const
+$var1 = 5
+$var2 = 10
+%var3 = var1/var2
 
 %pi = 3.14
 
@@ -10,7 +11,7 @@ func printTwoOrThree($arg1, $arg2, $arg3?){
 }
 printTwoOrThree("arg 1", "arg 2")
 
-if opt {
+if opt == NULL {
 
 } else if !val {
 

@@ -17,16 +17,22 @@ package net.sakura.interpreter.lexer;
 
 import java.util.Scanner;
 
-// See http://www.javased.com/?post=4288643
-// TODO javadoc
-public class PeekableScanner
-{
-    private Scanner scan1;
-    private Scanner scan2;
+/**
+ * This class has lets us use it as a scanner and peek to the next value,
+ * character by character, without scanning it. See
+ * <a href="http://www.javased.com/?post=4288643">source</a>.
+ */
+public class PeekableScanner {
+    private final Scanner scan1;
+    private final Scanner scan2;
     private String next;
 
-    public PeekableScanner( String source )
-    {
+    /**
+     * Create a new peekable scanner with a string.
+     *
+     * @param source The string to create the scanner from.
+     */
+    public PeekableScanner(String source) {
         scan1 = new Scanner(source);
         scan1.useDelimiter("");
         scan2 = new Scanner(source);
@@ -34,19 +40,31 @@ public class PeekableScanner
         next = scan2.next();
     }
 
-    public boolean hasNext()
-    {
+    /**
+     * Check if the scanner has another character.
+     *
+     * @return True if the scanner has another character.
+     */
+    public boolean hasNext() {
         return scan1.hasNext();
     }
 
-    public String next()
-    {
+    /**
+     * Get the next character.
+     *
+     * @return The next character.
+     */
+    public String next() {
         next = (scan2.hasNext() ? scan2.next() : null);
         return scan1.next();
     }
 
-    public String peek()
-    {
+    /**
+     * Get the next character without advancing the scanner's pointer.
+     *
+     * @return The next character.
+     */
+    public String peek() {
         return next;
     }
 }

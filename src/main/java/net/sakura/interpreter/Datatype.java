@@ -13,24 +13,14 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.lexer;
+package net.sakura.interpreter;
 
 /**
- * A single token created by the lexer.
- *
- * @param type The type of the token.
- * @param tokenPos The position of the token.
- * @param value The text value of the token.
+ * All the datatypes that a value can be.
  */
-public record Token(TokenType type, int tokenPos, String value) {
-
-    /**
-     * Get the string representation of this token.
-     *
-     * @return The string representation of this token.
-     */
-    @Override
-    public String toString() {
-        return "[%d] %s: %s".formatted(tokenPos, type, value.replaceAll("\n", "\\\\n"));
-    }
+public enum Datatype {
+    STRING,
+    NUMBER,
+    NULL,
+    FUNCTION
 }
