@@ -20,35 +20,28 @@ import net.sakura.interpreter.ExecutionContext;
 import net.sakura.interpreter.Value;
 import net.sakura.interpreter.lexer.Token;
 
-import javax.xml.crypto.Data;
-
 /**
- * A slash operator, which can be a path or division.
+ * Create a new positive operator.
  */
-public class SlashOperator extends Operator {
+public class PositiveOperator extends UnaryOperator {
 
     /**
-     * Create a new slash operator with a token.
+     * Create a new operator from a token.
+     *
+     * @param token The token to create the operator from.
      */
-    public SlashOperator(Token token) {
+    public PositiveOperator(Token token) {
         super(token);
     }
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        Value leftVal = leftChild().evaluate(ctx);
-        Value rightVal = rightChild().evaluate(ctx);
+        if (!isFull())
+            throw new RuntimeException("Positive operator has no operand");
 
-        if (leftVal.type() == DataType.NUMBER && rightVal.type() == DataType.NUMBER) {
-            double val = ((double) leftVal.value()) / ((double) rightVal.value());
-            return new Value(DataType.NUMBER, val, false);
-        } else {
-            return new Value(DataType.STRING, "NOT IMPLEMENTED", false);
-        }
-    }
-
-    @Override
-    public int getPrecedence() {
-        return 35;
+        Value val = getChild().evaluate(ctx);
+        if (val.type() != DataType.NUMBER)
+            throw new RuntimeException("Positive operator can only operate on a number");
+        return val;
     }
 }

@@ -82,8 +82,16 @@ public class Parser {
                 case AND -> null;
                 case OR -> null;
                 case NOT -> null;
-                case PLUS -> new AdditionOperator(token);
-                case MINUS -> new SubtractionOperator(token);
+                case PLUS -> {
+                    if (lexer.lastToken().isOperator())
+                            yield new PositiveOperator(token);
+                    yield new AdditionOperator(token);
+                }
+                case MINUS -> {
+                    if (lexer.lastToken().isOperator())
+                        yield new NegativeOperator(token);
+                    yield new SubtractionOperator(token);
+                }
                 case MULTIPLY -> new MultiplicationOperator(token);
                 case QUOTE -> new StringLiteral(token);
                 case COMMA -> null;
@@ -111,10 +119,6 @@ public class Parser {
                 default ->
                         throw new IllegalStateException("Unexpected value: " + type);
             };
-
-            if (newNode != null && newNode.token.tokenPos() == 16) {
-                System.out.println("");
-            }
 
             if (root == null)
                 root = newNode;
@@ -146,12 +150,12 @@ public class Parser {
     }
 
     /**
-     * Execute every sentence.
+     * Execute every expression.
      */
     public void execute(ExecutionContext rootContext) {
-        for (Node sentence : expressions) {
-            sentence.print();
-            sentence.evaluate(rootContext);
+        for (Node expression : expressions) {
+            expression.print();
+            expression.evaluate(rootContext);
         }
     }
 }

@@ -31,7 +31,7 @@ public class Symbol extends Node {
      */
     public Symbol(Token token){
         super(token, 0);
-        identifier = token.value();
+        identifier = (String) token.value();
     }
 
     @Override

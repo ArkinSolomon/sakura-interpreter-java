@@ -167,7 +167,7 @@ public class Lexer {
                     currentValue.append(thisChar);
 
                     // Current value must be one character long
-                    if (next == null || nextChar == '\n' || nextChar == ';') {
+                    if (next == null || !isIdentifierChar(nextChar)) {
                         if (isNumeric(thisCharStr))
                             currentType = TokenType.NUM_LITERAL;
                         else if (!isIdentifierChar(thisChar))
@@ -246,6 +246,53 @@ public class Lexer {
             // This is ok, because we'll break at EOF anyway
             tokens.remove(++i);
         }
+
+        simplify(tokens);
+    }
+
+    /**
+     * Simplify the tokens into more concise tokens. Do not allow function declarations.
+     *
+     * @param tokens The tokens to simplify.
+     */
+    private List<Token> simplify(List<Token> tokens) {
+        return simplify(tokens, false);
+    }
+
+    /**
+     * Simplify the tokens into more concise tokens and split into function declarations.
+     *
+     * @param tokens The tokens to simplify.
+     * @param isRoot True if this is the first time calling this method and is to disable function declarations.
+     */
+    private List<Token> simplify(List<Token> tokens, boolean isRoot) {
+        TokenStorage tokenStorage = new TokenStorage(tokens);
+
+        List<Token> newTokens = new ArrayList<>();
+        Token token = tokenStorage.consume();
+        while (token != null && token.type() != TokenType.EOF) {
+            if (token.type() == TokenType.OPEN_PARENTHESES) {
+                List<Token> toSimplify = new ArrayList<>();
+
+                token = tokenStorage.consume();
+                int depth = 0;
+                while (token != null && token.type() != TokenType.EOF) {
+                    if (token.type() == TokenType.CLOSE_PARENTHESES && depth == 0) {
+                        toSimplify.add(new Token(TokenType.EOF, token.tokenPos(), token.value()));
+                        newTokens.addAll(simplify(toSimplify));
+                    } else {
+                        if (token.type() == TokenType.OPEN_PARENTHESES)
+                            ++depth;
+                        toSimplify.add(token);
+                    }
+
+                    token = tokenStorage.consume();
+                }
+            }else
+                newTokens.add(token);
+            token = tokenStorage.consume();
+        }
+        return newTokens;
     }
 
     /**

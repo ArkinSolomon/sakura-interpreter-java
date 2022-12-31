@@ -34,7 +34,7 @@ public class MultiplicationOperator extends Operator {
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        if (!hasBothChildren())
+        if (!isFull())
             throw new RuntimeException("Multiplication requires both operands");
 
         Value leftVal = leftChild().evaluate(ctx);

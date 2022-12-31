@@ -20,44 +20,33 @@ import net.sakura.interpreter.Value;
 import net.sakura.interpreter.lexer.Token;
 
 /**
- * An operator for a left and right hand argument.
+ * Base class for all unary operators.
  */
-public class Operator extends Node {
+public class UnaryOperator extends Node {
 
     /**
-     * Create a new node with a specific amount of children.
+     * Create a new operator with a token.
      *
-     * @param token The token of the operator
+     * @param token The token of the operator.
      */
-    public Operator(Token token) {
-        super(token, 2);
-    }
-
-    @Override
-    public Value evaluate(ExecutionContext ctx){
-        throw new UnsupportedOperationException("Evaluate called on operator base");
+    protected UnaryOperator(Token token) {
+        super(token, 1);
     }
 
     @Override
     public final void assign(ExecutionContext ctx, Value val) {
-        throw new UnsupportedOperationException("Can not assign to operator");
+        throw new UnsupportedOperationException("Can not assign to unary operator");
+    }
+
+    @Override
+    public final int getPrecedence() {
+        return 90;
     }
 
     /**
-     * Get the left child of the operator.
-     *
-     * @return The left child of the operator
+     * Get the child of this node.
      */
-    protected final Node leftChild() {
-        return children[0];
-    }
-
-    /**
-     * Get the right hand side of the operator.
-     *
-     * @return The right child of the operator.
-     */
-    protected final Node rightChild() {
-        return children[1];
+    public Node getChild() {
+        return getChild(0);
     }
 }

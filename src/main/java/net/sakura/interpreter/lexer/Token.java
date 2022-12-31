@@ -22,7 +22,7 @@ package net.sakura.interpreter.lexer;
  * @param tokenPos The position of the token.
  * @param value The text value of the token.
  */
-public record Token(TokenType type, int tokenPos, String value) {
+public record Token(TokenType type, int tokenPos, Object value) {
 
     /**
      * Get the string representation of this token.
@@ -31,7 +31,7 @@ public record Token(TokenType type, int tokenPos, String value) {
      */
     @Override
     public String toString() {
-        return "[%d] %s: %s".formatted(tokenPos, type, value.replaceAll("\n", "\\\\n"));
+        return "[%d] %s: %s".formatted(tokenPos, type, value.toString().replaceAll("\n", "\\\\n"));
     }
 
     /**

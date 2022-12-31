@@ -36,7 +36,7 @@ public class AdditionOperator extends Operator {
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        if (!hasBothChildren())
+        if (!isFull())
             throw new RuntimeException("Addition requires both operands");
 
         Value lhs = leftChild().evaluate(ctx);

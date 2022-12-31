@@ -165,7 +165,7 @@ public class Node {
         System.out.println("-".repeat(indentCount) + token);
         for (Node child : children) {
             if (child == null) {
-                System.out.println("-".repeat(indentCount + 4) + "<NULL CHILD>");
+                System.out.println("-".repeat(indentCount + 2) + "<NULL CHILD>");
                 continue;
             }
             child.print(indentCount + 4);

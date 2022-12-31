@@ -31,7 +31,7 @@ public class Variable extends Node {
      */
     public Variable(Token token) {
         super(token, 0);
-        identifier = token.value();
+        identifier = (String) token.value();
     }
 
     @Override

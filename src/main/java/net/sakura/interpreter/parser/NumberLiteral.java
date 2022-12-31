@@ -36,6 +36,6 @@ public class NumberLiteral extends Literal {
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        return new Value(DataType.NUMBER, Double.parseDouble(token.value()), false);
+        return new Value(DataType.NUMBER, Double.parseDouble((String) token.value()), false);
     }
 }
