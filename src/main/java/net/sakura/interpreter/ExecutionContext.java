@@ -93,9 +93,9 @@ public class ExecutionContext {
     private void assignDefaults() {
         identifiers.put("NULL", Value.NULL);
 
-        identifiers.put("@__lang_version", new Value(Datatype.STRING, "1.0.0", false));
-        identifiers.put("@__interpreter", new Value(Datatype.STRING, "sakura.official", false));
-        identifiers.put("@__interpreter_version", new Value(Datatype.STRING, "1.0-SNAPSHOT", false));
+        identifiers.put("@__lang_version", new Value(DataType.STRING, "1.0.0", false));
+        identifiers.put("@__interpreter", new Value(DataType.STRING, "sakura.official", false));
+        identifiers.put("@__interpreter_version", new Value(DataType.STRING, "1.0-SNAPSHOT", false));
     }
 
     /**

@@ -15,7 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.Datatype;
+import net.sakura.interpreter.DataType;
 import net.sakura.interpreter.ExecutionContext;
 import net.sakura.interpreter.Value;
 import net.sakura.interpreter.lexer.Token;
@@ -28,17 +28,32 @@ public class MultiplicationOperator extends Operator {
     /**
      * Create a new node from a token.
      */
-    public MultiplicationOperator(Token token){
+    public MultiplicationOperator(Token token) {
         super(token);
     }
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
+        if (!hasBothChildren())
+            throw new RuntimeException("Multiplication requires both operands");
+
         Value leftVal = leftChild().evaluate(ctx);
         Value rightVal = rightChild().evaluate(ctx);
 
-        double val = ((double) leftVal.value()) * ((double) rightVal.value());
-        return new Value(Datatype.NUMBER, val, false);
+        if (rightVal.type() != DataType.NUMBER)
+            throw new RuntimeException("Right side of multiplication operator must be a number");
+
+        double rhs = (double) rightVal.value();
+        if (leftVal.type() == DataType.STRING) {
+            String value = (String) leftVal.value();
+            return new Value(DataType.STRING, value.repeat((int) Math.floor(rhs)), false);
+        } else if (leftVal.type() == DataType.NUMBER) {
+            double lhs = (double) leftVal.value();
+            double val = lhs * rhs;
+            return new Value(DataType.NUMBER, val, false);
+        }
+
+        throw new RuntimeException("Invalid operand types for multiplication operator");
     }
 
     @Override

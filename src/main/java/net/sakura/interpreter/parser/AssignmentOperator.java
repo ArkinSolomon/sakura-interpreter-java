@@ -42,6 +42,6 @@ public class AssignmentOperator extends Operator {
 
     @Override
     public int getPrecedence() {
-        return 2;
+        return 5;
     }
 }

@@ -60,4 +60,13 @@ public class Operator extends Node {
     protected final Node rightChild() {
         return children[1];
     }
+
+    /**
+     * Check if the operator has both children.
+     *
+     * @return True if the operator has both a left and right child.
+     */
+    protected final boolean hasBothChildren() {
+        return children[0] != null && children[1] != null;
+    }
 }

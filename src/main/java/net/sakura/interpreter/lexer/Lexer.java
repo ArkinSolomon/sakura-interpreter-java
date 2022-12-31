@@ -88,7 +88,6 @@ public class Lexer {
                     tokens.add(new Token(type, currentPos, thisCharStr));
                     currentPos++;
                     continue;
-
                 } else if (thisCharStr.isBlank()) {
                     currentPos++;
                     continue;
@@ -170,15 +169,15 @@ public class Lexer {
                     currentValue.append(thisChar);
 
                     // Current value must be one character long
-                    if (next == null) {
+                    if (next == null || nextChar == '\n' || nextChar == ';') {
                         if (isNumeric(thisCharStr))
                             currentType = TokenType.NUM_LITERAL;
                         else if (!isIdentifierChar(thisChar))
                             throw new RuntimeException("Invalid character");
 
                         tokens.add(new Token(currentType, currentPos, thisCharStr));
-                        ++currentPos;
-                        break;
+                        currentType = null;
+                        currentValue = new StringBuilder();
                     }
                 }
             } else {
@@ -281,6 +280,15 @@ public class Lexer {
         if (current < 0)
             return null;
         return tokens.get(current);
+    }
+
+    /**
+     * Get the last token.
+     */
+    public Token lastToken() {
+        if (current > 0)
+            return tokens.get(current - 1);
+        return null;
     }
 
     /**

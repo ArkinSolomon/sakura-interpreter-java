@@ -123,10 +123,6 @@ public class Parser {
                 Node insertionPoint = currentNode;
                 Node replacementChild = null;
 
-                System.out.println("*****");
-                root.print();
-                System.out.println("*****");
-
                 assert newNode != null;
                 while (insertionPoint != null && insertionPoint.getPrecedence() >= newNode.getPrecedence()) {
                     replacementChild = insertionPoint;

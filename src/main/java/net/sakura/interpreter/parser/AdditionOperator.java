@@ -15,7 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.Datatype;
+import net.sakura.interpreter.DataType;
 import net.sakura.interpreter.ExecutionContext;
 import net.sakura.interpreter.Value;
 import net.sakura.interpreter.lexer.Token;
@@ -36,10 +36,25 @@ public class AdditionOperator extends Operator {
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
+        if (!hasBothChildren())
+            throw new RuntimeException("Addition requires both operands");
+
         Value lhs = leftChild().evaluate(ctx);
         Value rhs = rightChild().evaluate(ctx);
 
-        return new Value(Datatype.NUMBER, (double) lhs.value() + (double) rhs.value(), false);
+        if (lhs.type() == DataType.STRING) {
+            String value = (String) lhs.value();
+
+            value += rhs.toString();
+            return new Value(DataType.STRING, value, false);
+        } else if (lhs.type() == DataType.NUMBER) {
+            if (rhs.type() != DataType.NUMBER)
+                throw new RuntimeException("Can not add a non-number to a number");
+
+            return new Value(DataType.NUMBER, (double) lhs.value() + (double) rhs.value(), false);
+        }
+
+        throw new RuntimeException("Invalid operand types for addition operator");
     }
 
     @Override

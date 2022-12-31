@@ -18,7 +18,7 @@ package net.sakura.interpreter;
 /**
  * All the datatypes that a value can be.
  */
-public enum Datatype {
+public enum DataType {
     STRING,
     NUMBER,
     NULL,

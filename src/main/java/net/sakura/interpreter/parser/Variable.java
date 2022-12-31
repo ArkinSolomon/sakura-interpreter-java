@@ -41,7 +41,7 @@ public class Variable extends Node {
 
     @Override
     public final Value evaluate(ExecutionContext ctx) {
-        throw new UnsupportedOperationException("Can not evaluate a variable");
+        throw new UnsupportedOperationException("Can not evaluate a variable declaration");
     }
 
     @Override

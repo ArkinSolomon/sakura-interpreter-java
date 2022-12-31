@@ -38,7 +38,9 @@ public class Symbol extends Node {
     public void assign(ExecutionContext ctx, Value val) {
         boolean hasId = ctx.hasIdentifier(identifier);
 
-        if (hasId && !ctx.getIdentifier(identifier).isMutable())
+        if (!hasId)
+            throw new RuntimeException("Identifier not found, did you declare it?");
+       else if (!ctx.getIdentifier(identifier).isMutable())
             throw new UnsupportedOperationException("Can not assign to immutable variable");
         ctx.assignIdentifier(identifier, val);
     }
@@ -46,7 +48,6 @@ public class Symbol extends Node {
     @Override
     public Value evaluate(ExecutionContext ctx) {
         boolean hasId = ctx.hasIdentifier(identifier);
-
         return hasId ? ctx.getIdentifier(identifier) : Value.NULL;
     }
 

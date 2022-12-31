@@ -1,1 +1,6 @@
-$var2 = 5 * 3 + 5
+$var1 = 6 / 7 * 5 / 8 * 19 + 14
+$var2 = var1 + 25
+$var3 = @__interpreter + var1
+%var2 = 9
+%repeated_var = @__lang_version * 4
+$whatIsThisVar = .4

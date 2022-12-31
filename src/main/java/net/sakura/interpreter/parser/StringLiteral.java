@@ -15,7 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.Datatype;
+import net.sakura.interpreter.DataType;
 import net.sakura.interpreter.ExecutionContext;
 import net.sakura.interpreter.Value;
 import net.sakura.interpreter.lexer.Token;
@@ -36,6 +36,6 @@ public class StringLiteral extends Literal {
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        return new Value(Datatype.STRING, token.value(), false);
+        return new Value(DataType.STRING, token.value(), false);
     }
 }

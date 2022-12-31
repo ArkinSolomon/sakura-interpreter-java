@@ -22,6 +22,18 @@ package net.sakura.interpreter;
  * @param value The value of the variable.
  * @param isMutable True if the variable is mutable.
  */
-public record Value(Datatype type, Object value, boolean isMutable) {
-    public static final Value NULL = new Value(Datatype.NULL, null, false);
+public record Value(DataType type, Object value, boolean isMutable) {
+    public static final Value NULL = new Value(DataType.NULL, null, false);
+
+    /**
+     * Get the string representation of the data of this value.
+     *
+     * @return The string representation of the data of this value.
+     */
+    @Override
+    public String toString() {
+        if (value == null)
+            return "NULL";
+        return value.toString();
+    }
 }

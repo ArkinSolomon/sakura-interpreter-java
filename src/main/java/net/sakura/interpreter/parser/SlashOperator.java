@@ -15,7 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.Datatype;
+import net.sakura.interpreter.DataType;
 import net.sakura.interpreter.ExecutionContext;
 import net.sakura.interpreter.Value;
 import net.sakura.interpreter.lexer.Token;
@@ -37,11 +37,11 @@ public class SlashOperator extends Operator {
         Value leftVal = leftChild().evaluate(ctx);
         Value rightVal = rightChild().evaluate(ctx);
 
-        if (leftVal.type() == Datatype.NUMBER && rightVal.type() == Datatype.NUMBER) {
+        if (leftVal.type() == DataType.NUMBER && rightVal.type() == DataType.NUMBER) {
             double val = ((double) leftVal.value()) / ((double) rightVal.value());
-            return new Value(Datatype.NUMBER, val, false);
-        }else {
-            return new Value(Datatype.STRING, "NOT IMPLEMENTED", false);
+            return new Value(DataType.NUMBER, val, false);
+        } else {
+            return new Value(DataType.STRING, "NOT IMPLEMENTED", false);
         }
     }
 

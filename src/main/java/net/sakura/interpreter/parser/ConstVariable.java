@@ -35,6 +35,6 @@ public class ConstVariable extends Variable {
 
     @Override
     public void assign(ExecutionContext ctx, Value val) {
-        throw new UnsupportedOperationException("Can not assign to constant variable");
+        ctx.assignIdentifier(identifier, new Value(val.type(), val.value(), false));
     }
 }
