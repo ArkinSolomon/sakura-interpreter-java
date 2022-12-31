@@ -128,7 +128,7 @@ public class Parser {
                 System.out.println("*****");
 
                 assert newNode != null;
-                while (insertionPoint != null && insertionPoint.getPrecedence() > newNode.getPrecedence()) {
+                while (insertionPoint != null && insertionPoint.getPrecedence() >= newNode.getPrecedence()) {
                     replacementChild = insertionPoint;
                     insertionPoint = insertionPoint.getParent();
                 }
