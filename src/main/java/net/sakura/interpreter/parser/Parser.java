@@ -83,12 +83,12 @@ public final class Parser {
                 case OR -> null;
                 case NOT -> null;
                 case PLUS -> {
-                    if (tokenStorage.lastToken().isOperator())
+                    if (tokenStorage.lastToken() == null || tokenStorage.lastToken().isOperator())
                         yield new PositiveOperator(token);
                     yield new AdditionOperator(token);
                 }
                 case MINUS -> {
-                    if (tokenStorage.lastToken().isOperator())
+                    if (tokenStorage.lastToken() == null || tokenStorage.lastToken().isOperator())
                         yield new NegativeOperator(token);
                     yield new SubtractionOperator(token);
                 }

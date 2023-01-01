@@ -78,4 +78,9 @@ public class FunctionCall extends Node {
 
         return ctx.executeFunc(identifier, argValues);
     }
+
+    @Override
+    public int getPrecedence() {
+        return Precedences.VALUE;
+    }
 }
