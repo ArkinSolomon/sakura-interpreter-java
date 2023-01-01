@@ -37,8 +37,10 @@ public class ParentheticalNode extends Node {
         TokenStorage content = new TokenStorage((List<Token>) token.value());
         Parser parser = new Parser(content);
         List<Node> childExpressions = parser.parse();
-        if (childExpressions.size() != 1)
+        if (childExpressions.size() > 1)
             throw new RuntimeException("Parentheses has more than one expression");
+        else if (childExpressions.size() < 1)
+            throw new RuntimeException("Unexpected empty parentheses");
         setChild(0, childExpressions.get(0));
     }
 

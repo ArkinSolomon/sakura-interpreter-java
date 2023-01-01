@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022. Sakura Contributors.
+ * Copyright (c) 2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,7 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.parser;
+package net.sakura.interpreter;
 
-/**
- * Precedences for every type of operator.
- */
-final class Precedences {
-    static int RETURN = 20;
-    static int ASSIGNMENT = 30;
-    static int ADD_SUB = 50;
-    static int MULTIPLY_SLASH = 60;
-    static int PREFIX = 80;
-    static int PARENTHETICAL = 90;
-    static int VALUE = 100;
-
-    /**
-     * No class instances.
-     */
-    private Precedences() {}
+public class Configuration {
 }

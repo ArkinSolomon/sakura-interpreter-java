@@ -60,6 +60,8 @@ public enum TokenType {
     FALSE, // FALSE
 
     FUNC, // func
+    FUNC_SIG, // The signature of the function
+    FUNC_DEF, // Function definition, a FUNC token followed by a BRACE token
     FUNC_CALL, // Function call, a symbol followed by parentheses
 
     OPEN_PARENTHESES, // (
@@ -68,6 +70,7 @@ public enum TokenType {
 
     OPEN_BRACE, // {
     CLOSE_BRACE, // }
+    BRACE, // A series of expressions wrapped in braces.
 
     NUM_LITERAL, // floats and integers
     SYMBOL // any other text

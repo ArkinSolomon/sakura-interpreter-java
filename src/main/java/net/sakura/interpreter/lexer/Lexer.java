@@ -288,6 +288,8 @@ public class Lexer {
                         break;
                     } else if (token.type() == TokenType.SEMI)
                         throw new RuntimeException("Can not put multiple statements within parentheses, use braces instead");
+                    else if (token.type() == TokenType.RETURN)
+                        throw new RuntimeException("Can not place return statement in parentheses");
                     else {
                         if (token.type() == TokenType.OPEN_PARENTHESES)
                             ++depth;
@@ -300,6 +302,8 @@ public class Lexer {
                     token = tokenStorage.consume();
                 }
             } else if (token.type() == TokenType.SYMBOL && tokenStorage.peek().type() == TokenType.OPEN_PARENTHESES) {
+
+                // Function calls
                 String identifier = (String) token.value();
                 int callStartPos = token.position();
 
@@ -311,7 +315,7 @@ public class Lexer {
                 final List<List<Token>> args = new ArrayList<>();
                 List<Token> currentArg = new ArrayList<>();
                 int argStartPos = -1;
-                while (token.type() != null && token.type() != TokenType.EOF) {
+                while (token != null && token.type() != TokenType.EOF) {
                     if (argStartPos < 0)
                         argStartPos = token.position();
 
@@ -347,15 +351,155 @@ public class Lexer {
 
                 FunctionCallData data = new FunctionCallData(identifier, args);
                 newTokens.add(new Token(TokenType.FUNC_CALL, callStartPos, data));
+            } else if (token.type() == TokenType.FUNC) {
+                if (!isRoot)
+                    throw new RuntimeException("Functions must be declared in global scope");
+
+                //Function definitions
+                String functionIdentifier = (String) token.value();
+                int functionDefStartPos = token.position();
+
+                // Parse arguments if there are parentheses
+                List<FunctionArgData> args = new ArrayList<>();
+                token = tokenStorage.consume();
+                if (token.type() == TokenType.OPEN_PARENTHESES) {
+                    token = tokenStorage.consume();
+
+                    int argStartPos = -1;
+
+                    String argId = null;
+                    boolean isConstant = false;
+                    boolean hasDefault = false;
+                    List<Token> defaultValue = new ArrayList<>();
+
+                    while (token != null && token.type() != TokenType.EOF) {
+                        if (argStartPos < 0)
+                            argStartPos = token.position();
+
+                        if (token.type() == TokenType.CONST_VAR) {
+                            argId = (String) token.value();
+                            isConstant = true;
+                        } else if (token.type() == TokenType.VARIABLE)
+                            argId = (String) token.value();
+                        else if (token.type() == TokenType.EQUALS || token.type() == TokenType.COMMA || token.type() == TokenType.CLOSE_PARENTHESES) {
+                            if (token.type() == TokenType.EQUALS) {
+                                if (isConstant)
+                                    throw new RuntimeException("Constant function arguments can not have defaults");
+
+                                hasDefault = true;
+
+                                token = tokenStorage.consume();
+                                int depth = 0;
+                                int defaultValueStart = token.position();
+                                while (token != null && token.type() != TokenType.EOF) {
+
+                                    if (token.type() == TokenType.COMMA || (token.type() == TokenType.CLOSE_PARENTHESES && depth == 0)) {
+                                        defaultValue.add(new Token(TokenType.EOF, defaultValueStart, "<ARG DEFAULT VAL END>"));
+                                        break;
+                                    } else if (token.type() == TokenType.SEMI)
+                                        throw new RuntimeException("Unexpected semi-colon in argument list");
+                                    else {
+                                        if (token.type() == TokenType.OPEN_PARENTHESES)
+                                            ++depth;
+                                        else if (token.type() == TokenType.CLOSE_PARENTHESES)
+                                            --depth;
+
+                                        defaultValue.add(token);
+                                    }
+
+                                    token = tokenStorage.consume();
+                                }
+                            }
+
+                            if (argId == null)
+                                throw new RuntimeException("Function argument list invalid");
+
+                            if (hasDefault && defaultValue.size() <= 1)
+                                throw new RuntimeException("Unexpected equals sign");
+
+                            FunctionArgData data = new FunctionArgData(argId, isConstant, hasDefault, defaultValue.size() == 0 ? null : simplify(defaultValue));
+                            args.add(data);
+
+                            argId = null;
+                            isConstant = false;
+                            hasDefault = false;
+                            defaultValue = new ArrayList<>();
+
+                            assert token != null;
+                            if (token.type() == TokenType.CLOSE_PARENTHESES)
+                                break;
+                        }
+
+                        token = tokenStorage.consume();
+                    }
+
+                    // We can set the body of the function to null for now, it'll be fixed later
+                    FunctionDefinitionData data = new FunctionDefinitionData(functionIdentifier, args, null);
+                    newTokens.add(new Token(TokenType.FUNC_SIG, functionDefStartPos, data));
+                }
+            } else if (token.type() == TokenType.OPEN_BRACE) {
+
+                // Parse braces
+                int braceStartPos = token.position();
+                int depth = 0;
+
+                List<Token> body = new ArrayList<>();
+                token = tokenStorage.consume();
+                while (token != null && token.type() != TokenType.EOF) {
+
+                    if (token.type() == TokenType.CLOSE_BRACE && depth == 0) {
+                        body.add(new Token(TokenType.EOF, token.position(), "<CLOSE BRACE>"));
+                        break;
+                    } else {
+                        if (token.type() == TokenType.OPEN_BRACE)
+                            ++depth;
+                        else if (token.type() == TokenType.CLOSE_BRACE)
+                            --depth;
+
+                        body.add(token);
+                    }
+
+                    token = tokenStorage.consume();
+                }
+
+                newTokens.add(new Token(TokenType.BRACE, braceStartPos, simplify(body)));
             } else
 
-                // Add every other token
+                // Simply every other token
                 newTokens.add(token);
 
             if (tokenStorage.peek() != null)
                 token = tokenStorage.consume();
         }
-        newTokens.add(tokens.get(tokens.size() - 1));
+
+        // Add the EOF
+        Token eofToken = tokens.get(tokens.size() - 1);
+        newTokens.add(eofToken);
+
+        // Link FUNC nodes to their next brace node as FUNC_DEF node
+        if (isRoot) {
+            tokenStorage = new TokenStorage(newTokens);
+            newTokens = new ArrayList<>();
+
+            token = tokenStorage.consume();
+
+            while (token != null && token.type() != TokenType.EOF) {
+
+                if (token.type() == TokenType.FUNC_SIG) {
+                    if (tokenStorage.peek().type() != TokenType.BRACE)
+                        throw new RuntimeException("Function signature not followed by brace");
+
+                    FunctionDefinitionData data = (FunctionDefinitionData) token.value();
+                    newTokens.add(new Token(TokenType.FUNC_DEF, token.position(), data.addBody(tokenStorage.consume())));
+                } else
+                    newTokens.add(token);
+
+                token = tokenStorage.consume();
+            }
+        }
+
+        newTokens.add(eofToken);
+
         return newTokens;
     }
 }

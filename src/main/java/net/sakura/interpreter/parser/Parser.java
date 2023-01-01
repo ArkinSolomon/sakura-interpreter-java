@@ -16,6 +16,7 @@
 package net.sakura.interpreter.parser;
 
 import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
 import net.sakura.interpreter.lexer.TokenStorage;
 import net.sakura.interpreter.lexer.TokenType;
@@ -29,7 +30,8 @@ import java.util.List;
 public final class Parser {
 
     private final TokenStorage tokenStorage;
-    private final List<Node> expressions;
+    private final List<Node> expressions = new ArrayList<>();
+    private final List<FunctionDefinition> functions = new ArrayList<>();
 
     /**
      * Create a parse tree using the tokens from the lexer.
@@ -38,7 +40,6 @@ public final class Parser {
      */
     public Parser(TokenStorage tokenStorage) {
         this.tokenStorage = tokenStorage;
-        this.expressions = new ArrayList<>();
     }
 
     /**
@@ -94,7 +95,6 @@ public final class Parser {
                 }
                 case MULTIPLY -> new MultiplicationOperator(token);
                 case QUOTE -> new StringLiteral(token);
-                case COMMA -> null;
                 case VARIABLE -> new Variable(token);
                 case CONST_VAR -> new ConstVariable(token);
                 case ENV_VARIABLE -> new EnvVariable(token);
@@ -104,21 +104,26 @@ public final class Parser {
                 case WHILE -> null;
                 case FOR -> null;
                 case IN -> null;
-                case RETURN -> null;
+                case RETURN -> new ReturnExpression(token);
                 case BACKSLASH -> null;
                 case SLASH -> new SlashOperator(token);
                 case TRUE -> null;
                 case FALSE -> null;
-                case FUNC -> null;
+                case FUNC_DEF -> new FunctionDefinition(token);
                 case FUNC_CALL -> new FunctionCall(token);
                 case PARENTHETICAL_EXPR -> new ParentheticalNode(token);
-                case OPEN_BRACE -> null;
-                case CLOSE_BRACE -> null;
                 case NUM_LITERAL -> new NumberLiteral(token);
                 case SYMBOL -> new Symbol(token);
                 default ->
                         throw new IllegalStateException("Unexpected value: " + type);
             };
+
+            if (newNode instanceof FunctionDefinition) {
+                functions.add((FunctionDefinition) newNode);
+                if (root != null)
+                    throw new RuntimeException("Function definitions can not be part of other expressions");
+                continue;
+            }
 
             if (root == null)
                 root = newNode;
@@ -153,10 +158,20 @@ public final class Parser {
     /**
      * Execute every expression.
      */
-    public void execute(ExecutionContext rootContext) {
+    public Value execute(ExecutionContext ctx) {
+
+        // Register functions if we're executing the root context
+        if (ctx.getRoot() == ctx) {
+            for (FunctionDefinition function : functions)
+                function.register(ctx);
+        }
+
         for (Node expression : expressions) {
             expression.print();
-            expression.evaluate(rootContext);
+            Value value = expression.evaluate(ctx);
+            if (expression instanceof ReturnExpression)
+                return value;
         }
+        return Value.NULL;
     }
 }
