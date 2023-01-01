@@ -188,7 +188,7 @@ public class Lexer {
                     switch (value) {
                         case "if" -> {
                             currentType = TokenType.IF;
-                            if (tokens.get(tokens.size() - 1).type() == TokenType.ELSE)
+                            if (tokens.size() > 0 && tokens.get(tokens.size() - 1).type() == TokenType.ELSE)
                                 currentType = TokenType.ELIF;
                         }
                         case "else" -> currentType = TokenType.ELSE;
@@ -307,6 +307,7 @@ public class Lexer {
                 String identifier = (String) token.value();
                 int callStartPos = token.position();
 
+                // Skip over the parenthesis and start with the first token of the list
                 tokenStorage.consume();
                 token = tokenStorage.consume();
 
@@ -315,54 +316,59 @@ public class Lexer {
                 final List<List<Token>> args = new ArrayList<>();
                 List<Token> currentArg = new ArrayList<>();
                 int argStartPos = -1;
-                while (token != null && token.type() != TokenType.EOF) {
-                    if (argStartPos < 0)
-                        argStartPos = token.position();
+                if (token.type() != TokenType.CLOSE_PARENTHESES){
+                    while (token != null && token.type() != TokenType.EOF) {
+                        if (argStartPos < 0)
+                            argStartPos = token.position();
 
-                    if (token.type() == TokenType.COMMA && depth == 0) {
-                        currentArg.add(new Token(TokenType.EOF, argStartPos, "<ARG LIST COMMA>"));
-                        args.add(simplify(currentArg));
-                        currentArg = new ArrayList<>();
-                        argStartPos = -1;
-                    } else if (token.type() == TokenType.CLOSE_PARENTHESES && depth == 0) {
-                        currentArg.add(new Token(TokenType.EOF, argStartPos, "<ARG LIST END>"));
-                        args.add(simplify(currentArg));
-                        currentArg = new ArrayList<>();
-                        break;
-                    } else if (token.type() == TokenType.SEMI)
-                        throw new RuntimeException("Can not put multiple statements within parentheses, use braces instead");
-                    else {
-                        if (token.type() == TokenType.OPEN_PARENTHESES)
-                            ++depth;
-                        else if (token.type() == TokenType.CLOSE_PARENTHESES)
-                            --depth;
+                        if (token.type() == TokenType.COMMA && depth == 0) {
+                            currentArg.add(new Token(TokenType.EOF, argStartPos, "<ARG LIST COMMA>"));
+                            args.add(simplify(currentArg));
+                            currentArg = new ArrayList<>();
+                            argStartPos = -1;
+                        } else if (token.type() == TokenType.CLOSE_PARENTHESES && depth == 0) {
+                            currentArg.add(new Token(TokenType.EOF, argStartPos, "<ARG LIST END>"));
+                            args.add(simplify(currentArg));
+                            currentArg = new ArrayList<>();
+                            break;
+                        } else if (token.type() == TokenType.SEMI)
+                            throw new RuntimeException("Can not put multiple statements within parentheses, use braces instead");
+                        else {
+                            if (token.type() == TokenType.OPEN_PARENTHESES)
+                                ++depth;
+                            else if (token.type() == TokenType.CLOSE_PARENTHESES)
+                                --depth;
 
-                        currentArg.add(token);
+                            currentArg.add(token);
+                        }
+
+                        token = tokenStorage.consume();
                     }
-
-                    token = tokenStorage.consume();
                 }
 
                 if (currentArg.size() != 0)
                     throw new RuntimeException("Function missing closing parentheses");
 
-                if (args.get(args.size() - 1).size() == 1)
+                if (args.size() > 0 && args.get(args.size() - 1).size() == 1)
                     throw new RuntimeException("Extra comma in function call");
 
                 FunctionCallData data = new FunctionCallData(identifier, args);
                 newTokens.add(new Token(TokenType.FUNC_CALL, callStartPos, data));
             } else if (token.type() == TokenType.FUNC) {
+
+                //Function definitions
                 if (!isRoot)
                     throw new RuntimeException("Functions must be declared in global scope");
 
-                //Function definitions
                 String functionIdentifier = (String) token.value();
                 int functionDefStartPos = token.position();
 
                 // Parse arguments if there are parentheses
                 List<FunctionArgData> args = new ArrayList<>();
-                token = tokenStorage.consume();
-                if (token.type() == TokenType.OPEN_PARENTHESES) {
+                if (tokenStorage.peek().type() == TokenType.OPEN_PARENTHESES) {
+
+                    // Get rid of the first parenthesis and start with the first item in it
+                    tokenStorage.consume();
                     token = tokenStorage.consume();
 
                     int argStartPos = -1;
@@ -432,11 +438,11 @@ public class Lexer {
 
                         token = tokenStorage.consume();
                     }
-
-                    // We can set the body of the function to null for now, it'll be fixed later
-                    FunctionDefinitionData data = new FunctionDefinitionData(functionIdentifier, args, null);
-                    newTokens.add(new Token(TokenType.FUNC_SIG, functionDefStartPos, data));
                 }
+
+                // We can set the body of the function to null for now, it'll be fixed later
+                FunctionDefinitionData data = new FunctionDefinitionData(functionIdentifier, args, null);
+                newTokens.add(new Token(TokenType.FUNC_SIG, functionDefStartPos, data));
             } else if (token.type() == TokenType.OPEN_BRACE) {
 
                 // Parse braces
@@ -479,6 +485,7 @@ public class Lexer {
         // Link FUNC nodes to their next brace node as FUNC_DEF node
         if (isRoot) {
             tokenStorage = new TokenStorage(newTokens);
+            tokenStorage.printTokens();
             newTokens = new ArrayList<>();
 
             token = tokenStorage.consume();

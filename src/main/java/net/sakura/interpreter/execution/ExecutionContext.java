@@ -86,22 +86,32 @@ public class ExecutionContext {
     }
 
     /**
-     * Assign a value to an identifier.
+     * Define an identifier in the local context.
      *
-     * @param identifier The identifier to assign the value of.
+     * @param identifier The name of the identifier to define.
      * @param val        The value of the identifier.
      */
-    public void assignIdentifier(String identifier, Value val) {
-        if (identifier.startsWith("@"))
-            throw new UnsupportedOperationException("Can not assign to environment variable");
-
-        if (getIdentifier(identifier) != Value.NULL) {
-            Value oldValue = identifiers.get(identifier);
-            if (!oldValue.isMutable())
-                throw new UnsupportedOperationException("Value not mutable");
-        }
-
+    public void defineIdentifier(String identifier, Value val) {
         identifiers.put(identifier, val);
+    }
+
+    /**
+     * Modify an identifier.
+     *
+     * @param identifier The name of the identifier to modify.
+     * @param val        The new value of the identifier.
+     */
+    public void modifyIdentifier(String identifier, Value val) {
+        if (!hasIdentifier(identifier))
+            throw new RuntimeException("Identifier \"%s\" not found".formatted(identifier));
+
+        if (identifiers.containsKey(identifier)) {
+            if (!identifiers.get(identifier).isMutable())
+                throw new RuntimeException("Identifier \"%s\" is not mutable".formatted(identifier));
+
+            identifiers.put(identifier, val);
+        } else
+            parent.modifyIdentifier(identifier, val);
     }
 
     /**

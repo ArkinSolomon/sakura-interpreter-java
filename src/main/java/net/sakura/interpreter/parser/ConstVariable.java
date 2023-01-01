@@ -35,6 +35,6 @@ public class ConstVariable extends Variable {
 
     @Override
     public void assign(ExecutionContext ctx, Value val) {
-        ctx.assignIdentifier(identifier, new Value(val.type(), val.value(), false));
+        ctx.defineIdentifier(identifier, new Value(val.type(), val.value(), false));
     }
 }

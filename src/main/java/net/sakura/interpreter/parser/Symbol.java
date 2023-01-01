@@ -42,7 +42,7 @@ public class Symbol extends Node {
             throw new RuntimeException("Identifier not found, did you declare it?");
        else if (!ctx.getIdentifier(identifier).isMutable())
             throw new UnsupportedOperationException("Can not assign to immutable variable");
-        ctx.assignIdentifier(identifier, val);
+        ctx.modifyIdentifier(identifier, val);
     }
 
     @Override

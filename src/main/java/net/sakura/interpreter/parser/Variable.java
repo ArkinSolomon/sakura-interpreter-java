@@ -46,6 +46,6 @@ public class Variable extends Node {
 
     @Override
     public void assign(ExecutionContext ctx, Value val) {
-        ctx.assignIdentifier(identifier, val);
+        ctx.defineIdentifier(identifier, val);
     }
 }

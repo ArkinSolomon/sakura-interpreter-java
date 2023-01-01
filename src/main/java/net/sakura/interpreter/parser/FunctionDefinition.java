@@ -121,7 +121,7 @@ public final class FunctionDefinition extends Node implements Function {
             FunctionArgData argData = data.args().get(i);
             String argId = argData.identifier();
             Value val = argValues.get(i);
-            tempCtx.assignIdentifier(argId, new Value(val.type(), val.value(), val.isMutable()));
+            tempCtx.defineIdentifier(argId, new Value(val.type(), val.value(), val.isMutable()));
         }
 
         return parsedFunc.execute(tempCtx);
