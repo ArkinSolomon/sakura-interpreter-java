@@ -15,8 +15,8 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.ExecutionContext;
-import net.sakura.interpreter.Value;
+import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
 
 /**
@@ -37,11 +37,13 @@ public class AssignmentOperator extends Operator {
     public Value evaluate(ExecutionContext ctx) {
         Value assignmentValue = rightChild().evaluate(ctx);
         leftChild().assign(ctx, new Value(assignmentValue.type(), assignmentValue.value(), true));
-        return Value.NULL;
+
+        // Assignment operators return the value of assignment
+        return new Value(assignmentValue.type(), assignmentValue.value(), false);
     }
 
     @Override
     public int getPrecedence() {
-        return 5;
+        return Precedences.ASSIGNMENT;
     }
 }

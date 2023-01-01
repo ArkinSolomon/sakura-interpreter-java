@@ -18,34 +18,42 @@ package net.sakura.interpreter.parser;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
+import net.sakura.interpreter.lexer.TokenStorage;
+
+import java.util.List;
 
 /**
- * An environment variable.
+ * A node for parenthetical statements.
  */
-public class EnvVariable extends Node {
-
-    private final String identifier;
+public class ParentheticalNode extends Node {
 
     /**
-     * Create a new environment variable node using a token.
+     * Create a new node with the parenthetical token.
      */
-    public EnvVariable(Token token){
-        super(token, 0);
-        identifier = "@" + token.value();
-    }
+    public ParentheticalNode(Token token) {
+        super(token, 1);
 
-    @Override
-    public int getPrecedence() {
-        return Precedences.VALUE;
+        @SuppressWarnings("unchecked")
+        TokenStorage content = new TokenStorage((List<Token>) token.value());
+        Parser parser = new Parser(content);
+        List<Node> childExpressions = parser.parse();
+        if (childExpressions.size() != 1)
+            throw new RuntimeException("Parentheses has more than one expression");
+        setChild(0, childExpressions.get(0));
     }
 
     @Override
     public void assign(ExecutionContext ctx, Value val) {
-        throw new UnsupportedOperationException("Can not assign to environment variable");
+        throw new RuntimeException("Can not assign to parenthetical expression");
     }
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        return ctx.getIdentifier(identifier);
+        return getChild(0).evaluate(ctx);
+    }
+
+    @Override
+    public int getPrecedence() {
+        return Precedences.PARENTHETICAL;
     }
 }

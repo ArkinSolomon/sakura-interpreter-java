@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022. Sakura Contributors.
+ * Copyright (c) 2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,22 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter;
+package net.sakura.interpreter.functions;
+
+import net.sakura.interpreter.execution.Value;
+
+import java.util.List;
 
 /**
- * All the datatypes that a value can be.
+ * Implement this interface to pass functions into the execution context.
  */
-public enum DataType {
-    STRING,
-    NUMBER,
-    NULL,
-    FUNCTION
+public interface Function {
+
+    /**
+     * Execute a function.
+     *
+     * @param args The argument values.
+     * @return The result of the function.
+     */
+    Value execute(List<Value> args);
 }

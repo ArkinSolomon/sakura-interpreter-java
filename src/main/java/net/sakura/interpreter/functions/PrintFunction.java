@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022. Sakura Contributors.
+ * Copyright (c) 2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,29 +13,30 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.parser;
+package net.sakura.interpreter.functions;
 
-import net.sakura.interpreter.execution.DataType;
-import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
-import net.sakura.interpreter.lexer.Token;
+
+import java.util.List;
 
 /**
- * A string in quotes.
+ * The print function to print a value.
  */
-public class StringLiteral extends Literal {
+public class PrintFunction implements Function {
 
     /**
-     * Create a new string from a quote token.
+     * Print the values provided.
      *
-     * @param token The quote token.
+     * @param args The arguments of the function.
+     * @return Always returns {@link Value#NULL}.
      */
-    public StringLiteral(Token token) {
-        super(token);
-    }
-
     @Override
-    public Value evaluate(ExecutionContext ctx) {
-        return new Value(DataType.STRING, token.value(), false);
+    public Value execute(List<Value> args) {
+        Value printValue = Value.NULL;
+        if (args.size() > 0)
+            printValue = args.get(0);
+
+        System.out.println(printValue);
+        return null;
     }
 }

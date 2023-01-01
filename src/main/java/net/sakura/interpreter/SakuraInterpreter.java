@@ -15,7 +15,10 @@
 
 package net.sakura.interpreter;
 
+import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.lexer.Lexer;
+import net.sakura.interpreter.lexer.Token;
+import net.sakura.interpreter.lexer.TokenStorage;
 import net.sakura.interpreter.parser.Parser;
 
 import java.io.File;
@@ -23,6 +26,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.List;
 
 public class SakuraInterpreter {
 
@@ -32,12 +36,13 @@ public class SakuraInterpreter {
         String input = Files.readString(file.toPath());
 
         Lexer lexer = new Lexer(input);
-        lexer.analyze();
+        List<Token> tokens = lexer.analyze();
+        TokenStorage tokenStorage = new TokenStorage(tokens);
 
         System.out.println();
-        lexer.printTokens();
+        tokenStorage.printTokens();
 
-        Parser parser = new Parser(lexer);
+        Parser parser = new Parser(tokenStorage);
         parser.parse();
 
         ExecutionContext ctx = new ExecutionContext();

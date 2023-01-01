@@ -15,27 +15,19 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.execution.DataType;
-import net.sakura.interpreter.execution.ExecutionContext;
-import net.sakura.interpreter.execution.Value;
-import net.sakura.interpreter.lexer.Token;
-
 /**
- * A number literal.
+ * Precedences for every type of operator.
  */
-public class NumberLiteral extends Literal {
+final class Precedences {
+    static int ASSIGNMENT = 5;
+    static int ADD_SUB = 50;
+    static int MULTIPLY_SLASH = 60;
+    static int PREFIX = 80;
+    static int PARENTHETICAL = 90;
+    static int VALUE = 100;
 
     /**
-     * Create a new literal from a token.
-     *
-     * @param token The token to create the literal from.
+     * No class instances.
      */
-    public NumberLiteral(Token token){
-        super(token);
-    }
-
-    @Override
-    public Value evaluate(ExecutionContext ctx) {
-        return new Value(DataType.NUMBER, Double.parseDouble((String) token.value()), false);
-    }
+    private Precedences() {}
 }

@@ -15,21 +15,21 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.ExecutionContext;
-import net.sakura.interpreter.Value;
+import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
 
 /**
  * An operator for a left and right hand argument.
  */
-public class Operator extends Node {
+class Operator extends Node {
 
     /**
      * Create a new node with a specific amount of children.
      *
      * @param token The token of the operator
      */
-    public Operator(Token token) {
+    protected Operator(Token token) {
         super(token, 2);
     }
 

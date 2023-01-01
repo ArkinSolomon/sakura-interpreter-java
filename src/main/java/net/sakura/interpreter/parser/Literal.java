@@ -15,21 +15,21 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.ExecutionContext;
-import net.sakura.interpreter.Value;
+import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
 
 /**
  * A number or string literal.
  */
-public class Literal extends Node {
+class Literal extends Node {
 
     /**
      * Create a new literal from the given token.
      *
      * @param token The token to create the literal from.
      */
-    public Literal(Token token){
+    protected Literal(Token token){
         super(token, 0);
     }
 
@@ -45,6 +45,6 @@ public class Literal extends Node {
 
     @Override
     public final int getPrecedence() {
-        return 100;
+        return Precedences.VALUE;
     }
 }

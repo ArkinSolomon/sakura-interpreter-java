@@ -15,9 +15,9 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.ExecutionContext;
-import net.sakura.interpreter.lexer.Lexer;
+import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.lexer.Token;
+import net.sakura.interpreter.lexer.TokenStorage;
 import net.sakura.interpreter.lexer.TokenType;
 
 import java.util.ArrayList;
@@ -26,33 +26,34 @@ import java.util.List;
 /**
  * Create a new parse tree.
  */
-public class Parser {
+public final class Parser {
 
-    private final Lexer lexer;
+    private final TokenStorage tokenStorage;
     private final List<Node> expressions;
 
     /**
-     * Create a parse tree using the lexer
+     * Create a parse tree using the tokens from the lexer.
      *
-     * @param lexer The lexer that tokenized the input.
+     * @param tokenStorage The tokens from the lexer.
      */
-    public Parser(Lexer lexer) {
-        this.lexer = lexer;
+    public Parser(TokenStorage tokenStorage) {
+        this.tokenStorage = tokenStorage;
         this.expressions = new ArrayList<>();
     }
 
     /**
      * Create the tree.
      */
-    public void parse() {
+    public List<Node> parse() {
 
         Node root = null;
         Node currentNode = null;
 
         while (true) {
-            Token token = lexer.consume();
-            if (token.type() == TokenType.EOF && root != null) {
-                expressions.add(root);
+            Token token = tokenStorage.consume();
+            if (token.type() == TokenType.EOF) {
+                if (root != null)
+                    expressions.add(root);
                 break;
             } else if (token.type() == TokenType.SEMI) {
                 if (root != null) {
@@ -71,7 +72,6 @@ public class Parser {
             }
 
             TokenType type = token.type();
-
             Node newNode = switch (type) {
                 case DOUBLE_EQUALS -> null;
                 case LT -> null;
@@ -83,12 +83,12 @@ public class Parser {
                 case OR -> null;
                 case NOT -> null;
                 case PLUS -> {
-                    if (lexer.lastToken().isOperator())
-                            yield new PositiveOperator(token);
+                    if (tokenStorage.lastToken().isOperator())
+                        yield new PositiveOperator(token);
                     yield new AdditionOperator(token);
                 }
                 case MINUS -> {
-                    if (lexer.lastToken().isOperator())
+                    if (tokenStorage.lastToken().isOperator())
                         yield new NegativeOperator(token);
                     yield new SubtractionOperator(token);
                 }
@@ -110,8 +110,8 @@ public class Parser {
                 case TRUE -> null;
                 case FALSE -> null;
                 case FUNC -> null;
-                case OPEN_PARENTHESES -> null;
-                case CLOSE_PARENTHESES -> null;
+                case FUNC_CALL -> new FunctionCall(token);
+                case PARENTHETICAL_EXPR -> new ParentheticalNode(token);
                 case OPEN_BRACE -> null;
                 case CLOSE_BRACE -> null;
                 case NUM_LITERAL -> new NumberLiteral(token);
@@ -147,6 +147,7 @@ public class Parser {
             }
             currentNode = newNode;
         }
+        return expressions;
     }
 
     /**

@@ -60,9 +60,12 @@ public enum TokenType {
     FALSE, // FALSE
 
     FUNC, // func
+    FUNC_CALL, // Function call, a symbol followed by parentheses
 
     OPEN_PARENTHESES, // (
     CLOSE_PARENTHESES, // )
+    PARENTHETICAL_EXPR, // Full parentheses expression
+
     OPEN_BRACE, // {
     CLOSE_BRACE, // }
 

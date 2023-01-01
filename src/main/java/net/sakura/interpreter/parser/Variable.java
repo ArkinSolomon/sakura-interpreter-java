@@ -15,8 +15,8 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.ExecutionContext;
-import net.sakura.interpreter.Value;
+import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
 
 /**
@@ -36,7 +36,7 @@ public class Variable extends Node {
 
     @Override
     public final int getPrecedence() {
-        return 100;
+        return Precedences.VALUE;
     }
 
     @Override

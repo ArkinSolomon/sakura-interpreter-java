@@ -56,15 +56,14 @@ public class TokenStorage {
     }
 
     /**
-     * Get the current token.
+     * Check if there is another token after the current.
      *
-     * @return The current token.
+     * @return True if there is another token.
      */
-    public Token currentToken() {
-        if (current < 0)
-            return null;
-        return tokens.get(current);
+    public boolean hasNext() {
+        return current >= 0 && current < tokens.size();
     }
+
 
     /**
      * Get the last token.
@@ -73,5 +72,13 @@ public class TokenStorage {
         if (current > 0)
             return tokens.get(current - 1);
         return null;
+    }
+
+    /**
+     * Print all tokens.
+     */
+    public void printTokens() {
+        for (Token token : tokens)
+            System.out.println(token);
     }
 }

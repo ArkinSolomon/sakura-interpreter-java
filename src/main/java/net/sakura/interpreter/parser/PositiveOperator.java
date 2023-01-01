@@ -15,15 +15,15 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.DataType;
-import net.sakura.interpreter.ExecutionContext;
-import net.sakura.interpreter.Value;
+import net.sakura.interpreter.execution.DataType;
+import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
 
 /**
  * Create a new positive operator.
  */
-public class PositiveOperator extends UnaryOperator {
+public class PositiveOperator extends PrefixOperator {
 
     /**
      * Create a new operator from a token.

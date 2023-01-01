@@ -60,7 +60,7 @@ public class Lexer {
     /**
      * Analyze the lexer text.
      */
-    public void analyze() {
+    public List<Token> analyze() {
         final PeekableScanner scanner = new PeekableScanner(input);
         int currentPos = 0;
         int startPos = -1;
@@ -240,14 +240,14 @@ public class Lexer {
             if (nextToken.type() != TokenType.SYMBOL)
                 throw new RuntimeException("Invalid function declaration");
 
-            Token newToken = new Token(TokenType.FUNC, thisToken.tokenPos(), nextToken.value());
+            Token newToken = new Token(TokenType.FUNC, thisToken.position(), nextToken.value());
             tokens.set(i, newToken);
 
             // This is ok, because we'll break at EOF anyway
             tokens.remove(++i);
         }
 
-        simplify(tokens);
+        return simplify(tokens, true);
     }
 
     /**
@@ -271,76 +271,91 @@ public class Lexer {
         List<Token> newTokens = new ArrayList<>();
         Token token = tokenStorage.consume();
         while (token != null && token.type() != TokenType.EOF) {
+
+            // Parse a parenthetical expression
             if (token.type() == TokenType.OPEN_PARENTHESES) {
                 List<Token> toSimplify = new ArrayList<>();
+                final int startPos = token.position();
 
                 token = tokenStorage.consume();
                 int depth = 0;
                 while (token != null && token.type() != TokenType.EOF) {
                     if (token.type() == TokenType.CLOSE_PARENTHESES && depth == 0) {
-                        toSimplify.add(new Token(TokenType.EOF, token.tokenPos(), token.value()));
-                        newTokens.addAll(simplify(toSimplify));
-                    } else {
+                        toSimplify.add(new Token(TokenType.EOF, token.position(), "<CLOSE PARENTHESES>"));
+
+                        List<Token> content = simplify(toSimplify);
+                        newTokens.add(new Token(TokenType.PARENTHETICAL_EXPR, startPos, content));
+                        break;
+                    } else if (token.type() == TokenType.SEMI)
+                        throw new RuntimeException("Can not put multiple statements within parentheses, use braces instead");
+                    else {
                         if (token.type() == TokenType.OPEN_PARENTHESES)
                             ++depth;
+                        else if (token.type() == TokenType.CLOSE_PARENTHESES)
+                            --depth;
+
                         toSimplify.add(token);
                     }
 
                     token = tokenStorage.consume();
                 }
-            }else
+            } else if (token.type() == TokenType.SYMBOL && tokenStorage.peek().type() == TokenType.OPEN_PARENTHESES) {
+                String identifier = (String) token.value();
+                int callStartPos = token.position();
+
+                tokenStorage.consume();
+                token = tokenStorage.consume();
+
+                // Parse arguments
+                int depth = 0;
+                final List<List<Token>> args = new ArrayList<>();
+                List<Token> currentArg = new ArrayList<>();
+                int argStartPos = -1;
+                while (token.type() != null && token.type() != TokenType.EOF) {
+                    if (argStartPos < 0)
+                        argStartPos = token.position();
+
+                    if (token.type() == TokenType.COMMA && depth == 0) {
+                        currentArg.add(new Token(TokenType.EOF, argStartPos, "<ARG LIST COMMA>"));
+                        args.add(simplify(currentArg));
+                        currentArg = new ArrayList<>();
+                        argStartPos = -1;
+                    } else if (token.type() == TokenType.CLOSE_PARENTHESES && depth == 0) {
+                        currentArg.add(new Token(TokenType.EOF, argStartPos, "<ARG LIST END>"));
+                        args.add(simplify(currentArg));
+                        currentArg = new ArrayList<>();
+                        break;
+                    } else if (token.type() == TokenType.SEMI)
+                        throw new RuntimeException("Can not put multiple statements within parentheses, use braces instead");
+                    else {
+                        if (token.type() == TokenType.OPEN_PARENTHESES)
+                            ++depth;
+                        else if (token.type() == TokenType.CLOSE_PARENTHESES)
+                            --depth;
+
+                        currentArg.add(token);
+                    }
+
+                    token = tokenStorage.consume();
+                }
+
+                if (currentArg.size() != 0)
+                    throw new RuntimeException("Function missing closing parentheses");
+
+                if (args.get(args.size() - 1).size() == 1)
+                    throw new RuntimeException("Extra comma in function call");
+
+                FunctionCallData data = new FunctionCallData(identifier, args);
+                newTokens.add(new Token(TokenType.FUNC_CALL, callStartPos, data));
+            } else
+
+                // Add every other token
                 newTokens.add(token);
-            token = tokenStorage.consume();
+
+            if (tokenStorage.peek() != null)
+                token = tokenStorage.consume();
         }
+        newTokens.add(tokens.get(tokens.size() - 1));
         return newTokens;
-    }
-
-    /**
-     * Consume and move to the next token.
-     *
-     * @return The next token.
-     */
-    public Token consume() {
-        ++current;
-        return tokens.get(current);
-    }
-
-    /**
-     * Get the next token without moving forward.
-     *
-     * @return The next token.
-     */
-    public Token peek() {
-        if (current == tokens.size() - 1)
-            return null;
-        return tokens.get(current + 1);
-    }
-
-    /**
-     * Get the current token.
-     *
-     * @return The current token.
-     */
-    public Token currentToken() {
-        if (current < 0)
-            return null;
-        return tokens.get(current);
-    }
-
-    /**
-     * Get the last token.
-     */
-    public Token lastToken() {
-        if (current > 0)
-            return tokens.get(current - 1);
-        return null;
-    }
-
-    /**
-     * Print all tokens.
-     */
-    public void printTokens() {
-        for (Token token : tokens)
-            System.out.println(token);
     }
 }

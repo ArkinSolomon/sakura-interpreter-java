@@ -15,9 +15,9 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.DataType;
-import net.sakura.interpreter.ExecutionContext;
-import net.sakura.interpreter.Value;
+import net.sakura.interpreter.execution.DataType;
+import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
 
 /**
@@ -59,6 +59,6 @@ public class AdditionOperator extends Operator {
 
     @Override
     public int getPrecedence() {
-        return 15;
+        return Precedences.ADD_SUB;
     }
 }

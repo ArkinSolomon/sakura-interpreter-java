@@ -15,32 +15,32 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.ExecutionContext;
-import net.sakura.interpreter.Value;
+import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
 
 /**
- * Base class for all unary operators.
+ * Base class for all prefix operators.
  */
-public class UnaryOperator extends Node {
+class PrefixOperator extends Node {
 
     /**
      * Create a new operator with a token.
      *
      * @param token The token of the operator.
      */
-    protected UnaryOperator(Token token) {
+    protected PrefixOperator(Token token) {
         super(token, 1);
     }
 
     @Override
     public final void assign(ExecutionContext ctx, Value val) {
-        throw new UnsupportedOperationException("Can not assign to unary operator");
+        throw new UnsupportedOperationException("Can not assign to prefix operator");
     }
 
     @Override
     public final int getPrecedence() {
-        return 90;
+        return Precedences.PREFIX;
     }
 
     /**

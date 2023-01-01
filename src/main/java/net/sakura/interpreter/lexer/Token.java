@@ -18,11 +18,11 @@ package net.sakura.interpreter.lexer;
 /**
  * A single token created by the lexer.
  *
- * @param type The type of the token.
- * @param tokenPos The position of the token.
- * @param value The text value of the token.
+ * @param type     The type of the token.
+ * @param position The position of the token.
+ * @param value    The text value of the token.
  */
-public record Token(TokenType type, int tokenPos, Object value) {
+public record Token(TokenType type, int position, Object value) {
 
     /**
      * Get the string representation of this token.
@@ -31,7 +31,7 @@ public record Token(TokenType type, int tokenPos, Object value) {
      */
     @Override
     public String toString() {
-        return "[%d] %s: %s".formatted(tokenPos, type, value.toString().replaceAll("\n", "\\\\n"));
+        return "[%d] %s: %s".formatted(position, type, value.toString().replaceAll("\n", "\\\\n"));
     }
 
     /**
@@ -40,8 +40,9 @@ public record Token(TokenType type, int tokenPos, Object value) {
      * @return True if this token is an operator.
      */
     public boolean isOperator() {
-        return switch (type){
-            case PLUS, MINUS, MULTIPLY, SLASH, EQUALS, DOUBLE_EQUALS, GT, LT, GTE, LTE, NOT, AND, OR -> true;
+        return switch (type) {
+            case PLUS, MINUS, MULTIPLY, SLASH, EQUALS, DOUBLE_EQUALS, GT, LT, GTE, LTE, NOT, AND, OR ->
+                    true;
             default -> false;
         };
     }
