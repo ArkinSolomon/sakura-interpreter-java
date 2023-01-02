@@ -1,20 +1,4 @@
-printUntil(10)
-
-func printUntil(%n, %curr = 1) {
-    print(fibonacci(curr))
-
-    if curr == n {
-        return
-    }
-    printUntil(n, curr + 1)
-}
-
-func fibonacci(%n) {
-    if n == 0 {
-        return 0
-    } else if n ==1 {
-        return 1
-    } else {
-        return fibonacci(n-1) + fibonacci(n-2)
-    }
+%str = "hello!"
+for %char in str {
+    print(char == "l")
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023. Sakura Contributors.
+ * Copyright (c) 2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 package net.sakura.interpreter.execution;
 
 /**
- * All the datatypes that a value can be.
+ * A value that can be iterated over in a for loop.
  */
-public enum DataType {
-    STRING,
-    NUMBER,
-    BOOLEAN,
-    NULL,
-    FUNCTION,
-    ITERABLE,
-    __BRACE_RETURN
+public interface Iterable {
+
+    /**
+     * Get the next value of the iterable, or null if the next value does not exist.
+     *
+     * @return The next value of the iterable.
+     */
+    Value next();
 }

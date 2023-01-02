@@ -143,6 +143,17 @@ public final class Lexer {
                         currentPos++;
                     } else
                         tokens.add(new Token(TokenType.GT, currentPos, ">"));
+                } else if (thisChar == '!') {
+                    if (nextChar == null)
+                        throw new RuntimeException("Dangling exclamation point ");
+
+                    if (nextChar == '=') {
+                        tokens.add(new Token(TokenType.NOT_EQUALS, currentPos, "!="));
+
+                        scanner.next();
+                        currentPos++;
+                    } else
+                        tokens.add(new Token(TokenType.NOT, currentPos, "!"));
                 } else if (thisChar == '"')
                     currentType = TokenType.QUOTE;
                 else if (thisChar == '/')
@@ -153,8 +164,6 @@ public final class Lexer {
                     tokens.add(new Token(TokenType.AND, currentPos, "&"));
                 else if (thisChar == '|')
                     tokens.add(new Token(TokenType.OR, currentPos, "|"));
-                else if (thisChar == '!')
-                    tokens.add(new Token(TokenType.NOT, currentPos, "!"));
                 else if (thisChar == '+')
                     tokens.add(new Token(TokenType.PLUS, currentPos, "+"));
                 else if (thisChar == '-')
@@ -494,11 +503,12 @@ public final class Lexer {
                     throw new RuntimeException("Unexpected end of file while parsing conditional statement");
 
                 if (condition.size() == 0) {
-                    String name = switch (statementType){
+                    String name = switch (statementType) {
                         case IF -> "If";
                         case ELIF -> "Else-if";
                         case WHILE -> "While";
-                        default -> throw new IllegalStateException("Invalid statement type: " + statementType);
+                        default ->
+                                throw new IllegalStateException("Invalid statement type: " + statementType);
                     };
                     throw new RuntimeException("%s statement requires condition".formatted(name));
                 }
@@ -506,15 +516,55 @@ public final class Lexer {
                 condition.add(new Token(TokenType.EOF, token.position(), "<COND END>"));
                 condition = simplify(condition);
 
-                 TokenType conditionalType = switch (statementType){
+                TokenType conditionalType = switch (statementType) {
                     case IF -> TokenType.IF_COND;
                     case ELIF -> TokenType.ELIF_COND;
                     case WHILE -> TokenType.WHILE_COND;
-                    default -> throw new IllegalStateException("Invalid statement type: " + statementType);
+                    default ->
+                            throw new IllegalStateException("Invalid statement type: " + statementType);
                 };
                 newTokens.add(new Token(conditionalType, statementStart, condition));
 
                 // We already consumed the brace, so parse the brace statement
+                continue;
+            } else if (token.type() == TokenType.FOR) {
+                int loopStartPos = token.position();
+
+                // Get the variable
+                token = tokenStorage.consume();
+                Token assignee = null;
+                boolean isConstVar = false;
+                while (assignee == null && token != null && token.type() != TokenType.EOF) {
+                    if (token.type() == TokenType.VARIABLE || token.type() == TokenType.CONST_VAR) {
+                        assignee = token;
+                        isConstVar = token.type() == TokenType.CONST_VAR;
+                    }
+                    token = tokenStorage.consume();
+                }
+
+                if (assignee == null)
+                    throw new RuntimeException("Unexpected end of file");
+
+                // Look for the in token
+                if (token.type() != TokenType.IN)
+                    throw new RuntimeException("In statement must follow variable assignment in for loop");
+
+                // Consume the IN token
+                token = tokenStorage.consume();
+
+                List<Token> iterable = new ArrayList<>();
+                while (token != null && token.type() != TokenType.EOF && token.type() != TokenType.OPEN_BRACE) {
+                    iterable.add(token);
+                    token = tokenStorage.consume();
+                }
+
+                assert token != null;
+                iterable.add(new Token(TokenType.EOF, token.position(), "<ITERABLE END>"));
+
+                ForLoopData data = new ForLoopData((String) assignee.value(), isConstVar, iterable, null);
+                newTokens.add(new Token(TokenType.FOR_ASSIGN, loopStartPos, data));
+
+                // We already consumed the brace
                 continue;
             } else
 
@@ -546,22 +596,29 @@ public final class Lexer {
 
                 FunctionDefinitionData data = (FunctionDefinitionData) token.value();
                 newTokens.add(new Token(TokenType.FUNC_DEF, token.position(), data.addBody(tokenStorage.consume())));
-            } else if (token.type() == TokenType.IF_COND || token.type() == TokenType.WHILE_COND) {
+            } else if (token.type() == TokenType.IF_COND || token.type() == TokenType.WHILE_COND || token.type() == TokenType.FOR_ASSIGN) {
                 int statementStart = token.position();
-                TokenType statementType  = token.type();
+                TokenType statementType = token.type();
+                Object statementTokenValue = token.value();
 
-                @SuppressWarnings("unchecked")
-                List<Token> condition = (List<Token>) token.value();
+                List<Token> condition = null;
+                if (token.type() != TokenType.FOR_ASSIGN)
 
+                    //noinspection unchecked
+                    condition = (List<Token>) token.value();
+
+                tokenStorage.printTokens();
                 Token body = tokenStorage.consume();
-                if (body.type() != TokenType.BRACE){
+                if (body.type() != TokenType.BRACE) {
                     String statementName = "If";
                     if (statementType == TokenType.WHILE_COND)
                         statementName = "While";
+                    else if (statementType == TokenType.FOR_ASSIGN)
+                        statementName = "For";
                     throw new RuntimeException("%s statement must be followed by a brace statement".formatted(statementName));
                 }
 
-                if (statementType == TokenType.IF_COND){
+                if (statementType == TokenType.IF_COND) {
                     ArrayList<List<Token>> conditions = new ArrayList<>();
                     ArrayList<Token> branches = new ArrayList<>();
                     branches.add(body);
@@ -569,11 +626,12 @@ public final class Lexer {
 
                     IfData data = new IfData(conditions, branches);
                     newTokens.add(new Token(TokenType.IF_STATEMENT, statementStart, data));
-                } else {
-
-                    // WHILE_COND
+                } else if (statementType == TokenType.WHILE_COND) {
                     WhileData data = new WhileData(condition, body);
                     newTokens.add(new Token(TokenType.WHILE_LOOP, statementStart, data));
+                } else {
+                    ForLoopData data = ((ForLoopData) statementTokenValue).addBody(body);
+                    newTokens.add(new Token(TokenType.FOR_LOOP, statementStart, data));
                 }
             } else if (token.type() == TokenType.ELIF_COND || token.type() == TokenType.ELSE) {
                 if (newTokens.size() == 0)

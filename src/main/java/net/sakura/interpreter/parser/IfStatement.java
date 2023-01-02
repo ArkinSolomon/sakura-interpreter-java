@@ -109,10 +109,12 @@ final class IfStatement extends Expression {
         }
         if (i  == conditions.size()){
             Value elseReturn = getChild(i).evaluate(tempCtx);
+            ExecutionResult elseResult = ((ExecutionResult) elseReturn.value());
 
-            if (elseReturn.type() == DataType.__BRACE_RETURN && ((ExecutionResult) elseReturn.value()).earlyReturn()){
+            // elseResult may be null since it can be a no-op
+            if (elseResult != null && elseResult.earlyReturn()){
                 parent.stop();
-                return ((ExecutionResult) elseReturn.value()).returnValue();
+                return elseResult.returnValue();
             }
         }
         return Value.NULL;

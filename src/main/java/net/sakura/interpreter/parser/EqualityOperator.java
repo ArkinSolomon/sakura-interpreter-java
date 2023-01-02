@@ -25,7 +25,7 @@ import java.util.Objects;
 /**
  * An operator to determine equality between two values.
  */
-final class EqualityOperator extends Operator {
+class EqualityOperator extends Operator {
 
     /**
      * Create a new operator from a token.

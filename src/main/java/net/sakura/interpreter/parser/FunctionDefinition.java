@@ -109,7 +109,8 @@ final class FunctionDefinition extends Expression implements Function {
             FunctionArgData argData = data.args().get(i);
             String argId = argData.identifier();
             Value val = argValues.get(i);
-            tempCtx.defineIdentifier(argId, new Value(val.type(), val.value(), val.isMutable()));
+
+            tempCtx.defineIdentifier(argId, val == null ? Value.NULL : new Value(val.type(), val.value(), val.isMutable()));
         }
 
         return parsedFunc.execute(tempCtx).returnValue();

@@ -38,4 +38,14 @@ public record Value(DataType type, Object value, boolean isMutable) {
             return "NULL";
         return value.toString();
     }
+
+    /**
+     * Change if a value is mutable.
+     *
+     * @param isMutable The new mutability value.
+     * @return A new value with the same datatype and value, except with the new mutability value.
+     */
+    public Value setMutability(boolean isMutable) {
+        return new Value(type, value, isMutable);
+    }
 }

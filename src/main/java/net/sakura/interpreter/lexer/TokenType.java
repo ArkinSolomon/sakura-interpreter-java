@@ -21,6 +21,7 @@ public enum TokenType {
     SEMI, // A semi colon
 
     DOUBLE_EQUALS, // == (equality)
+    NOT_EQUALS, // !=
     LT, // <
     LTE, // <=
     GT, // >
