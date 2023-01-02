@@ -85,7 +85,10 @@ final class FunctionDefinition extends Expression implements Function {
      * @param ctx The context in which to register this function.
      */
     public void register(ExecutionContext ctx) {
-        rootCtx = ctx.getRoot();
+        rootCtx = ctx;
+
+        if (ctx.hasIdentifier(data.identifier()))
+            throw new RuntimeException("Function already exists");
         ctx.registerFunc(data.identifier(), this);
     }
 

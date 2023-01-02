@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * An instance of this class performs lexical analysis on a given string input
@@ -35,7 +36,11 @@ public final class Lexer {
      * @param path The file on which to perform the analysis.
      */
     public Lexer(Path path) throws IOException {
-        scanner = new PeekableScanner(path);
+        try {
+            scanner = new PeekableScanner(path);
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException("File is empty", e);
+        }
     }
 
     /**
@@ -44,7 +49,11 @@ public final class Lexer {
      * @param input The string on which to perform the analysis.
      */
     public Lexer(String input) {
-        scanner = new PeekableScanner(input);
+        try {
+            scanner = new PeekableScanner(input);
+        }catch (NoSuchElementException e){
+            throw new RuntimeException("Input is empty", e);
+        }
     }
 
     private static boolean isNumeric(String s) {
@@ -398,62 +407,64 @@ public final class Lexer {
                     boolean hasDefault = false;
                     List<Token> defaultValue = new ArrayList<>();
 
-                    while (token != null && token.type() != TokenType.EOF) {
-                        if (argStartPos < 0)
-                            argStartPos = token.position();
+                    if (token.type() != TokenType.CLOSE_PARENTHESIS) {
+                        while (token != null && token.type() != TokenType.EOF) {
+                            if (argStartPos < 0)
+                                argStartPos = token.position();
 
-                        if (token.type() == TokenType.CONST_VAR) {
-                            argId = (String) token.value();
-                            isConstant = true;
-                        } else if (token.type() == TokenType.VARIABLE)
-                            argId = (String) token.value();
-                        else if (token.type() == TokenType.EQUALS || token.type() == TokenType.COMMA || token.type() == TokenType.CLOSE_PARENTHESIS) {
-                            if (token.type() == TokenType.EQUALS) {
-                                hasDefault = true;
-
-                                token = tokenStorage.consume();
-                                int depth = 0;
-                                int defaultValueStart = token.position();
-                                while (token != null && token.type() != TokenType.EOF) {
-
-                                    if (token.type() == TokenType.COMMA || (token.type() == TokenType.CLOSE_PARENTHESIS && depth == 0)) {
-                                        defaultValue.add(new Token(TokenType.EOF, defaultValueStart, "<ARG DEFAULT VAL END>"));
-                                        break;
-                                    } else if (token.type() == TokenType.SEMI)
-                                        throw new RuntimeException("Unexpected semi-colon in argument list");
-                                    else {
-                                        if (token.type() == TokenType.OPEN_PARENTHESIS)
-                                            ++depth;
-                                        else if (token.type() == TokenType.CLOSE_PARENTHESIS)
-                                            --depth;
-
-                                        defaultValue.add(token);
-                                    }
+                            if (token.type() == TokenType.CONST_VAR) {
+                                argId = (String) token.value();
+                                isConstant = true;
+                            } else if (token.type() == TokenType.VARIABLE)
+                                argId = (String) token.value();
+                            else if (token.type() == TokenType.EQUALS || token.type() == TokenType.COMMA || token.type() == TokenType.CLOSE_PARENTHESIS) {
+                                if (token.type() == TokenType.EQUALS) {
+                                    hasDefault = true;
 
                                     token = tokenStorage.consume();
+                                    int depth = 0;
+                                    int defaultValueStart = token.position();
+                                    while (token != null && token.type() != TokenType.EOF) {
+
+                                        if (token.type() == TokenType.COMMA || (token.type() == TokenType.CLOSE_PARENTHESIS && depth == 0)) {
+                                            defaultValue.add(new Token(TokenType.EOF, defaultValueStart, "<ARG DEFAULT VAL END>"));
+                                            break;
+                                        } else if (token.type() == TokenType.SEMI)
+                                            throw new RuntimeException("Unexpected semi-colon in argument list");
+                                        else {
+                                            if (token.type() == TokenType.OPEN_PARENTHESIS)
+                                                ++depth;
+                                            else if (token.type() == TokenType.CLOSE_PARENTHESIS)
+                                                --depth;
+
+                                            defaultValue.add(token);
+                                        }
+
+                                        token = tokenStorage.consume();
+                                    }
                                 }
+
+                                if (argId == null)
+                                    throw new RuntimeException("Function argument list invalid");
+
+                                if (hasDefault && defaultValue.size() <= 1)
+                                    throw new RuntimeException("Unexpected equals sign");
+
+                                FunctionArgData data = new FunctionArgData(argId, isConstant, hasDefault, defaultValue.size() == 0 ? null : simplify(defaultValue));
+                                args.add(data);
+
+                                argId = null;
+                                isConstant = false;
+                                hasDefault = false;
+                                defaultValue = new ArrayList<>();
+
+                                assert token != null;
+                                if (token.type() == TokenType.CLOSE_PARENTHESIS)
+                                    break;
                             }
 
-                            if (argId == null)
-                                throw new RuntimeException("Function argument list invalid");
-
-                            if (hasDefault && defaultValue.size() <= 1)
-                                throw new RuntimeException("Unexpected equals sign");
-
-                            FunctionArgData data = new FunctionArgData(argId, isConstant, hasDefault, defaultValue.size() == 0 ? null : simplify(defaultValue));
-                            args.add(data);
-
-                            argId = null;
-                            isConstant = false;
-                            hasDefault = false;
-                            defaultValue = new ArrayList<>();
-
-                            assert token != null;
-                            if (token.type() == TokenType.CLOSE_PARENTHESIS)
-                                break;
+                            token = tokenStorage.consume();
                         }
-
-                        token = tokenStorage.consume();
                     }
                 }
 
