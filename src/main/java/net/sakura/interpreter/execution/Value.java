@@ -24,6 +24,8 @@ package net.sakura.interpreter.execution;
  */
 public record Value(DataType type, Object value, boolean isMutable) {
     public static final Value NULL = new Value(DataType.NULL, null, false);
+    public static final Value TRUE = new Value(DataType.BOOLEAN, true, false);
+    public static final Value FALSE = new Value(DataType.BOOLEAN, false, false);
 
     /**
      * Get the string representation of the data of this value.

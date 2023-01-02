@@ -20,26 +20,26 @@ import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
 
 /**
- * A return statement.
+ * A single expression. Nodes that shouldn't be children or have children added.
  */
-public class ReturnExpression extends Operator {
+public class Expression extends Node {
 
     /**
-     * Create a return statement from a token.
+     * Create a new expression from a token with a certain amount of children.
      *
-     * @param token The return token.
+     * @param token The token for the expression.
+     * @param childCount The number of children for the expression.
      */
-    public ReturnExpression(Token token){
-        super(token);
+    public Expression(Token token, int childCount){
+        super(token, childCount);
     }
 
     @Override
-    public Value evaluate(ExecutionContext ctx) {
-        return getChild(0).evaluate(ctx);
+    public final void assign(ExecutionContext ctx, Value val) {
+        throw new RuntimeException("Can not assign to an expression");
     }
 
     @Override
-    public int getPrecedence() {
-        return Precedences.RETURN;
+    public final int getPrecedence() {throw new RuntimeException("Can not get precedence of expression");
     }
 }

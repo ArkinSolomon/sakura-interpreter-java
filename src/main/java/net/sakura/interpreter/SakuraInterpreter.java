@@ -40,15 +40,16 @@ public class SakuraInterpreter {
         TokenStorage tokenStorage = new TokenStorage(tokens);
 
         System.out.println();
-        tokenStorage.printTokens();
+//        tokenStorage.printTokens();
 
         Parser parser = new Parser(tokenStorage);
         parser.parse();
 
+//        System.out.println("\n--Output--\n");
         ExecutionContext ctx = new ExecutionContext();
         parser.execute(ctx);
 
-        System.out.println("\n--Execution context--\n");
-        ctx.printContext();
+//        System.out.println("\n--Execution context--\n");
+//        ctx.printContext();
     }
 }

@@ -43,14 +43,22 @@ public enum TokenType {
     CONST_VAR, // %var
     ENV_VARIABLE, // @var
 
-    IF, // if (if statement)
-    ELIF, // else if (if statement)
-    ELSE, // else (if statement)
+    IF, // if
+    IF_COND, // if ...
+    ELIF, // else if
+    ELIF_COND, // elif
+    ELSE, // else
+    IF_STATEMENT, // The fully parsed statement
 
-    WHILE, // while (loop)
-    FOR, // for (loop)
+    WHILE, // while
+    WHILE_COND, // while ...
+    WHILE_LOOP, // The whole parsed and tokenized loop
 
+    FOR, // for
     IN, // in
+    FOR_COND, // for ... in ...
+    FOR_LOOP, // The whole parsed and tokenized loop
+
     RETURN, // return
 
     BACKSLASH, // \ (escaping)
@@ -64,8 +72,8 @@ public enum TokenType {
     FUNC_DEF, // Function definition, a FUNC token followed by a BRACE token
     FUNC_CALL, // Function call, a symbol followed by parentheses
 
-    OPEN_PARENTHESES, // (
-    CLOSE_PARENTHESES, // )
+    OPEN_PARENTHESIS, // (
+    CLOSE_PARENTHESIS, // )
     PARENTHETICAL_EXPR, // Full parentheses expression
 
     OPEN_BRACE, // {

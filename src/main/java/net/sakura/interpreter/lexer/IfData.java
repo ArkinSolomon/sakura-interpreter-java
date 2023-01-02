@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023. Sakura Contributors.
+ * Copyright (c) 2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,16 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.execution;
+package net.sakura.interpreter.lexer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * All the datatypes that a value can be.
+ * The token of the if statement.
+ *
+ * @param conditions The branches of the if statement.
+ * @param branches The body for each branch of the if statement.
  */
-public enum DataType {
-    STRING,
-    NUMBER,
-    BOOLEAN,
-    NULL,
-    FUNCTION,
-    __BRACE_RETURN
+public record IfData(ArrayList<List<Token>> conditions, ArrayList<Token> branches) {
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023. Sakura Contributors.
+ * Copyright (c) 2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,25 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.execution;
+package net.sakura.interpreter.parser;
+
+import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.execution.Value;
 
 /**
- * All the datatypes that a value can be.
+ * A NO-OP expression which does nothing.
  */
-public enum DataType {
-    STRING,
-    NUMBER,
-    BOOLEAN,
-    NULL,
-    FUNCTION,
-    __BRACE_RETURN
+public final class NoOpExpression extends Expression {
+
+    /**
+     * Create a new no-op.
+     */
+    NoOpExpression() {
+        super(null, 0);
+    }
+
+    @Override
+    public Value evaluate(ExecutionContext ctx) {
+        return Value.NULL;
+    }
 }

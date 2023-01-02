@@ -16,6 +16,7 @@
 package net.sakura.interpreter.parser;
 
 import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.execution.ExecutionResult;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
 import net.sakura.interpreter.lexer.TokenStorage;
@@ -33,6 +34,8 @@ public final class Parser {
     private final List<Node> expressions = new ArrayList<>();
     private final List<FunctionDefinition> functions = new ArrayList<>();
 
+    private boolean stop = false;
+
     /**
      * Create a parse tree using the tokens from the lexer.
      *
@@ -40,6 +43,13 @@ public final class Parser {
      */
     public Parser(TokenStorage tokenStorage) {
         this.tokenStorage = tokenStorage;
+    }
+
+    /**
+     * Stop execution of this parser.
+     */
+    void stop() {
+        stop = true;
     }
 
     /**
@@ -74,7 +84,7 @@ public final class Parser {
 
             TokenType type = token.type();
             Node newNode = switch (type) {
-                case DOUBLE_EQUALS -> null;
+                case DOUBLE_EQUALS -> new EqualityOperator(token);
                 case LT -> null;
                 case LTE -> null;
                 case GT -> null;
@@ -98,19 +108,18 @@ public final class Parser {
                 case VARIABLE -> new Variable(token);
                 case CONST_VAR -> new ConstVariable(token);
                 case ENV_VARIABLE -> new EnvVariable(token);
-                case IF -> null;
-                case ELIF -> null;
-                case ELSE -> null;
+                case IF_STATEMENT -> new IfStatement(token, this);
                 case WHILE -> null;
                 case FOR -> null;
                 case IN -> null;
-                case RETURN -> new ReturnExpression(token);
+                case RETURN -> new ReturnStatement(token);
                 case BACKSLASH -> null;
                 case SLASH -> new SlashOperator(token);
-                case TRUE -> null;
-                case FALSE -> null;
+                case TRUE -> new TrueLiteral(token);
+                case FALSE -> new FalseLiteral(token);
                 case FUNC_DEF -> new FunctionDefinition(token);
                 case FUNC_CALL -> new FunctionCall(token);
+                case BRACE -> new BraceExpression(token, this);
                 case PARENTHETICAL_EXPR -> new ParentheticalNode(token);
                 case NUM_LITERAL -> new NumberLiteral(token);
                 case SYMBOL -> new Symbol(token);
@@ -118,12 +127,19 @@ public final class Parser {
                         throw new IllegalStateException("Unexpected value: " + type);
             };
 
-            if (newNode instanceof FunctionDefinition) {
-                functions.add((FunctionDefinition) newNode);
+            // Do not add expressions to tree
+            if (newNode instanceof Expression) {
                 if (root != null)
-                    throw new RuntimeException("Function definitions can not be part of other expressions");
+                    throw new RuntimeException("Function definitions or statements can not be part of other expressions");
+
+                if (newNode instanceof FunctionDefinition)
+                    functions.add((FunctionDefinition) newNode);
+                else
+                    expressions.add(newNode);
+
                 continue;
             }
+
 
             if (root == null)
                 root = newNode;
@@ -158,7 +174,7 @@ public final class Parser {
     /**
      * Execute every expression.
      */
-    public Value execute(ExecutionContext ctx) {
+    public ExecutionResult execute(ExecutionContext ctx) {
 
         // Register functions if we're executing the root context
         if (ctx.getRoot() == ctx) {
@@ -167,11 +183,11 @@ public final class Parser {
         }
 
         for (Node expression : expressions) {
-            expression.print();
+//            expression.print();
             Value value = expression.evaluate(ctx);
-            if (expression instanceof ReturnExpression)
-                return value;
+            if (expression instanceof Expression && stop || expression instanceof ReturnStatement)
+                return new ExecutionResult(true, value);
         }
-        return Value.NULL;
+        return new ExecutionResult(false, Value.NULL);
     }
 }

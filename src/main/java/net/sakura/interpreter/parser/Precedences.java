@@ -21,6 +21,7 @@ package net.sakura.interpreter.parser;
 final class Precedences {
     static int RETURN = 20;
     static int ASSIGNMENT = 30;
+    static int EQUALITY = 40;
     static int ADD_SUB = 50;
     static int MULTIPLY_SLASH = 60;
     static int PREFIX = 80;

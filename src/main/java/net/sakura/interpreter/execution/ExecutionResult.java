@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023. Sakura Contributors.
+ * Copyright (c) 2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,10 @@
 package net.sakura.interpreter.execution;
 
 /**
- * All the datatypes that a value can be.
+ * The result of executing a bit of code.
+ *
+ * @param earlyReturn True if there was an early return.
+ * @param returnValue The return value of the early return.
  */
-public enum DataType {
-    STRING,
-    NUMBER,
-    BOOLEAN,
-    NULL,
-    FUNCTION,
-    __BRACE_RETURN
+public record ExecutionResult(boolean earlyReturn, Value returnValue) {
 }

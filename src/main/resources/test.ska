@@ -1,10 +1,20 @@
-%a = 7
-%b = 4
-$c = "non-existent"
+printUntil(30)
 
-add()
-print(c)
+func printUntil(%n, %curr = 1) {
+    if curr == n {
+        return
+    }
 
-func add {
-    %c = a + b
+    print(fibonacci(curr))
+    printUntil(n, curr + 1)
+}
+
+func fibonacci(%n) {
+    if n == 0 {
+        return 0
+    } else if n ==1 {
+        return 1
+    } else {
+        return fibonacci(n-1) + fibonacci(n-2)
+    }
 }

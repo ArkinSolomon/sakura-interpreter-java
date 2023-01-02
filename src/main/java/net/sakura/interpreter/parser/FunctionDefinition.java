@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * A function definition node.
  */
-public final class FunctionDefinition extends Node implements Function {
+public final class FunctionDefinition extends Expression implements Function {
 
     private final FunctionDefinitionData data;
     private final Parser parsedFunc;
@@ -75,11 +75,6 @@ public final class FunctionDefinition extends Node implements Function {
     }
 
     @Override
-    public void assign(ExecutionContext ctx, Value val) {
-        throw new RuntimeException("Can not assign to function definition");
-    }
-
-    @Override
     public Value evaluate(ExecutionContext ctx) {
         throw new RuntimeException("Can not evaluate function definition");
     }
@@ -94,18 +89,11 @@ public final class FunctionDefinition extends Node implements Function {
         ctx.registerFunc(data.identifier(), this);
     }
 
-
-    @Override
-    public int getPrecedence() {
-
-        // Functions definitions have no precedence (they're not values)
-        return -1;
-    }
-
     @Override
     public Value execute(List<Value> args) {
         ExecutionContext tempCtx = new ExecutionContext(rootCtx);
 
+        @SuppressWarnings("ConstantConditions")
         List<Value> argValues = new ArrayList<>(defaultArgExpressions
                 .stream()
                 .map(node -> node == null ? null : node.evaluate(rootCtx))
@@ -124,6 +112,6 @@ public final class FunctionDefinition extends Node implements Function {
             tempCtx.defineIdentifier(argId, new Value(val.type(), val.value(), val.isMutable()));
         }
 
-        return parsedFunc.execute(tempCtx);
+        return parsedFunc.execute(tempCtx).returnValue();
     }
 }

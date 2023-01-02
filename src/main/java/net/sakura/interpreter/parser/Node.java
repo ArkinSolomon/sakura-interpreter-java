@@ -27,8 +27,8 @@ import java.util.Objects;
  */
 public class Node {
 
-    protected final int childCount;
-    protected final Node[] children;
+    protected int childCount;
+    protected Node[] children;
     protected final Token token;
 
     private Node parent;
@@ -65,6 +65,15 @@ public class Node {
         throw new UnsupportedOperationException("Assign called on node base");
     }
 
+    protected void resize(int newSize) {
+        Node[] newChildren = new Node[newSize];
+        int loopSize = Math.min(newSize, childCount);
+        if (loopSize >= 0)
+            System.arraycopy(children, 0, newChildren, 0, loopSize);
+        children = newChildren;
+        childCount = newSize;
+    }
+
     /**
      * Set the child of the tree.
      *
@@ -86,7 +95,7 @@ public class Node {
      */
     public Node getChild(int i) {
         if (i >= childCount)
-            throw new IndexOutOfBoundsException("Index i is greater than children in node");
+            throw new IndexOutOfBoundsException("Index %d is greater than children in node".formatted(i));
         return children[i];
     }
 
