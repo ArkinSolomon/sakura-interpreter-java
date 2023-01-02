@@ -15,6 +15,8 @@
 
 package net.sakura.interpreter.lexer;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Scanner;
 
 /**
@@ -28,14 +30,32 @@ public class PeekableScanner {
     private String next;
 
     /**
+     * Create a new peekable scanner with a file.
+     *
+     * @param source The path to the file to scan.
+     */
+    public PeekableScanner(Path source) throws IOException {
+        scan1 = new Scanner(source);
+        scan2 = new Scanner(source);
+        init();
+    }
+
+    /**
      * Create a new peekable scanner with a string.
      *
-     * @param source The string to create the scanner from.
+     * @param input The string to create the scanner from.
      */
-    public PeekableScanner(String source) {
-        scan1 = new Scanner(source);
+    public PeekableScanner(String input) {
+        scan1 = new Scanner(input);
+        scan2 = new Scanner(input);
+        init();
+    }
+
+    /**
+     * Initialize the scanners.
+     */
+    private void init() {
         scan1.useDelimiter("");
-        scan2 = new Scanner(source);
         scan2.useDelimiter("");
         next = scan2.next();
     }

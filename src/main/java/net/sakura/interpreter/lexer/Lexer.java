@@ -15,6 +15,8 @@
 
 package net.sakura.interpreter.lexer;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,17 +26,25 @@ import java.util.List;
  */
 public class Lexer {
 
-    private final String input;
-
     private final List<Token> tokens = new ArrayList<>();
+    private final PeekableScanner scanner;
+
+    /**
+     * Create a new instance which will perform lexical analysis on a file.
+     *
+     * @param path The file on which to perform the analysis.
+     */
+    public Lexer(Path path) throws IOException {
+        scanner = new PeekableScanner(path);
+    }
 
     /**
      * Create a new instance which will perform lexical analysis on a string.
      *
-     * @param input The input on which to perform the analysis.
+     * @param input The string on which to perform the analysis.
      */
     public Lexer(String input) {
-        this.input = input;
+        scanner = new PeekableScanner(input);
     }
 
     private static boolean isNumeric(String s) {
@@ -52,6 +62,7 @@ public class Lexer {
      * @param c The character to check.
      * @return True if the character can be used in an identifier.
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private static boolean isIdentifierChar(char c) {
         return Character.isLetterOrDigit(c) || c == '_';
     }
@@ -60,7 +71,6 @@ public class Lexer {
      * Analyze the lexer text.
      */
     public List<Token> analyze() {
-        final PeekableScanner scanner = new PeekableScanner(input);
         int currentPos = 0;
         int startPos = -1;
 
@@ -187,7 +197,7 @@ public class Lexer {
                     switch (value) {
                         case "if" -> {
                             currentType = TokenType.IF;
-                            if (tokens.size() > 0 && tokens.get(tokens.size() - 1).type() == TokenType.ELSE){
+                            if (tokens.size() > 0 && tokens.get(tokens.size() - 1).type() == TokenType.ELSE) {
                                 tokens.remove(tokens.size() - 1);
                                 currentType = TokenType.ELIF;
                             }

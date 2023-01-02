@@ -31,7 +31,7 @@ public class ExecutionContext {
     private final Map<String, Value> identifiers = new HashMap<>();
 
     private ExecutionContext parent = null;
-    private ExecutionContext root;
+    private final ExecutionContext root;
 
     /**
      * Create a new blank root execution context
@@ -155,8 +155,9 @@ public class ExecutionContext {
      */
     private void assignDefaults() {
         identifiers.put("NULL", Value.NULL);
+
         identifiers.put("@__lang_version", new Value(DataType.STRING, "1.0.0", false));
-        identifiers.put("@__interpreter", new Value(DataType.STRING, "sakura.official", false));
+        identifiers.put("@__interpreter", new Value(DataType.STRING, "sakura.official.java", false));
         identifiers.put("@__interpreter_version", new Value(DataType.STRING, "1.0-SNAPSHOT", false));
 
         registerFunc("print", new PrintFunction());
