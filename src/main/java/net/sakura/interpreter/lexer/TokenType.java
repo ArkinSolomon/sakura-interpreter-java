@@ -56,16 +56,13 @@ public enum TokenType {
 
     FOR, // for
     IN, // in
-    FOR_COND, // for ... in ...
+    FOR_ASSIGN, // for ... in ...
     FOR_LOOP, // The whole parsed and tokenized loop
 
     RETURN, // return
 
     BACKSLASH, // \ (escaping)
     SLASH, // / (path values or division)
-
-    TRUE, // TRUE
-    FALSE, // FALSE
 
     FUNC, // func
     FUNC_SIG, // The signature of the function

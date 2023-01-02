@@ -112,8 +112,6 @@ public final class Parser {
                 case RETURN -> new ReturnStatement(token);
                 case BACKSLASH -> null;
                 case SLASH -> new SlashOperator(token);
-                case TRUE -> new TrueLiteral(token);
-                case FALSE -> new FalseLiteral(token);
                 case FUNC_DEF -> new FunctionDefinition(token);
                 case FUNC_CALL -> new FunctionCall(token);
                 case BRACE -> new BraceExpression(token, this);

@@ -24,7 +24,7 @@ import java.util.List;
  * An instance of this class performs lexical analysis on a given string input
  * and creates tokens from it.
  */
-public class Lexer {
+public final class Lexer {
 
     private final List<Token> tokens = new ArrayList<>();
     private final PeekableScanner scanner;
@@ -203,8 +203,6 @@ public class Lexer {
                             }
                         }
                         case "else" -> currentType = TokenType.ELSE;
-                        case "TRUE" -> currentType = TokenType.TRUE;
-                        case "FALSE" -> currentType = TokenType.FALSE;
                         case "while" -> currentType = TokenType.WHILE;
                         case "func" -> currentType = TokenType.FUNC;
                         case "in" -> currentType = TokenType.IN;

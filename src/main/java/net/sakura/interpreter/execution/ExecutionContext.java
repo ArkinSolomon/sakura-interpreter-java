@@ -155,6 +155,8 @@ public class ExecutionContext {
      */
     private void assignDefaults() {
         identifiers.put("NULL", Value.NULL);
+        identifiers.put("TRUE", Value.TRUE);
+        identifiers.put("FALSE", Value.FALSE);
 
         identifiers.put("@__lang_version", new Value(DataType.STRING, "1.0.0", false));
         identifiers.put("@__interpreter", new Value(DataType.STRING, "sakura.official.java", false));
