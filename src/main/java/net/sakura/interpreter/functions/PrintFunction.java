@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * The print function to print a value.
  */
-public class PrintFunction implements Function {
+public final class PrintFunction implements Function {
 
     /**
      * Print the values provided.

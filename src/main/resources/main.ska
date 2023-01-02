@@ -11,7 +11,7 @@ func printTwoOrThree($arg1, $arg2, $arg3?){
 }
 printTwoOrThree("arg 1", "arg 2")
 
-if opt == NULL {
+if opt == NULL & val == 8 {
 
 } else if !val {
 
@@ -25,6 +25,6 @@ while $var == TRUE {
     $var = FALSE
 }
 
-for $file in $dir {
+for $file in dir {
     print($file)
 }

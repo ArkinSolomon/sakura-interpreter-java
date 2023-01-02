@@ -561,7 +561,7 @@ public final class Lexer {
                 assert token != null;
                 iterable.add(new Token(TokenType.EOF, token.position(), "<ITERABLE END>"));
 
-                ForLoopData data = new ForLoopData((String) assignee.value(), isConstVar, iterable, null);
+                ForLoopData data = new ForLoopData((String) assignee.value(), isConstVar, simplify(iterable), null);
                 newTokens.add(new Token(TokenType.FOR_ASSIGN, loopStartPos, data));
 
                 // We already consumed the brace

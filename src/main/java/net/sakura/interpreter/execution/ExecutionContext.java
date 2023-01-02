@@ -17,6 +17,7 @@ package net.sakura.interpreter.execution;
 
 import net.sakura.interpreter.functions.Function;
 import net.sakura.interpreter.functions.PrintFunction;
+import net.sakura.interpreter.functions.RangeFunction;
 
 import java.util.HashMap;
 import java.util.List;
@@ -163,6 +164,7 @@ public class ExecutionContext {
         identifiers.put("@__interpreter_version", new Value(DataType.STRING, "1.0-SNAPSHOT", false));
 
         registerFunc("print", new PrintFunction());
+        registerFunc("range", new RangeFunction());
     }
 
     /**
