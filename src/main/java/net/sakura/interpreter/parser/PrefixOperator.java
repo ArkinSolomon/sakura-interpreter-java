@@ -22,7 +22,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * Base class for all prefix operators.
  */
-class PrefixOperator extends Node {
+abstract class PrefixOperator extends Node {
 
     /**
      * Create a new operator with a token.

@@ -22,7 +22,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * A return statement.
  */
-public class ReturnStatement extends Node {
+final class ReturnStatement extends Node {
 
     /**
      * Create a return statement from a token.

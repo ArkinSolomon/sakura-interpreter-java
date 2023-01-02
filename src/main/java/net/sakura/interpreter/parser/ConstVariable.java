@@ -22,7 +22,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * A constant variable node.
  */
-public class ConstVariable extends Variable {
+final class ConstVariable extends Variable {
 
     /**
      * Create a constant variable from a token.

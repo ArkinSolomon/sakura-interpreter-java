@@ -23,7 +23,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * An operator for the minus sign.
  */
-public class SubtractionOperator extends Operator {
+final class SubtractionOperator extends Operator {
 
     /**
      * Create a new minus operator with a token.

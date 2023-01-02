@@ -22,7 +22,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * An environment variable.
  */
-public class EnvVariable extends Node {
+final class EnvVariable extends Node {
 
     private final String identifier;
 

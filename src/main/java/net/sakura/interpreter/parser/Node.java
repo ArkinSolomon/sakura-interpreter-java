@@ -25,7 +25,7 @@ import java.util.Objects;
 /**
  * A node of the tree. An expression.
  */
-public class Node {
+public abstract class Node {
 
     protected int childCount;
     protected Node[] children;
@@ -65,6 +65,11 @@ public class Node {
         throw new UnsupportedOperationException("Assign called on node base");
     }
 
+    /**
+     * Resize a node and copy all children that fit.
+     *
+     * @param newSize The new size of the node.
+     */
     protected void resize(int newSize) {
         Node[] newChildren = new Node[newSize];
         int loopSize = Math.min(newSize, childCount);
@@ -160,16 +165,25 @@ public class Node {
     /**
      * Check if the node is full.
      *
-     * @return True if all the node's children are not null/
+     * @return True if all the node's children are not null.
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isFull() {
         return Arrays.stream(children).noneMatch(Objects::isNull);
     }
 
+    /**
+     * Print out this node and all of its children, with a starting indent of zero.
+     */
     public void print() {
         print(0);
     }
 
+    /**
+     * Print out this node and all its children.
+     *
+     * @param indentCount The indent for this node.
+     */
     public void print(int indentCount) {
         System.out.println("-".repeat(indentCount) + token);
         for (Node child : children) {

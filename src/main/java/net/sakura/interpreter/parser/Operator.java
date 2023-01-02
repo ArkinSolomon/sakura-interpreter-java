@@ -22,7 +22,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * An operator for a left and right hand argument.
  */
-class Operator extends Node {
+abstract class Operator extends Node {
 
     /**
      * Create a new node with a specific amount of children.

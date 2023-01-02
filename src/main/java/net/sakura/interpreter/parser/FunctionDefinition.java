@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * A function definition node.
  */
-public final class FunctionDefinition extends Expression implements Function {
+final class FunctionDefinition extends Expression implements Function {
 
     private final FunctionDefinitionData data;
     private final Parser parsedFunc;

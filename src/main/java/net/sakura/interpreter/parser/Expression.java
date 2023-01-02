@@ -22,7 +22,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * A single expression. Nodes that shouldn't be children or have children added.
  */
-public class Expression extends Node {
+abstract class Expression extends Node {
 
     /**
      * Create a new expression from a token with a certain amount of children.
@@ -30,7 +30,7 @@ public class Expression extends Node {
      * @param token The token for the expression.
      * @param childCount The number of children for the expression.
      */
-    public Expression(Token token, int childCount){
+    protected Expression(Token token, int childCount){
         super(token, childCount);
     }
 

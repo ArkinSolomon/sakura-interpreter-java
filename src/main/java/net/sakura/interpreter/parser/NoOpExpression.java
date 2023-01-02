@@ -21,7 +21,7 @@ import net.sakura.interpreter.execution.Value;
 /**
  * A NO-OP expression which does nothing.
  */
-public final class NoOpExpression extends Expression {
+final class NoOpExpression extends Expression {
 
     /**
      * Create a new no-op.

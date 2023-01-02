@@ -23,7 +23,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * A type of operator that compares two numbers.
  */
-public final class NumericalComparison extends Operator {
+final class NumericalComparison extends Operator {
 
     /**
      * Create a new less-than operator from a token.

@@ -22,7 +22,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * A node used by variables.
  */
-public class Variable extends Node {
+class Variable extends Node {
 
     protected String identifier;
 

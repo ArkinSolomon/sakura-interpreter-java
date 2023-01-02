@@ -22,7 +22,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * A symbol node.
  */
-public class Symbol extends Node {
+final class Symbol extends Node {
 
     private final String identifier;
 

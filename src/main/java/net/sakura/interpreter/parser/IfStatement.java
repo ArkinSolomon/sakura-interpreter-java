@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * An if-statement node.
  */
-public class IfStatement extends Expression {
+final class IfStatement extends Expression {
 
     private final List<Node> conditions = new ArrayList<>();
 

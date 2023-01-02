@@ -23,7 +23,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * A number literal.
  */
-public class NumberLiteral extends Literal {
+final class NumberLiteral extends Literal {
 
     /**
      * Create a new literal from a token.

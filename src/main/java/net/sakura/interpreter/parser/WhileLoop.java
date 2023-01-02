@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * An expression for a while loop.
  */
-public class WhileLoop extends Expression{
+final class WhileLoop extends Expression{
 
     private final Parser parent;
 

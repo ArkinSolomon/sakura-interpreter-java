@@ -15,7 +15,6 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
@@ -23,7 +22,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * A literal for false boolean value.
  */
-public class FalseLiteral extends Literal {
+final class FalseLiteral extends Literal {
 
     /**
      * Create a new literal false boolean value from a token.

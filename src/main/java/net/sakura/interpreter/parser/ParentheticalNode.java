@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * A node for parenthetical statements.
  */
-public class ParentheticalNode extends Node {
+final class ParentheticalNode extends Node {
 
     /**
      * Create a new node with the parenthetical token.

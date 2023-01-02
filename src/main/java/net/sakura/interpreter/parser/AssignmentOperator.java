@@ -22,7 +22,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * The assignment operator.
  */
-public class AssignmentOperator extends Operator {
+final class AssignmentOperator extends Operator {
 
     /**
      * Create a new node with a specific amount of children.

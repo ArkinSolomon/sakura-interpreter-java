@@ -23,7 +23,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * A node for multiplying.
  */
-public class MultiplicationOperator extends Operator {
+final class MultiplicationOperator extends Operator {
 
     /**
      * Create a new node from a token.

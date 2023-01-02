@@ -23,7 +23,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * A string in quotes.
  */
-public class StringLiteral extends Literal {
+final class StringLiteral extends Literal {
 
     /**
      * Create a new string from a quote token.

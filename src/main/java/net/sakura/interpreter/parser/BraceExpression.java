@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * An expression wrapped in braces.
  */
-public class BraceExpression extends Expression {
+final class BraceExpression extends Expression {
 
     private final Parser parent;
     private final Parser body;

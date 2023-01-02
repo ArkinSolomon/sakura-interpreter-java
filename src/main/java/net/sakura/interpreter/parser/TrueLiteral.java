@@ -15,7 +15,6 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
@@ -23,7 +22,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * A literal for true boolean value.
  */
-public class TrueLiteral extends Literal {
+final class TrueLiteral extends Literal {
 
     /**
      * Create a new literal true boolean value from a token.

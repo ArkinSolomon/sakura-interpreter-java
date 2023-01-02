@@ -23,7 +23,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * An addition operator.
  */
-public class AdditionOperator extends Operator {
+final class AdditionOperator extends Operator {
 
     /**
      * Create an addition operator from a token.

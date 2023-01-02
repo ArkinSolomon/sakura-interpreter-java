@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Make a call to a function.
  */
-public class FunctionCall extends Node {
+final class FunctionCall extends Node {
 
     String identifier;
 

@@ -23,7 +23,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * A slash operator, which can be a path or division.
  */
-public class SlashOperator extends Operator {
+final class SlashOperator extends Operator {
 
     /**
      * Create a new slash operator with a token.

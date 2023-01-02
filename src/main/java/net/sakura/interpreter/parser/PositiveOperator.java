@@ -23,7 +23,7 @@ import net.sakura.interpreter.lexer.Token;
 /**
  * Create a new positive operator.
  */
-public class PositiveOperator extends PrefixOperator {
+final class PositiveOperator extends PrefixOperator {
 
     /**
      * Create a new operator from a token.
