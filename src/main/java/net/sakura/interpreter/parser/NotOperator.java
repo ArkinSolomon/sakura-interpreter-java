@@ -15,38 +15,36 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
 
 /**
- * A return statement.
+ * Operator for boolean inversion.
  */
-final class ReturnStatement extends Node {
+final class NotOperator extends PrefixOperator{
 
     /**
-     * Create a return statement from a token.
+     * Create a new not prefix operator using a token.
      *
-     * @param token The return token.
+     * @param token The prefix operator token.
      */
-    public ReturnStatement(Token token) {
-        super(token, 1);
+    public NotOperator(Token token) {
+        super(token);
     }
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        if (getChild(0) == null)
-            return Value.NULL;
-        return getChild(0).evaluate(ctx);
-    }
+        if (!isFull())
+            throw new RuntimeException("Boolean inversion requires a value to follow");
 
-    @Override
-    public void assign(ExecutionContext ctx, Value val) {
-        throw new UnsupportedOperationException("Can not assign to return statement");
-    }
+        Value childValue = getChild().evaluate(ctx);
+        if (childValue.type() != DataType.BOOLEAN)
+            throw new RuntimeException("Can not invert a non-boolean value");
 
-    @Override
-    public int getPrecedence() {
-        return Precedences.RETURN;
+        if ((boolean) childValue.value())
+            return Value.FALSE;
+        return Value.TRUE;
     }
 }

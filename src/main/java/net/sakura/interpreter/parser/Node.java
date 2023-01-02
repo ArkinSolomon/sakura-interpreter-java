@@ -25,7 +25,7 @@ import java.util.Objects;
 /**
  * A node of the tree. An expression.
  */
-public abstract class Node {
+abstract class Node {
 
     protected int childCount;
     protected Node[] children;
@@ -39,7 +39,7 @@ public abstract class Node {
      * @param token      The token of the node.
      * @param childCount The amount of children in the node.
      */
-    public Node(Token token, int childCount) {
+    protected Node(Token token, int childCount) {
         this.childCount = childCount;
         this.token = token;
         children = new Node[childCount];
@@ -51,9 +51,7 @@ public abstract class Node {
      * @param ctx The current execution context.
      * @return The value of the node.
      */
-    public Value evaluate(ExecutionContext ctx) {
-        throw new UnsupportedOperationException("Evaluate called on node base");
-    }
+    public abstract Value evaluate(ExecutionContext ctx);
 
     /**
      * Assign a value to this node.
@@ -61,16 +59,14 @@ public abstract class Node {
      * @param ctx The context in which to assign.
      * @param val The value which to assign.
      */
-    public void assign(ExecutionContext ctx, Value val) {
-        throw new UnsupportedOperationException("Assign called on node base");
-    }
+    public abstract void assign(ExecutionContext ctx, Value val);
 
     /**
      * Resize a node and copy all children that fit.
      *
      * @param newSize The new size of the node.
      */
-    protected void resize(int newSize) {
+    protected final void resize(int newSize) {
         Node[] newChildren = new Node[newSize];
         int loopSize = Math.min(newSize, childCount);
         if (loopSize >= 0)
@@ -85,7 +81,7 @@ public abstract class Node {
      * @param i     The index of the child to set.
      * @param child The child to set.
      */
-    public void setChild(int i, Node child) {
+    public final void setChild(int i, Node child) {
         if (i >= childCount)
             throw new IndexOutOfBoundsException("Index i is greater than children in node");
         children[i] = child;
@@ -98,7 +94,7 @@ public abstract class Node {
      * @param i The index of the child to get
      * @return The child node.
      */
-    public Node getChild(int i) {
+    public final Node getChild(int i) {
         if (i >= childCount)
             throw new IndexOutOfBoundsException("Index %d is greater than children in node".formatted(i));
         return children[i];
@@ -109,7 +105,7 @@ public abstract class Node {
      *
      * @return The index of the node in this node's children, or -1 if the node is not a child.
      */
-    public int findChild(Node node) {
+    public final int findChild(Node node) {
         for (int i = 0; i < childCount; ++i) {
            if (children[i] == node)
                return i;
@@ -121,7 +117,7 @@ public abstract class Node {
     /**
      * Insert value as the next child of the node.
      */
-    public void insertChild(Node child) {
+    public final void insertChild(Node child) {
         for (int i = 0; i < childCount; i++) {
             if (children[i] == null) {
                 setChild(i, child);
@@ -136,7 +132,7 @@ public abstract class Node {
      *
      * @return The parent node, or null if there is no parent.
      */
-    public Node getParent() {
+    public final Node getParent() {
         return this.parent;
     }
 
@@ -145,14 +141,12 @@ public abstract class Node {
      *
      * @return The precedence of the node.
      */
-    public int getPrecedence() {
-        throw new UnsupportedOperationException("Precedence not set");
-    }
+    public abstract int getPrecedence();
 
     /**
      * Check if the node and all it's children are full.
      */
-    public boolean isCompletelyFull() {
+    public final boolean isCompletelyFull() {
         if (!isFull())
             return false;
 
@@ -168,14 +162,14 @@ public abstract class Node {
      * @return True if all the node's children are not null.
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean isFull() {
+    public final boolean isFull() {
         return Arrays.stream(children).noneMatch(Objects::isNull);
     }
 
     /**
      * Print out this node and all of its children, with a starting indent of zero.
      */
-    public void print() {
+    public final void print() {
         print(0);
     }
 
@@ -184,7 +178,7 @@ public abstract class Node {
      *
      * @param indentCount The indent for this node.
      */
-    public void print(int indentCount) {
+    public final void print(int indentCount) {
         System.out.println("-".repeat(indentCount) + token);
         for (Node child : children) {
             if (child == null) {

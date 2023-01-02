@@ -25,17 +25,12 @@ import net.sakura.interpreter.lexer.Token;
 abstract class Operator extends Node {
 
     /**
-     * Create a new node with a specific amount of children.
+     * Create a new operator with two children.
      *
      * @param token The token of the operator
      */
     protected Operator(Token token) {
         super(token, 2);
-    }
-
-    @Override
-    public Value evaluate(ExecutionContext ctx){
-        throw new UnsupportedOperationException("Evaluate called on operator base");
     }
 
     @Override

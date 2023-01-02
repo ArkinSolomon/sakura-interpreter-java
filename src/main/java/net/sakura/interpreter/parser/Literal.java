@@ -34,11 +34,6 @@ abstract class Literal extends Node {
     }
 
     @Override
-    public Value evaluate(ExecutionContext ctx) {
-        throw new UnsupportedOperationException("Evaluate called on literal base");
-    }
-
-    @Override
     public final void assign(ExecutionContext ctx, Value val) {
         throw new UnsupportedOperationException("Can not assign to literal");
     }

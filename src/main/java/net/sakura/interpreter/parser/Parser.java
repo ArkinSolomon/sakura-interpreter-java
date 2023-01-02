@@ -88,9 +88,8 @@ public final class Parser {
                 case NOT_EQUALS -> new NotEqualsOperator(token);
                 case DOUBLE_EQUALS -> new EqualityOperator(token);
                 case LT, LTE, GT, GTE -> new NumericalComparison(token);
-                case AND -> null;
-                case OR -> null;
-                case NOT -> null;
+                case AND, OR -> new BinaryBooleanOperator(token);
+                case NOT -> new NotOperator(token);
                 case PLUS -> {
                     if (tokenStorage.lastToken() == null || tokenStorage.lastToken().isOperator())
                         yield new PositiveOperator(token);
@@ -110,7 +109,6 @@ public final class Parser {
                 case WHILE_LOOP -> new WhileLoop(token, this);
                 case FOR_LOOP -> new ForLoop(token, this);
                 case RETURN -> new ReturnStatement(token);
-                case BACKSLASH -> null;
                 case SLASH -> new SlashOperator(token);
                 case FUNC_DEF -> new FunctionDefinition(token);
                 case FUNC_CALL -> new FunctionCall(token);
@@ -142,7 +140,6 @@ public final class Parser {
                 Node insertionPoint = currentNode;
                 Node replacementChild = null;
 
-                assert newNode != null;
                 while (insertionPoint != null && insertionPoint.getPrecedence() >= newNode.getPrecedence()) {
                     replacementChild = insertionPoint;
                     insertionPoint = insertionPoint.getParent();

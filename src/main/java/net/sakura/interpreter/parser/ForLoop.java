@@ -81,8 +81,10 @@ final class ForLoop extends Expression {
         Value iterableEvalResult = getChild(0).evaluate(ctx);
         if (iterableEvalResult.type() == DataType.STRING)
             loopIterable = new StringIterable((String) iterableEvalResult.value());
-        else
+        else if (iterableEvalResult.type() == DataType.ITERABLE)
             loopIterable = (Iterable) iterableEvalResult.value();
+        else
+            throw new RuntimeException("For loops can only loop over iterables");
 
         Value curr = loopIterable.next();
         while (curr != null) {

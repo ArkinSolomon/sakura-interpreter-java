@@ -158,7 +158,7 @@ public class ExecutionContext {
         identifiers.put("TRUE", Value.TRUE);
         identifiers.put("FALSE", Value.FALSE);
 
-        identifiers.put("@__lang_version", new Value(DataType.STRING, "0.1.0-alpha.1", false));
+        identifiers.put("@__lang_version", new Value(DataType.STRING, "1.0.0-alpha", false));
         identifiers.put("@__interpreter", new Value(DataType.STRING, "sakura.official.java", false));
         identifiers.put("@__interpreter_version", new Value(DataType.STRING, "1.0-SNAPSHOT", false));
 

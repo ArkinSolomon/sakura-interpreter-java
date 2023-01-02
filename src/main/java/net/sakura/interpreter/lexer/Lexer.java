@@ -158,7 +158,7 @@ public final class Lexer {
                     currentType = TokenType.QUOTE;
                 else if (thisChar == '/')
                     tokens.add(new Token(TokenType.SLASH, currentPos, "/"));
-                else if (thisChar == '\\')
+                else if (thisChar == '\\') // I don't remember why I implemented this... but I'll leave it for now...
                     tokens.add(new Token(TokenType.BACKSLASH, currentPos, "\\"));
                 else if (thisChar == '&')
                     tokens.add(new Token(TokenType.AND, currentPos, "&"));

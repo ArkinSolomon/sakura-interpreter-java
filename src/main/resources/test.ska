@@ -1,4 +1,4 @@
-%str = "hello!"
-for %char in str {
-    print(char == "l")
-}
+print(!TRUE)
+print(!FALSE)
+print(TRUE & FALSE)
+print(TRUE | FALSE)

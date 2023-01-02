@@ -27,10 +27,10 @@ abstract class Expression extends Node {
     /**
      * Create a new expression from a token with a certain amount of children.
      *
-     * @param token The token for the expression.
+     * @param token      The token for the expression.
      * @param childCount The number of children for the expression.
      */
-    protected Expression(Token token, int childCount){
+    protected Expression(Token token, int childCount) {
         super(token, childCount);
     }
 
@@ -40,6 +40,7 @@ abstract class Expression extends Node {
     }
 
     @Override
-    public final int getPrecedence() {throw new RuntimeException("Can not get precedence of expression");
+    public final int getPrecedence() {
+        throw new RuntimeException("Can not get precedence of expression");
     }
 }

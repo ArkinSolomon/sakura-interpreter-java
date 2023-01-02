@@ -35,8 +35,8 @@ public class NotEqualsOperator extends EqualityOperator {
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        if (!((boolean) super.evaluate(ctx).value()))
-            return Value.TRUE;
-        return Value.FALSE;
+        if ((boolean) super.evaluate(ctx).value())
+            return Value.FALSE;
+        return Value.TRUE;
     }
 }
