@@ -479,10 +479,11 @@ public class Lexer {
                 }
 
                 newTokens.add(new Token(TokenType.BRACE, braceStartPos, simplify(body)));
-            } else if (token.type() == TokenType.IF || token.type() == TokenType.ELIF) {
+            } else if (token.type() == TokenType.IF || token.type() == TokenType.ELIF || token.type() == TokenType.WHILE) {
 
-                boolean isIf = token.type() == TokenType.IF;
+                TokenType statementType = token.type();
                 int statementStart = token.position();
+
                 token = tokenStorage.consume();
                 List<Token> condition = new ArrayList<>();
                 while (token != null && token.type() != TokenType.EOF && token.type() != TokenType.OPEN_BRACE) {
@@ -492,14 +493,28 @@ public class Lexer {
 
                 assert token != null;
                 if (token.type() == TokenType.EOF)
-                    throw new RuntimeException("Unexpected end of file while parsing if or else if condition");
+                    throw new RuntimeException("Unexpected end of file while parsing conditional statement");
 
-                if (condition.size() == 0)
-                    throw new RuntimeException("%s statement requires condition".formatted(isIf ? "If" : "Else-if"));
+                if (condition.size() == 0) {
+                    String name = switch (statementType){
+                        case IF -> "If";
+                        case ELIF -> "Else-if";
+                        case WHILE -> "While";
+                        default -> throw new IllegalStateException("Invalid statement type: " + statementType);
+                    };
+                    throw new RuntimeException("%s statement requires condition".formatted(name));
+                }
 
-                condition.add(new Token(TokenType.EOF, token.position(), "<%s COND END>".formatted(isIf ? "IF" : "ELIF")));
+                condition.add(new Token(TokenType.EOF, token.position(), "<COND END>"));
                 condition = simplify(condition);
-                newTokens.add(new Token(isIf ? TokenType.IF_COND : TokenType.ELIF_COND, statementStart, condition));
+
+                 TokenType conditionalType = switch (statementType){
+                    case IF -> TokenType.IF_COND;
+                    case ELIF -> TokenType.ELIF_COND;
+                    case WHILE -> TokenType.WHILE_COND;
+                    default -> throw new IllegalStateException("Invalid statement type: " + statementType);
+                };
+                newTokens.add(new Token(conditionalType, statementStart, condition));
 
                 // We already consumed the brace, so parse the brace statement
                 continue;
@@ -533,22 +548,35 @@ public class Lexer {
 
                 FunctionDefinitionData data = (FunctionDefinitionData) token.value();
                 newTokens.add(new Token(TokenType.FUNC_DEF, token.position(), data.addBody(tokenStorage.consume())));
-            } else if (token.type() == TokenType.IF_COND) {
-                ArrayList<List<Token>> conditions = new ArrayList<>();
-                ArrayList<Token> branches = new ArrayList<>();
-                int ifStatementStart = token.position();
+            } else if (token.type() == TokenType.IF_COND || token.type() == TokenType.WHILE_COND) {
+                int statementStart = token.position();
+                TokenType statementType  = token.type();
 
                 @SuppressWarnings("unchecked")
                 List<Token> condition = (List<Token>) token.value();
-                conditions.add(condition);
 
-                Token branch = tokenStorage.consume();
-                if (branch.type() != TokenType.BRACE)
-                    throw new RuntimeException("If statement must be followed by a brace statement");
-                branches.add(branch);
+                Token body = tokenStorage.consume();
+                if (body.type() != TokenType.BRACE){
+                    String statementName = "If";
+                    if (statementType == TokenType.WHILE_COND)
+                        statementName = "While";
+                    throw new RuntimeException("%s statement must be followed by a brace statement".formatted(statementName));
+                }
 
-                IfData data = new IfData(conditions, branches);
-                newTokens.add(new Token(TokenType.IF_STATEMENT, ifStatementStart, data));
+                if (statementType == TokenType.IF_COND){
+                    ArrayList<List<Token>> conditions = new ArrayList<>();
+                    ArrayList<Token> branches = new ArrayList<>();
+                    branches.add(body);
+                    conditions.add(condition);
+
+                    IfData data = new IfData(conditions, branches);
+                    newTokens.add(new Token(TokenType.IF_STATEMENT, statementStart, data));
+                } else {
+
+                    // WHILE_COND
+                    WhileData data = new WhileData(condition, body);
+                    newTokens.add(new Token(TokenType.WHILE_LOOP, statementStart, data));
+                }
             } else if (token.type() == TokenType.ELIF_COND || token.type() == TokenType.ELSE) {
                 if (newTokens.size() == 0)
                     throw new RuntimeException("If-statement branch must be preceded by an if-statement");

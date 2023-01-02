@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * An interpreter to interpret Sakura.
+ */
 public class SakuraInterpreter {
 
     private final InterpreterOptions options;

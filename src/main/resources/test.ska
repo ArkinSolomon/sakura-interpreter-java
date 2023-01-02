@@ -1,11 +1,11 @@
-printUntil(30)
+printUntil(10)
 
 func printUntil(%n, %curr = 1) {
+    print(fibonacci(curr))
+
     if curr == n {
         return
     }
-
-    print(fibonacci(curr))
     printUntil(n, curr + 1)
 }
 

@@ -85,10 +85,7 @@ public final class Parser {
             TokenType type = token.type();
             Node newNode = switch (type) {
                 case DOUBLE_EQUALS -> new EqualityOperator(token);
-                case LT -> null;
-                case LTE -> null;
-                case GT -> null;
-                case GTE -> null;
+                case LT, LTE, GT, GTE -> new NumericalComparison(token);
                 case EQUALS -> new AssignmentOperator(token);
                 case AND -> null;
                 case OR -> null;
@@ -109,7 +106,7 @@ public final class Parser {
                 case CONST_VAR -> new ConstVariable(token);
                 case ENV_VARIABLE -> new EnvVariable(token);
                 case IF_STATEMENT -> new IfStatement(token, this);
-                case WHILE -> null;
+                case WHILE_LOOP -> new WhileLoop(token, this);
                 case FOR -> null;
                 case IN -> null;
                 case RETURN -> new ReturnStatement(token);

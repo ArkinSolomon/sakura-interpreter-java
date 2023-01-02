@@ -20,36 +20,42 @@ import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
 
-import java.util.Objects;
-
 /**
- * An operator to determine equality between two values.
+ * A type of operator that compares two numbers.
  */
-public final class EqualityOperator extends Operator {
+public final class NumericalComparison extends Operator {
 
     /**
-     * Create a new operator from a token.
+     * Create a new less-than operator from a token.
      *
-     * @param token The token for the operator.
+     * @param token The token to create the operator from.
      */
-    public EqualityOperator(Token token) {
+    public NumericalComparison(Token token) {
         super(token);
     }
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
         if (!isFull())
-            throw new UnsupportedOperationException("Equality operator requires both arguments");
+            throw new UnsupportedOperationException("Less-than operator requires both arguments");
 
         Value lhs = leftChild().evaluate(ctx);
         Value rhs = rightChild().evaluate(ctx);
 
-        Object leftValue = lhs.type() == DataType.NULL ? null : lhs.value();
-        Object rightValue = rhs.type() == DataType.NULL ? null : rhs.value();
+        if (lhs.type() != DataType.NUMBER || rhs.type() != DataType.NUMBER)
+            throw new UnsupportedOperationException("The numerical operators (>, >=, <, <=) can only compare numbers");
 
-        if (lhs.type() == rhs.type() && leftValue == null || Objects.equals(leftValue, rightValue))
-            return Value.TRUE;
-        else return Value.FALSE;
+        double leftValue = (double) lhs.value();
+        double rightValue = (double) rhs.value();
+
+        boolean value = switch ((String) token.value()){
+            case ">" -> leftValue > rightValue;
+            case ">=" -> leftValue >= rightValue;
+            case "<" -> leftValue < rightValue;
+            case "<=" -> leftValue <= rightValue;
+            default -> throw new IllegalStateException("Invalid value \"%s\" in numerical operator");
+        };
+        return new Value(DataType.BOOLEAN, value, false);
     }
 
     @Override

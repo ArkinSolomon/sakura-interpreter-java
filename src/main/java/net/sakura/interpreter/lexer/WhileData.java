@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022. Sakura Contributors.
+ * Copyright (c) 2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,15 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.parser;
+package net.sakura.interpreter.lexer;
+
+import java.util.List;
 
 /**
- * Precedences for every type of operator.
+ * Data for a while loop.
+ *
+ * @param condition The condition that must be met for the body to execute.
+ * @param body The body to execute.
  */
-final class Precedences {
-    static int RETURN = 20;
-    static int ASSIGNMENT = 30;
-    static int COMPARISON = 40;
-    static int ADD_SUB = 50;
-    static int MULTIPLY_SLASH = 60;
-    static int PREFIX = 80;
-    static int PARENTHETICAL = 90;
-    static int VALUE = 100;
-
-    /**
-     * No class instances.
-     */
-    private Precedences() {}
+public record WhileData(List<Token> condition, Token body) {
 }
