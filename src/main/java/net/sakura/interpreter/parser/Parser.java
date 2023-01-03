@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.ExecutionResult;
@@ -24,6 +25,7 @@ import net.sakura.interpreter.lexer.TokenStorage;
 import net.sakura.interpreter.lexer.TokenType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -62,11 +64,21 @@ public final class Parser {
     }
 
     /**
-     * Create the tree.
+     * Create the tree and check the top level and if-statements of the tree for any break or continue statements.
      *
      * @return The nodes from the created tree.
      */
     public List<Node> parse() {
+        return parse(true);
+    }
+
+    /**
+     * Create the tree.
+     *
+     * @param checkTopLevel True if to check for break or continue statements in the top level and if-statements of the tree.
+     * @return The nodes from the created tree.
+     */
+    List<Node> parse(boolean checkTopLevel) {
 
         Node root = null;
         Node currentNode = null;
@@ -145,7 +157,6 @@ public final class Parser {
                 continue;
             }
 
-
             if (root == null)
                 root = newNode;
             else {
@@ -172,6 +183,13 @@ public final class Parser {
             }
             currentNode = newNode;
         }
+
+        if (checkTopLevel){
+            checkLoopControl(expressions);
+            for (FunctionDefinition function : functions)
+                checkLoopControl(List.of(function.children));
+        }
+
         return expressions;
     }
 
@@ -183,14 +201,15 @@ public final class Parser {
     public ExecutionResult execute(ExecutionContext ctx) {
 
         // Register functions if we're executing the root context
-        if (ctx.getRoot() == ctx && !registered) {
+        final boolean isRoot = ctx.getRoot() == ctx;
+        if (isRoot && !registered) {
             registered = true;
             for (FunctionDefinition function : functions)
                 function.register(ctx);
         }
 
         for (Node expression : expressions) {
-            //            expression.print();
+                        expression.print();
             ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {
@@ -199,6 +218,7 @@ public final class Parser {
             }
             if (expression instanceof Expression && stop || expression instanceof ReturnStatement || expression instanceof LoopControlExpression) {
                 EarlyReturnType type = EarlyReturnType.RETURN;
+
                 if (braceReturnResult != null) {
                     TokenType returnerType = braceReturnResult.returner().type();
                     if (returnerType == TokenType.BREAK || returnerType == TokenType.CONTINUE)
@@ -206,9 +226,27 @@ public final class Parser {
                 }
 
                 return new ExecutionResult(type, value, expression.getToken());
-
             }
         }
         return new ExecutionResult(EarlyReturnType.NONE, Value.NULL, null);
+    }
+
+    /**
+     * Check for any breaks or continues in the top level of the list of nodes, as well as any if-statements.
+     *
+     * @param nodes The nodes to check.
+     */
+    private void checkLoopControl(List<Node> nodes) {
+        for (Node node : nodes){
+            Token token = node.getToken();
+            if (token.type() == TokenType.CONTINUE || token.type() == TokenType.BREAK)
+                throw new SakuraException(token.line(), token.column(), "A \"%s\" statement can only be within a loop.".formatted(token.type() == TokenType.CONTINUE ? "continue" : "break"));
+            else if (token.type() == TokenType.IF_STATEMENT || token.type() == TokenType.BRACE) {
+                for (int i = 0; i < node.childCount; i++){
+                    Node child = node.getChild(i);
+                    checkLoopControl(Collections.singletonList(child));
+                }
+            }
+        }
     }
 }

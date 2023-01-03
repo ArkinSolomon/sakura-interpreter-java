@@ -53,7 +53,7 @@ final class ForLoop extends Expression {
 
         TokenStorage iterableTS = new TokenStorage(data.iterable());
         Parser iterableParser = new Parser(iterableTS);
-        List<Node> iterableNodes = iterableParser.parse();
+        List<Node> iterableNodes = iterableParser.parse(false);
         if (iterableNodes.size() != 1)
             throw new RuntimeException("For loop iterable can only be one expression");
         setChild(0, iterableNodes.get(0));
@@ -68,7 +68,7 @@ final class ForLoop extends Expression {
 
         bodyList.add(new Token(TokenType.EOF, eofLine, eofCol, "<WHILE BODY END>"));
         TokenStorage branchTokenStorage = new TokenStorage(bodyList);
-        List<Node> bodyNodes = new Parser(branchTokenStorage).parse();
+        List<Node> bodyNodes = new Parser(branchTokenStorage).parse(false);
 
         if (bodyNodes.size() != 1)
             throw new RuntimeException("The body of a while loop must be wrapped in braces");
