@@ -79,9 +79,14 @@ final class WhileLoop extends Expression{
 
             Value braceReturn = getChild(1).evaluate(tempCtx);
             ExecutionResult result = (ExecutionResult) braceReturn.value();
-            if (result.earlyReturn()){
-                parent.stop();
-                return result.returnValue();
+            if (result.earlyReturnType() != EarlyReturnType.NONE){
+                if (result.earlyReturnType() == EarlyReturnType.CONTINUE)
+                    continue;
+                else if (result.earlyReturnType() == EarlyReturnType.BREAK)
+                    return Value.NULL;
+                else
+                    parent.stop();
+                    return braceReturn;
             }
         }
         return Value.NULL;

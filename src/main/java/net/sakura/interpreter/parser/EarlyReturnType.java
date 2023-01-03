@@ -13,17 +13,14 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.execution;
-
-import net.sakura.interpreter.lexer.Token;
-import net.sakura.interpreter.parser.EarlyReturnType;
+package net.sakura.interpreter.parser;
 
 /**
- * The result of executing a bit of code.
- *
- * @param earlyReturnType The type of the early return. None if there was not an early return.
- * @param returnValue The return value of the early return.
- * @param returner The token that started the return.
+ * The type of the early return of a function.
  */
-public record ExecutionResult(EarlyReturnType earlyReturnType, Value returnValue, Token returner) {
+public enum EarlyReturnType {
+    NONE,
+    RETURN,
+    BREAK,
+    CONTINUE
 }

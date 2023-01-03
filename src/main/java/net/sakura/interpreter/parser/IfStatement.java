@@ -39,7 +39,7 @@ final class IfStatement extends Expression {
     /**
      * Create a new if statement from a token.
      *
-     * @param token The token to create the if statement from.
+     * @param token  The token to create the if statement from.
      * @param parent The parser that created this expression.
      */
     public IfStatement(Token token, Parser parent) {
@@ -47,7 +47,7 @@ final class IfStatement extends Expression {
         this.parent = parent;
 
         IfData data = (IfData) token.value();
-        int conditionsLen= data.conditions().size();
+        int conditionsLen = data.conditions().size();
         resize(conditionsLen + 1);
 
         for (List<Token> condition : data.conditions()) {
@@ -101,19 +101,20 @@ final class IfStatement extends Expression {
             if ((boolean) conditionValue.value()) {
                 Value braceReturn = getChild(i).evaluate(tempCtx);
                 ExecutionResult result = (ExecutionResult) braceReturn.value();
-                if (result.earlyReturn()){
+                if (result.earlyReturnType() != EarlyReturnType.NONE) {
+                    //                   if (result.earlyReturnType() == EarlyReturnType.RETURN)
                     parent.stop();
-                    return result.returnValue();
+                    return braceReturn;
                 }
                 break;
             }
         }
-        if (i  == conditions.size()){
+        if (i == conditions.size()) {
             Value elseReturn = getChild(i).evaluate(tempCtx);
             ExecutionResult elseResult = ((ExecutionResult) elseReturn.value());
 
             // elseResult may be null since it can be a no-op
-            if (elseResult != null && elseResult.earlyReturn()){
+            if (elseResult != null && elseResult.earlyReturnType() != EarlyReturnType.NONE) {
                 parent.stop();
                 return elseResult.returnValue();
             }

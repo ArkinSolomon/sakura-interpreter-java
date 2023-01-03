@@ -49,6 +49,6 @@ public final class RangeIterator implements Iterable {
         current += step;
         if (current >= end)
             return null;
-        return new Value(DataType.NUMBER, current, false);
+        return new Value(DataType.NUMBER, (double) current, false);
     }
 }

@@ -1,8 +1,19 @@
-countToZero(5)
-
-func countToZero(%curr) {
-    if curr > 0 {
-        return countToZero(curr -1)
+func test {
+    $a = NULL
+    for $_ in range(1, 6) {
+        for $i in range(1, 11) {
+            a = i
+            if i == 5 {
+                continue
+            } else if i == 8 {
+                break
+            }
+            print(i)
+        }
+        print("FINAL: " +  a)
+        print("")
     }
-    terminate("Zero!")
+    return a
 }
+return test()
+

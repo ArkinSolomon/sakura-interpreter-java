@@ -15,12 +15,11 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
-
-import java.util.Objects;
 
 /**
  * An operator to determine equality between two values.
@@ -44,12 +43,20 @@ class EqualityOperator extends Operator {
         Value lhs = leftChild().evaluate(ctx);
         Value rhs = rightChild().evaluate(ctx);
 
-        Object leftValue = lhs.type() == DataType.NULL ? null : lhs.value();
-        Object rightValue = rhs.type() == DataType.NULL ? null : rhs.value();
+        if (lhs.type() != rhs.type())
+            return Value.FALSE;
 
-        if (lhs.type() == rhs.type() && leftValue == null || Objects.equals(leftValue, rightValue))
-            return Value.TRUE;
-        else return Value.FALSE;
+        boolean isEqual = switch (lhs.type()) {
+            case STRING -> lhs.value().equals(rhs.value());
+            case NUMBER -> (double) lhs.value() == (double) rhs.value();
+            case BOOLEAN -> (boolean) lhs.value() == (boolean) rhs.value();
+            case NULL -> true;
+            case FUNCTION -> lhs.value() == rhs.value();
+            default ->
+                    throw new SakuraException(token.line(), token.column(), "Invalid comparison between operands both of type \"%s\".".formatted(lhs.type()));
+        };
+
+        return new Value(DataType.BOOLEAN, isEqual, false);
     }
 
     @Override

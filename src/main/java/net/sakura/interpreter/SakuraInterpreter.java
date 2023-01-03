@@ -111,12 +111,12 @@ public class SakuraInterpreter {
 
         try {
             SakuraInterpreter interpreter = new SakuraInterpreter(opts);
-            interpreter.executeFile(Path.of(Objects.requireNonNull(SakuraInterpreter.class.getResource("/test.ska")).getFile()));
+            Value retVal = interpreter.executeFile(Path.of(Objects.requireNonNull(SakuraInterpreter.class.getResource("/test.ska")).getFile()));
+            System.out.println("\n\nRETURN VALUE: " + retVal);
         }catch (SakuraException e) {
             System.err.println(e.getMessage());
             for (String call : e.getStacktrace())
                 System.err.println("\tat " + call);
         }
-
     }
 }

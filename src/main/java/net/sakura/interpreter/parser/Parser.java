@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.ExecutionResult;
 import net.sakura.interpreter.execution.Value;
@@ -35,6 +36,7 @@ public final class Parser {
     private final List<FunctionDefinition> functions = new ArrayList<>();
 
     private boolean stop = false;
+    private boolean registered;
 
     /**
      * Create a parse tree using the tokens from the lexer.
@@ -53,7 +55,16 @@ public final class Parser {
     }
 
     /**
+     * Continue execution of the parser.
+     */
+    void unstop() {
+        stop = false;
+    }
+
+    /**
      * Create the tree.
+     *
+     * @return The nodes from the created tree.
      */
     public List<Node> parse() {
 
@@ -109,6 +120,7 @@ public final class Parser {
                 case WHILE_LOOP -> new WhileLoop(token, this);
                 case FOR_LOOP -> new ForLoop(token, this);
                 case RETURN -> new ReturnStatement(token);
+                case BREAK, CONTINUE -> new LoopControlExpression(token);
                 case SLASH -> new SlashOperator(token);
                 case FUNC_DEF -> new FunctionDefinition(token);
                 case FUNC_CALL -> new FunctionCall(token);
@@ -165,21 +177,38 @@ public final class Parser {
 
     /**
      * Execute every expression.
+     *
+     * @param ctx The context in which to execute the expressions.
      */
     public ExecutionResult execute(ExecutionContext ctx) {
 
         // Register functions if we're executing the root context
-        if (ctx.getRoot() == ctx) {
+        if (ctx.getRoot() == ctx && !registered) {
+            registered = true;
             for (FunctionDefinition function : functions)
                 function.register(ctx);
         }
 
         for (Node expression : expressions) {
-//            expression.print();
+            //            expression.print();
+            ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
-            if (expression instanceof Expression && stop || expression instanceof ReturnStatement)
-                return new ExecutionResult(true, value);
+            if (value != null && value.type() == DataType.__BRACE_RETURN) {
+                braceReturnResult = (ExecutionResult) value.value();
+                value = braceReturnResult.returnValue();
+            }
+            if (expression instanceof Expression && stop || expression instanceof ReturnStatement || expression instanceof LoopControlExpression) {
+                EarlyReturnType type = EarlyReturnType.RETURN;
+                if (braceReturnResult != null) {
+                    TokenType returnerType = braceReturnResult.returner().type();
+                    if (returnerType == TokenType.BREAK || returnerType == TokenType.CONTINUE)
+                        type = returnerType == TokenType.BREAK ? EarlyReturnType.BREAK : EarlyReturnType.CONTINUE;
+                }
+
+                return new ExecutionResult(type, value, expression.getToken());
+
+            }
         }
-        return new ExecutionResult(false, Value.NULL);
+        return new ExecutionResult(EarlyReturnType.NONE, Value.NULL, null);
     }
 }

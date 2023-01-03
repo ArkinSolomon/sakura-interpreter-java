@@ -235,6 +235,8 @@ public final class Lexer {
                                 currentType = TokenType.ELIF;
                             }
                         }
+                        case "break" -> currentType = TokenType.BREAK;
+                        case "continue" -> currentType = TokenType.CONTINUE;
                         case "else" -> currentType = TokenType.ELSE;
                         case "while" -> currentType = TokenType.WHILE;
                         case "func" -> currentType = TokenType.FUNC;
