@@ -15,9 +15,12 @@
 
 package net.sakura.interpreter.execution;
 
+import net.sakura.interpreter.SakuraException;
 import net.sakura.interpreter.functions.Function;
 import net.sakura.interpreter.functions.PrintFunction;
 import net.sakura.interpreter.functions.RangeFunction;
+import net.sakura.interpreter.functions.TerminateFunction;
+import net.sakura.interpreter.parser.Node;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,9 +33,8 @@ public class ExecutionContext {
 
     // Map identifiers to values
     private final Map<String, Value> identifiers = new HashMap<>();
-
-    private ExecutionContext parent = null;
     private final ExecutionContext root;
+    private ExecutionContext parent = null;
 
     /**
      * Create a new blank root execution context
@@ -135,10 +137,16 @@ public class ExecutionContext {
     public Value executeFunc(String identifier, List<Value> args) {
         Value functionValue = getIdentifier(identifier);
         if (functionValue.type() != DataType.FUNCTION)
-            throw new RuntimeException("Attempt to execute non-function value");
+            throw new SakuraException("Can not call \"%s\" of type \"%s\". Only function types are callable.".formatted(identifier, functionValue.type()));
 
-        Function func = (Function) functionValue.value();
-        return func.execute(args);
+        try {
+            Function func = (Function) functionValue.value();
+            return func.execute(args);
+        } catch (SakuraException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("An exception occurred while executing the function \"%s\".".formatted(identifier), e);
+        }
     }
 
     /**
@@ -165,14 +173,31 @@ public class ExecutionContext {
 
         registerFunc("print", new PrintFunction());
         registerFunc("range", new RangeFunction());
+        registerFunc("terminate", new TerminateFunction());
     }
 
     /**
      * Print the execution context.
      */
     public void printContext() {
-        for (String k : identifiers.keySet()) {
-            System.out.printf("%s: %s%n", k, identifiers.get(k));
+        String[] ctxIds = identifiers
+                .keySet()
+                .stream()
+                .sorted()
+                .toArray(String[]::new);
+
+        for (String k : ctxIds){
+            Value val = identifiers.get(k);
+            String output = val.toString();
+            if (val.value() instanceof Function){
+                if (val.value() instanceof Node)
+                    output = "<defined function>";
+                else
+                    output = val.value().getClass().getCanonicalName();
+            }
+
+            System.out.printf("%s: %s%n", k, output);
         }
+
     }
 }

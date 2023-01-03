@@ -61,6 +61,8 @@ public enum TokenType {
     FOR_LOOP, // The whole parsed and tokenized loop
 
     RETURN, // return
+    BREAK, // break
+    CONTINUE, // continue
 
     BACKSLASH, // \ (escaping)
     SLASH, // / (path values or division)

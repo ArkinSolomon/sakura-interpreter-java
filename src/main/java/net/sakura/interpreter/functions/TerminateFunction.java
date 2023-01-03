@@ -13,30 +13,27 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.parser;
+package net.sakura.interpreter.functions;
 
-import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.SakuraException;
 import net.sakura.interpreter.execution.Value;
-import net.sakura.interpreter.lexer.Token;
+
+import java.util.List;
 
 /**
- * Invert the equals operator for less code.
+ * A function that terminates script execution immediately.
  */
-final class NotEqualsOperator extends EqualityOperator {
+public final class TerminateFunction implements Function {
 
     /**
-     * Create a new not-equals operator from a token.
-     *
-     * @param token The token for the new operator.
+     * Throw an exception that terminates execution.
      */
-    public NotEqualsOperator(Token token) {
-        super(token);
-    }
-
     @Override
-    public Value evaluate(ExecutionContext ctx) {
-        if ((boolean) super.evaluate(ctx).value())
-            return Value.FALSE;
-        return Value.TRUE;
+    public Value execute(List<Value> args) {
+        String reason = "<unknown reason>";
+        if (args.size() > 0)
+            reason = args.get(0).value().toString();
+
+        throw new SakuraException("Script execution terminated: " + reason);
     }
 }

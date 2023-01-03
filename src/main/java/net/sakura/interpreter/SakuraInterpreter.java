@@ -109,7 +109,14 @@ public class SakuraInterpreter {
         InterpreterOptions opts = new InterpreterOptions();
         opts.setExecutor("dev-env");
 
-        SakuraInterpreter interpreter = new SakuraInterpreter(opts);
-        interpreter.executeFile(Path.of(Objects.requireNonNull(SakuraInterpreter.class.getResource("/test.ska")).getFile()));
+        try {
+            SakuraInterpreter interpreter = new SakuraInterpreter(opts);
+            interpreter.executeFile(Path.of(Objects.requireNonNull(SakuraInterpreter.class.getResource("/test.ska")).getFile()));
+        }catch (SakuraException e) {
+            System.err.println(e.getMessage());
+            for (String call : e.getStacktrace())
+                System.err.println("\tat " + call);
+        }
+
     }
 }

@@ -67,9 +67,10 @@ final class IfStatement extends Expression {
 
             @SuppressWarnings("unchecked")
             List<Token> branchBodyTokens = (List<Token>) branchToken.value();
-            int eofPos = branchBodyTokens.get(branchBodyTokens.size() - 1).position();
+            int eofLine = branchBodyTokens.get(branchBodyTokens.size() - 1).line();
+            int eofCol = branchBodyTokens.get(branchBodyTokens.size() - 1).column();
 
-            branchBody.add(new Token(TokenType.EOF, eofPos, "<BRANCH BODY END>"));
+            branchBody.add(new Token(TokenType.EOF, eofLine, eofCol, "<BRANCH BODY END>"));
             TokenStorage branchTokenStorage = new TokenStorage(branchBody);
             List<Node> branches = new Parser(branchTokenStorage).parse();
 

@@ -63,9 +63,10 @@ final class ForLoop extends Expression {
 
         @SuppressWarnings("unchecked")
         List<Token> bodyTokens = (List<Token>) data.body().value();
-        int eofPos = bodyTokens.get(bodyTokens.size() - 1).position();
+        int eofLine = bodyTokens.get(bodyTokens.size() - 1).line();
+        int eofCol = bodyTokens.get(bodyTokens.size() - 1).column();
 
-        bodyList.add(new Token(TokenType.EOF, eofPos, "<WHILE BODY END>"));
+        bodyList.add(new Token(TokenType.EOF, eofLine, eofCol, "<WHILE BODY END>"));
         TokenStorage branchTokenStorage = new TokenStorage(bodyList);
         List<Node> bodyNodes = new Parser(branchTokenStorage).parse();
 

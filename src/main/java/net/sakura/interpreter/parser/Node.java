@@ -25,7 +25,7 @@ import java.util.Objects;
 /**
  * A node of the tree. An expression.
  */
-abstract class Node {
+public abstract class Node {
 
     protected int childCount;
     protected Node[] children;
@@ -125,6 +125,15 @@ abstract class Node {
             }
         }
         throw new IndexOutOfBoundsException("Node is full");
+    }
+
+    /**
+     * Get the token that this node used to be created.
+     *
+     * @return The token that caused the creation of this node.
+     */
+    public Token getToken() {
+        return token;
     }
 
     /**

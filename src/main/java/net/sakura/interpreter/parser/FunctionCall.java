@@ -15,7 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.execution.DataType;
+import net.sakura.interpreter.SakuraException;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.FunctionCallData;
@@ -65,18 +65,20 @@ final class FunctionCall extends Node {
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        if  (!ctx.hasIdentifier(identifier))
+        if (!ctx.hasIdentifier(identifier))
             throw new RuntimeException("Function does not exist");
-
-        Value val = ctx.getIdentifier(identifier);
-        if (val.type() != DataType.FUNCTION)
-            throw new RuntimeException("Values of type %s are not callable".formatted(val.type()));
 
         List<Value> argValues = new ArrayList<>();
         for (Node child : children)
             argValues.add(child.evaluate(ctx));
-
-        return ctx.executeFunc(identifier, argValues);
+        try {
+            return ctx.executeFunc(identifier, argValues);
+        } catch (SakuraException e) {
+            if (!e.isLocationSet())
+               throw e.setPosition(token.line(), token.column());
+            e.addStackTraceItem(token.line(), token.column(), identifier);
+            throw e;
+        }
     }
 
     @Override

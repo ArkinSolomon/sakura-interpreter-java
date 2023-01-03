@@ -19,10 +19,11 @@ package net.sakura.interpreter.lexer;
  * A single token created by the lexer.
  *
  * @param type     The type of the token.
- * @param position The position of the token.
+ * @param line The line of the token.
+ * @param column The column of the text.
  * @param value    The text value of the token.
  */
-public record Token(TokenType type, int position, Object value) {
+public record Token(TokenType type, int line, int column, Object value) {
 
     /**
      * Get the string representation of this token.
@@ -31,7 +32,7 @@ public record Token(TokenType type, int position, Object value) {
      */
     @Override
     public String toString() {
-        return "[%d] %s: %s".formatted(position, type, value.toString().replaceAll("\n", "\\\\n"));
+        return "[%d:%d] %s: %s".formatted(line, column, type, value.toString().replaceAll("\n", "\\\\n"));
     }
 
     /**

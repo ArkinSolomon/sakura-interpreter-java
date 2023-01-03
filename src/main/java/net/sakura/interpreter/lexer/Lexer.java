@@ -80,11 +80,16 @@ public final class Lexer {
      * Analyze the lexer text.
      */
     public List<Token> analyze() {
-        int currentPos = 0;
-        int startPos = -1;
+        int currentLine = 1;
+        int currentCol = 1;
+
+        int startLine = -1;
+        int startCol = -1;
 
         TokenType currentType = null;
         StringBuilder currentValue = new StringBuilder();
+
+        boolean incLine = false;
 
         while (scanner.hasNext()) {
             String thisCharStr = scanner.next();
@@ -95,6 +100,15 @@ public final class Lexer {
                 continue;
 
             char thisChar = thisCharStr.charAt(0);
+            if (incLine){
+                incLine = false;
+                currentLine++;
+                currentCol = 1;
+            }
+
+            if (thisChar == '\n')
+                incLine = true;
+
 
             String next = scanner.peek();
             Character nextChar = next == null ? null : next.charAt(0);
@@ -103,15 +117,16 @@ public final class Lexer {
 
                 if (thisChar == '\n' || thisChar == ';') {
                     TokenType type = thisChar == '\n' ? TokenType.EOL : TokenType.SEMI;
-                    tokens.add(new Token(type, currentPos, thisCharStr));
-                    currentPos++;
+                    tokens.add(new Token(type, currentLine, currentCol, thisCharStr));
+                    currentCol++;
                     continue;
                 } else if (thisCharStr.isBlank()) {
-                    currentPos++;
+                    currentCol++;
                     continue;
                 }
 
-                startPos = currentPos;
+                startLine = currentLine;
+                startCol = currentCol;
                 if (thisChar == '$')
                     currentType = TokenType.VARIABLE;
                 else if (thisChar == '%')
@@ -123,72 +138,72 @@ public final class Lexer {
                         throw new RuntimeException("Dangling equals");
 
                     if (nextChar == '=') {
-                        tokens.add(new Token(TokenType.DOUBLE_EQUALS, currentPos, "=="));
+                        tokens.add(new Token(TokenType.DOUBLE_EQUALS, currentLine, currentCol, "=="));
 
                         // We need to increment by two, so we leave this here (similar for LTE and GTE)
                         scanner.next();
-                        currentPos++;
+                        currentCol++;
                     } else
-                        tokens.add(new Token(TokenType.EQUALS, currentPos, "="));
+                        tokens.add(new Token(TokenType.EQUALS, currentLine, currentCol, "="));
                 } else if (thisChar == '<') {
                     if (nextChar == null)
                         throw new RuntimeException("Dangling less than");
 
                     if (nextChar == '=') {
-                        tokens.add(new Token(TokenType.LTE, currentPos, "<="));
+                        tokens.add(new Token(TokenType.LTE, currentLine, currentCol, "<="));
 
                         scanner.next();
-                        currentPos++;
+                        currentCol++;
                     } else
-                        tokens.add(new Token(TokenType.LT, currentPos, "<"));
+                        tokens.add(new Token(TokenType.LT, currentLine, currentCol, "<"));
                 } else if (thisChar == '>') {
                     if (nextChar == null)
                         throw new RuntimeException("Dangling greater than");
 
                     if (nextChar == '=') {
-                        tokens.add(new Token(TokenType.GTE, currentPos, ">="));
+                        tokens.add(new Token(TokenType.GTE, currentLine, currentCol, ">="));
 
                         scanner.next();
-                        currentPos++;
+                        currentCol++;
                     } else
-                        tokens.add(new Token(TokenType.GT, currentPos, ">"));
+                        tokens.add(new Token(TokenType.GT, currentLine, currentCol, ">"));
                 } else if (thisChar == '!') {
                     if (nextChar == null)
                         throw new RuntimeException("Dangling exclamation point ");
 
                     if (nextChar == '=') {
-                        tokens.add(new Token(TokenType.NOT_EQUALS, currentPos, "!="));
+                        tokens.add(new Token(TokenType.NOT_EQUALS, currentLine, currentCol, "!="));
 
                         scanner.next();
-                        currentPos++;
+                        currentCol++;
                     } else
-                        tokens.add(new Token(TokenType.NOT, currentPos, "!"));
+                        tokens.add(new Token(TokenType.NOT, currentLine, currentCol, "!"));
                 } else if (thisChar == '"')
                     currentType = TokenType.QUOTE;
                 else if (thisChar == '/')
-                    tokens.add(new Token(TokenType.SLASH, currentPos, "/"));
-                else if (thisChar == '\\') // I don't remember why I implemented this... but I'll leave it for now...
-                    tokens.add(new Token(TokenType.BACKSLASH, currentPos, "\\"));
+                    tokens.add(new Token(TokenType.SLASH, currentLine, currentCol, "/"));
+                else if (thisChar == '\\') // I left this for spaces maybe?
+                    tokens.add(new Token(TokenType.BACKSLASH, currentLine, currentCol, "\\"));
                 else if (thisChar == '&')
-                    tokens.add(new Token(TokenType.AND, currentPos, "&"));
+                    tokens.add(new Token(TokenType.AND, currentLine, currentCol, "&"));
                 else if (thisChar == '|')
-                    tokens.add(new Token(TokenType.OR, currentPos, "|"));
+                    tokens.add(new Token(TokenType.OR, currentLine, currentCol, "|"));
                 else if (thisChar == '+')
-                    tokens.add(new Token(TokenType.PLUS, currentPos, "+"));
+                    tokens.add(new Token(TokenType.PLUS, currentLine, currentCol, "+"));
                 else if (thisChar == '-')
-                    tokens.add(new Token(TokenType.MINUS, currentPos, "-"));
+                    tokens.add(new Token(TokenType.MINUS, currentLine, currentCol, "-"));
                 else if (thisChar == '*')
-                    tokens.add(new Token(TokenType.MULTIPLY, currentPos, "*"));
+                    tokens.add(new Token(TokenType.MULTIPLY, currentLine, currentCol, "*"));
                 else if (thisChar == '(')
-                    tokens.add(new Token(TokenType.OPEN_PARENTHESIS, currentPos, "("));
+                    tokens.add(new Token(TokenType.OPEN_PARENTHESIS, currentLine, currentCol, "("));
                 else if (thisChar == ')')
-                    tokens.add(new Token(TokenType.CLOSE_PARENTHESIS, currentPos, ")"));
+                    tokens.add(new Token(TokenType.CLOSE_PARENTHESIS, currentLine, currentCol, ")"));
                 else if (thisChar == '{')
-                    tokens.add(new Token(TokenType.OPEN_BRACE, currentPos, "{"));
+                    tokens.add(new Token(TokenType.OPEN_BRACE, currentLine, currentCol, "{"));
                 else if (thisChar == '}')
-                    tokens.add(new Token(TokenType.CLOSE_BRACE, currentPos, "}"));
+                    tokens.add(new Token(TokenType.CLOSE_BRACE, currentLine, currentCol, "}"));
                 else if (thisChar == ',')
-                    tokens.add(new Token(TokenType.COMMA, currentPos, ","));
+                    tokens.add(new Token(TokenType.COMMA, currentLine, currentCol, ","));
                 else {
                     currentType = TokenType.SYMBOL;
                     currentValue.append(thisChar);
@@ -200,7 +215,7 @@ public final class Lexer {
                         else if (!isIdentifierChar(thisChar))
                             throw new RuntimeException("Invalid character");
 
-                        tokens.add(new Token(currentType, currentPos, thisCharStr));
+                        tokens.add(new Token(currentType, currentLine, currentCol, thisCharStr));
                         currentType = null;
                         currentValue = new StringBuilder();
                     }
@@ -232,7 +247,7 @@ public final class Lexer {
                         }
                     }
 
-                    tokens.add(new Token(currentType, startPos, value));
+                    tokens.add(new Token(currentType, startLine, startCol, value));
                     currentType = null;
                     currentValue = new StringBuilder();
                 } else {
@@ -243,17 +258,17 @@ public final class Lexer {
                     // If we're currently looking at a quote (make sure we check for escaped endings)
                     if (thisChar == '"' && lastVal != '\\') {
                         currentType = null;
-                        tokens.add(new Token(TokenType.QUOTE, startPos, currentValue.toString()));
+                        tokens.add(new Token(TokenType.QUOTE, startLine, startCol, currentValue.toString()));
                         currentValue = new StringBuilder();
                     } else
                         currentValue.append(thisChar);
                 }
             }
-            currentPos++;
+            currentCol++;
         }
 
         // End of file should be the index of the character after the last character in the file
-        tokens.add(new Token(TokenType.EOF, currentPos, "<EOF>"));
+        tokens.add(new Token(TokenType.EOF, currentLine, currentCol, "<EOF>"));
 
         // Group FUNC then SYMBOL into one token
         for (int i = 0; i < tokens.size(); i++) {
@@ -267,7 +282,7 @@ public final class Lexer {
             if (nextToken.type() != TokenType.SYMBOL)
                 throw new RuntimeException("Invalid function declaration");
 
-            Token newToken = new Token(TokenType.FUNC, thisToken.position(), nextToken.value());
+            Token newToken = new Token(TokenType.FUNC, thisToken.line(), thisToken.column(), nextToken.value());
             tokens.set(i, newToken);
 
             // This is ok, because we'll break at EOF anyway
@@ -304,16 +319,17 @@ public final class Lexer {
             // Parse a parenthetical expression
             if (token.type() == TokenType.OPEN_PARENTHESIS) {
                 List<Token> toSimplify = new ArrayList<>();
-                final int startPos = token.position();
+                final int startLine = token.line();
+                final int startCol = token.column();
 
                 token = tokenStorage.consume();
                 int depth = 0;
                 while (token != null && token.type() != TokenType.EOF) {
                     if (token.type() == TokenType.CLOSE_PARENTHESIS && depth == 0) {
-                        toSimplify.add(new Token(TokenType.EOF, token.position(), "<CLOSE PARENTHESES>"));
+                        toSimplify.add(new Token(TokenType.EOF, token.line(), token.column(), "<CLOSE PARENTHESES>"));
 
                         List<Token> content = simplify(toSimplify);
-                        newTokens.add(new Token(TokenType.PARENTHETICAL_EXPR, startPos, content));
+                        newTokens.add(new Token(TokenType.PARENTHETICAL_EXPR, startLine, startCol, content));
                         break;
                     } else if (token.type() == TokenType.SEMI)
                         throw new RuntimeException("Can not put multiple statements within parentheses, use braces instead");
@@ -334,7 +350,8 @@ public final class Lexer {
 
                 // Function calls
                 String identifier = (String) token.value();
-                int callStartPos = token.position();
+                int callStartLine = token.line();
+                int callStartCol = token.column();
 
                 // Skip over the parenthesis and start with the first token of the list
                 tokenStorage.consume();
@@ -344,19 +361,24 @@ public final class Lexer {
                 int depth = 0;
                 final List<List<Token>> args = new ArrayList<>();
                 List<Token> currentArg = new ArrayList<>();
-                int argStartPos = -1;
+
+                int argStartLine = -1;
+                int argStartCol = -1;
+
                 if (token.type() != TokenType.CLOSE_PARENTHESIS) {
                     while (token != null && token.type() != TokenType.EOF) {
-                        if (argStartPos < 0)
-                            argStartPos = token.position();
+                        if (argStartLine < 0){
+                            argStartLine = token.line();
+                            argStartCol = token.column();
+                        }
 
                         if (token.type() == TokenType.COMMA && depth == 0) {
-                            currentArg.add(new Token(TokenType.EOF, argStartPos, "<ARG LIST COMMA>"));
+                            currentArg.add(new Token(TokenType.EOF, argStartLine, argStartCol, "<ARG LIST COMMA>"));
                             args.add(simplify(currentArg));
                             currentArg = new ArrayList<>();
-                            argStartPos = -1;
+                            argStartLine = -1;
                         } else if (token.type() == TokenType.CLOSE_PARENTHESIS && depth == 0) {
-                            currentArg.add(new Token(TokenType.EOF, argStartPos, "<ARG LIST END>"));
+                            currentArg.add(new Token(TokenType.EOF, argStartLine, argStartCol, "<ARG LIST END>"));
                             args.add(simplify(currentArg));
                             currentArg = new ArrayList<>();
                             break;
@@ -382,7 +404,7 @@ public final class Lexer {
                     throw new RuntimeException("Extra comma in function call");
 
                 FunctionCallData data = new FunctionCallData(identifier, args);
-                newTokens.add(new Token(TokenType.FUNC_CALL, callStartPos, data));
+                newTokens.add(new Token(TokenType.FUNC_CALL, callStartLine, callStartCol, data));
             } else if (token.type() == TokenType.FUNC) {
 
                 //Function definitions
@@ -390,7 +412,8 @@ public final class Lexer {
                     throw new RuntimeException("Functions must be declared in global scope");
 
                 String functionIdentifier = (String) token.value();
-                int functionDefStartPos = token.position();
+                int funcDefStartLine = token.line();
+                int funcDefStartCol = token.column();
 
                 // Parse arguments if there are parentheses
                 List<FunctionArgData> args = new ArrayList<>();
@@ -410,7 +433,7 @@ public final class Lexer {
                     if (token.type() != TokenType.CLOSE_PARENTHESIS) {
                         while (token != null && token.type() != TokenType.EOF) {
                             if (argStartPos < 0)
-                                argStartPos = token.position();
+                                argStartPos = token.line();
 
                             if (token.type() == TokenType.CONST_VAR) {
                                 argId = (String) token.value();
@@ -423,11 +446,13 @@ public final class Lexer {
 
                                     token = tokenStorage.consume();
                                     int depth = 0;
-                                    int defaultValueStart = token.position();
+                                    int defaultValueLine = token.line();
+                                    int defaultValueColumn = token.column();
+
                                     while (token != null && token.type() != TokenType.EOF) {
 
                                         if (token.type() == TokenType.COMMA || (token.type() == TokenType.CLOSE_PARENTHESIS && depth == 0)) {
-                                            defaultValue.add(new Token(TokenType.EOF, defaultValueStart, "<ARG DEFAULT VAL END>"));
+                                            defaultValue.add(new Token(TokenType.EOF, defaultValueLine, defaultValueColumn, "<ARG DEFAULT VAL END>"));
                                             break;
                                         } else if (token.type() == TokenType.SEMI)
                                             throw new RuntimeException("Unexpected semi-colon in argument list");
@@ -470,11 +495,12 @@ public final class Lexer {
 
                 // We can set the body of the function to null for now, it'll be fixed later
                 FunctionDefinitionData data = new FunctionDefinitionData(functionIdentifier, args, null);
-                newTokens.add(new Token(TokenType.FUNC_SIG, functionDefStartPos, data));
+                newTokens.add(new Token(TokenType.FUNC_SIG, funcDefStartLine, funcDefStartCol, data));
             } else if (token.type() == TokenType.OPEN_BRACE) {
 
                 // Parse braces
-                int braceStartPos = token.position();
+                int braceStartLine = token.line();
+                int braceStartCol = token.column();
                 int depth = 0;
 
                 List<Token> body = new ArrayList<>();
@@ -482,7 +508,7 @@ public final class Lexer {
                 while (token != null && token.type() != TokenType.EOF) {
 
                     if (token.type() == TokenType.CLOSE_BRACE && depth == 0) {
-                        body.add(new Token(TokenType.EOF, token.position(), "<CLOSE BRACE>"));
+                        body.add(new Token(TokenType.EOF, token.line(), token.column(), "<CLOSE BRACE>"));
                         break;
                     } else {
                         if (token.type() == TokenType.OPEN_BRACE)
@@ -496,11 +522,12 @@ public final class Lexer {
                     token = tokenStorage.consume();
                 }
 
-                newTokens.add(new Token(TokenType.BRACE, braceStartPos, simplify(body)));
+                newTokens.add(new Token(TokenType.BRACE, braceStartLine, braceStartCol, simplify(body)));
             } else if (token.type() == TokenType.IF || token.type() == TokenType.ELIF || token.type() == TokenType.WHILE) {
 
                 TokenType statementType = token.type();
-                int statementStart = token.position();
+                int statementStartLine = token.line();
+                int statementStartCol = token.column();
 
                 token = tokenStorage.consume();
                 List<Token> condition = new ArrayList<>();
@@ -524,7 +551,7 @@ public final class Lexer {
                     throw new RuntimeException("%s statement requires condition".formatted(name));
                 }
 
-                condition.add(new Token(TokenType.EOF, token.position(), "<COND END>"));
+                condition.add(new Token(TokenType.EOF, token.line(), token.column(), "<COND END>"));
                 condition = simplify(condition);
 
                 TokenType conditionalType = switch (statementType) {
@@ -534,12 +561,13 @@ public final class Lexer {
                     default ->
                             throw new IllegalStateException("Invalid statement type: " + statementType);
                 };
-                newTokens.add(new Token(conditionalType, statementStart, condition));
+                newTokens.add(new Token(conditionalType, statementStartLine, statementStartCol, condition));
 
                 // We already consumed the brace, so parse the brace statement
                 continue;
             } else if (token.type() == TokenType.FOR) {
-                int loopStartPos = token.position();
+                int loopStartLine = token.line();
+                int loopStartCol = token.column();
 
                 // Get the variable
                 token = tokenStorage.consume();
@@ -570,10 +598,10 @@ public final class Lexer {
                 }
 
                 assert token != null;
-                iterable.add(new Token(TokenType.EOF, token.position(), "<ITERABLE END>"));
+                iterable.add(new Token(TokenType.EOF, token.line(), token.column(), "<ITERABLE END>"));
 
                 ForLoopData data = new ForLoopData((String) assignee.value(), isConstVar, simplify(iterable), null);
-                newTokens.add(new Token(TokenType.FOR_ASSIGN, loopStartPos, data));
+                newTokens.add(new Token(TokenType.FOR_ASSIGN, loopStartLine, loopStartCol, data));
 
                 // We already consumed the brace
                 continue;
@@ -606,9 +634,11 @@ public final class Lexer {
                     throw new RuntimeException("Function signature not followed by brace");
 
                 FunctionDefinitionData data = (FunctionDefinitionData) token.value();
-                newTokens.add(new Token(TokenType.FUNC_DEF, token.position(), data.addBody(tokenStorage.consume())));
+                newTokens.add(new Token(TokenType.FUNC_DEF, token.line(), token.column(), data.addBody(tokenStorage.consume())));
             } else if (token.type() == TokenType.IF_COND || token.type() == TokenType.WHILE_COND || token.type() == TokenType.FOR_ASSIGN) {
-                int statementStart = token.position();
+                int statementStartLine = token.line();
+                int statementStartCol = token.column();
+
                 TokenType statementType = token.type();
                 Object statementTokenValue = token.value();
 
@@ -636,13 +666,13 @@ public final class Lexer {
                     conditions.add(condition);
 
                     IfData data = new IfData(conditions, branches);
-                    newTokens.add(new Token(TokenType.IF_STATEMENT, statementStart, data));
+                    newTokens.add(new Token(TokenType.IF_STATEMENT, statementStartLine, statementStartCol, data));
                 } else if (statementType == TokenType.WHILE_COND) {
                     WhileData data = new WhileData(condition, body);
-                    newTokens.add(new Token(TokenType.WHILE_LOOP, statementStart, data));
+                    newTokens.add(new Token(TokenType.WHILE_LOOP, statementStartLine, statementStartCol, data));
                 } else {
                     ForLoopData data = ((ForLoopData) statementTokenValue).addBody(body);
-                    newTokens.add(new Token(TokenType.FOR_LOOP, statementStart, data));
+                    newTokens.add(new Token(TokenType.FOR_LOOP, statementStartLine, statementStartCol, data));
                 }
             } else if (token.type() == TokenType.ELIF_COND || token.type() == TokenType.ELSE) {
                 if (newTokens.size() == 0)
