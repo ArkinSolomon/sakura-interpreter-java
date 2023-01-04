@@ -47,4 +47,18 @@ public record Token(TokenType type, int line, int column, Object value) {
             default -> false;
         };
     }
+
+    /**
+     * Check if this token is of the following types.
+     *
+     * @param types The types to check for.
+     * @return True if the token is of the provided types.
+     */
+    public boolean isOfType(TokenType... types) {
+        for (TokenType checkType : types){
+            if (type == checkType)
+                return true;
+        }
+        return false;
+    }
 }

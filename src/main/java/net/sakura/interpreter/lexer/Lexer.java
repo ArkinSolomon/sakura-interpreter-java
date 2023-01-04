@@ -15,6 +15,10 @@
 
 package net.sakura.interpreter.lexer;
 
+import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.exceptions.UnclosedParenthesisException;
+import net.sakura.interpreter.exceptions.UnexpectedTokenException;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -51,7 +55,7 @@ public final class Lexer {
     public Lexer(String input) {
         try {
             scanner = new PeekableScanner(input);
-        }catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             throw new RuntimeException("Input is empty", e);
         }
     }
@@ -77,6 +81,29 @@ public final class Lexer {
     }
 
     /**
+     * Check for basic multi-statement tokens.
+     *
+     * @return True if the token is of a type that is determined to be a multi-statement token.
+     */
+    private static boolean isMultiStatement(Token token) {
+        return token.isOfType(TokenType.SEMI, TokenType.RETURN, TokenType.CONTINUE, TokenType.BREAK, TokenType.IF, TokenType.ELSE, TokenType.ELIF, TokenType.WHILE, TokenType.FOR, TokenType.FUNC, TokenType.OPEN_BRACE, TokenType.CLOSE_BRACE);
+    }
+
+    /**
+     * Check if an identifier is valid.
+     *
+     * @param identifier The identifier to check.
+     * @return True if the identifier is valid.
+     */
+    private static boolean isValidIdentifier(String identifier) {
+        if (identifier == null || identifier.length() == 0)
+            return false;
+        return identifier.matches("^\\w+$") && !identifier.substring(0, 1).matches("\\d");
+    }
+
+    // Note that this function sometimes adds multiple EOF tokens for nested expressions, it's not a problem since we stop when we see the next one so ¯\_(ツ)_/¯
+
+    /**
      * Analyze the lexer text.
      */
     public List<Token> analyze() {
@@ -100,7 +127,7 @@ public final class Lexer {
                 continue;
 
             char thisChar = thisCharStr.charAt(0);
-            if (incLine){
+            if (incLine) {
                 incLine = false;
                 currentLine++;
                 currentCol = 1;
@@ -230,7 +257,7 @@ public final class Lexer {
                     switch (value) {
                         case "if" -> {
                             currentType = TokenType.IF;
-                            if (tokens.size() > 0 && tokens.get(tokens.size() - 1).type() == TokenType.ELSE) {
+                            if (tokens.size() > 0 && tokens.get(tokens.size() - 1).isOfType(TokenType.ELSE)) {
                                 tokens.remove(tokens.size() - 1);
                                 currentType = TokenType.ELIF;
                             }
@@ -271,24 +298,27 @@ public final class Lexer {
 
         // End of file should be the index of the character after the last character in the file
         tokens.add(new Token(TokenType.EOF, currentLine, currentCol, "<EOF>"));
+        if (currentType == TokenType.QUOTE)
+            throw new SakuraException(startLine, startCol, "Unclosed string literal (you are missing a quotation mark).");
 
         // Group FUNC then SYMBOL into one token
         for (int i = 0; i < tokens.size(); i++) {
             Token thisToken = tokens.get(i);
-            if (thisToken.type() == TokenType.EOF)
+            if (thisToken.isOfType(TokenType.EOF))
                 break;
-            else if (thisToken.type() != TokenType.FUNC)
+            else if (!thisToken.isOfType(TokenType.FUNC))
                 continue;
 
-            Token nextToken = tokens.get(i + 1);
-            if (nextToken.type() != TokenType.SYMBOL)
+            // It's easier just to create a new TokenStore when there's a FUNC token, since we'd have to handle shifting the array
+            TokenStorage ts = new TokenStorage(tokens, i);
+            Token nextToken = ts.nextNonEOLToken();
+
+            if (!nextToken.isOfType(TokenType.SYMBOL))
                 throw new RuntimeException("Invalid function declaration");
 
             Token newToken = new Token(TokenType.FUNC, thisToken.line(), thisToken.column(), nextToken.value());
             tokens.set(i, newToken);
-
-            // This is ok, because we'll break at EOF anyway
-            tokens.remove(++i);
+            tokens.remove(nextToken);
         }
 
         return simplify(tokens, true);
@@ -303,8 +333,6 @@ public final class Lexer {
         return simplify(tokens, false);
     }
 
-    // Note that this function sometimes adds multiple EOF tokens for nested expressions, it's not a problem since we stop when we see the next one so ¯\_(ツ)_/¯
-
     /**
      * Simplify the tokens into more concise tokens by merging tokens together.
      *
@@ -313,34 +341,36 @@ public final class Lexer {
      */
     private List<Token> simplify(List<Token> tokens, boolean isRoot) {
         TokenStorage tokenStorage = new TokenStorage(tokens);
+        if (isRoot) {
+            tokenStorage.printTokens();
+            System.out.println();
+        }
 
         List<Token> newTokens = new ArrayList<>();
         Token token = tokenStorage.consume();
-        while (token != null && token.type() != TokenType.EOF) {
+        while (token != null && !token.isOfType(TokenType.EOF)) {
 
             // Parse a parenthetical expression
-            if (token.type() == TokenType.OPEN_PARENTHESIS) {
+            if (token.isOfType(TokenType.OPEN_PARENTHESIS) && !tokenStorage.lastNonEOLToken().isOfType(TokenType.FUNC)) {
                 List<Token> toSimplify = new ArrayList<>();
                 final int startLine = token.line();
                 final int startCol = token.column();
 
                 token = tokenStorage.consume();
                 int depth = 0;
-                while (token != null && token.type() != TokenType.EOF) {
-                    if (token.type() == TokenType.CLOSE_PARENTHESIS && depth == 0) {
+                while (token != null && !token.isOfType(TokenType.EOF)) {
+                    if (token.isOfType(TokenType.CLOSE_PARENTHESIS) && depth == 0) {
                         toSimplify.add(new Token(TokenType.EOF, token.line(), token.column(), "<CLOSE PARENTHESES>"));
 
                         List<Token> content = simplify(toSimplify);
                         newTokens.add(new Token(TokenType.PARENTHETICAL_EXPR, startLine, startCol, content));
                         break;
-                    } else if (token.type() == TokenType.SEMI)
-                        throw new RuntimeException("Can not put multiple statements within parentheses, use braces instead");
-                    else if (token.type() == TokenType.RETURN)
-                        throw new RuntimeException("Can not place return statement in parentheses");
+                    } else if (isMultiStatement(token))
+                        throw new UnexpectedTokenException(token);
                     else {
-                        if (token.type() == TokenType.OPEN_PARENTHESIS)
+                        if (token.isOfType(TokenType.OPEN_PARENTHESIS))
                             ++depth;
-                        else if (token.type() == TokenType.CLOSE_PARENTHESIS)
+                        else if (token.isOfType(TokenType.CLOSE_PARENTHESIS))
                             --depth;
 
                         toSimplify.add(token);
@@ -348,16 +378,16 @@ public final class Lexer {
 
                     token = tokenStorage.consume();
                 }
-            } else if (token.type() == TokenType.SYMBOL && tokenStorage.peek().type() == TokenType.OPEN_PARENTHESIS) {
+            } else if (token.isOfType(TokenType.SYMBOL) && tokenStorage.peekNextNonEOLToken().isOfType(TokenType.OPEN_PARENTHESIS)) {
 
                 // Function calls
                 String identifier = (String) token.value();
                 int callStartLine = token.line();
                 int callStartCol = token.column();
 
-                // Skip over the parenthesis and start with the first token of the list
-                tokenStorage.consume();
-                token = tokenStorage.consume();
+                // Skip over the FUNC and the first parentheses
+                tokenStorage.nextNonEOLToken();
+                token = tokenStorage.nextNonEOLToken();
 
                 // Parse arguments
                 int depth = 0;
@@ -367,47 +397,49 @@ public final class Lexer {
                 int argStartLine = -1;
                 int argStartCol = -1;
 
-                if (token.type() != TokenType.CLOSE_PARENTHESIS) {
-                    while (token != null && token.type() != TokenType.EOF) {
-                        if (argStartLine < 0){
+                if (!token.isOfType(TokenType.CLOSE_PARENTHESIS)) {
+                    while (token != null && !token.isOfType(TokenType.EOF)) {
+                        if (argStartLine < 0) {
                             argStartLine = token.line();
                             argStartCol = token.column();
                         }
 
-                        if (token.type() == TokenType.COMMA && depth == 0) {
+                        if (token.isOfType(TokenType.COMMA) && depth == 0) {
                             currentArg.add(new Token(TokenType.EOF, argStartLine, argStartCol, "<ARG LIST COMMA>"));
                             args.add(simplify(currentArg));
                             currentArg = new ArrayList<>();
                             argStartLine = -1;
-                        } else if (token.type() == TokenType.CLOSE_PARENTHESIS && depth == 0) {
+                        } else if (token.isOfType(TokenType.CLOSE_PARENTHESIS) && depth == 0) {
                             currentArg.add(new Token(TokenType.EOF, argStartLine, argStartCol, "<ARG LIST END>"));
                             args.add(simplify(currentArg));
                             currentArg = new ArrayList<>();
                             break;
-                        } else if (token.type() == TokenType.SEMI)
+                        } else if (token.isOfType(TokenType.SEMI))
                             throw new RuntimeException("Can not put multiple statements within parentheses");
                         else {
-                            if (token.type() == TokenType.OPEN_PARENTHESIS)
+                            if (token.isOfType(TokenType.OPEN_PARENTHESIS))
                                 ++depth;
-                            else if (token.type() == TokenType.CLOSE_PARENTHESIS)
+                            else if (token.isOfType(TokenType.CLOSE_PARENTHESIS))
                                 --depth;
 
                             currentArg.add(token);
                         }
 
-                        token = tokenStorage.consume();
+                        token = tokenStorage.nextNonEOLToken();
                     }
                 }
 
-                if (currentArg.size() != 0)
+                if (currentArg.size() != 0){
+                    tokenStorage.printTokens();
                     throw new RuntimeException("Function missing closing parentheses");
+                }
 
                 if (args.size() > 0 && args.get(args.size() - 1).size() == 1)
                     throw new RuntimeException("Extra comma in function call");
 
                 FunctionCallData data = new FunctionCallData(identifier, args);
                 newTokens.add(new Token(TokenType.FUNC_CALL, callStartLine, callStartCol, data));
-            } else if (token.type() == TokenType.FUNC) {
+            } else if (token.isOfType(TokenType.FUNC)) {
 
                 //Function definitions
                 if (!isRoot)
@@ -419,7 +451,7 @@ public final class Lexer {
 
                 // Parse arguments if there are parentheses
                 List<FunctionArgData> args = new ArrayList<>();
-                if (tokenStorage.peek().type() == TokenType.OPEN_PARENTHESIS) {
+                if (tokenStorage.peekNextNonEOLToken().isOfType(TokenType.OPEN_PARENTHESIS)) {
 
                     // Get rid of the first parenthesis and start with the first item in it
                     tokenStorage.consume();
@@ -432,18 +464,18 @@ public final class Lexer {
                     boolean hasDefault = false;
                     List<Token> defaultValue = new ArrayList<>();
 
-                    if (token.type() != TokenType.CLOSE_PARENTHESIS) {
-                        while (token != null && token.type() != TokenType.EOF) {
+                    if (!token.isOfType(TokenType.CLOSE_PARENTHESIS)) {
+                        while (token != null && !token.isOfType(TokenType.EOF)) {
                             if (argStartPos < 0)
                                 argStartPos = token.line();
 
-                            if (token.type() == TokenType.CONST_VAR) {
+                            if (token.isOfType(TokenType.CONST_VAR)) {
                                 argId = (String) token.value();
                                 isConstant = true;
-                            } else if (token.type() == TokenType.VARIABLE)
+                            } else if (token.isOfType(TokenType.VARIABLE))
                                 argId = (String) token.value();
-                            else if (token.type() == TokenType.EQUALS || token.type() == TokenType.COMMA || token.type() == TokenType.CLOSE_PARENTHESIS) {
-                                if (token.type() == TokenType.EQUALS) {
+                            else if (token.isOfType(TokenType.EQUALS) || token.isOfType(TokenType.COMMA) || token.isOfType(TokenType.CLOSE_PARENTHESIS)) {
+                                if (token.isOfType(TokenType.EQUALS)) {
                                     hasDefault = true;
 
                                     token = tokenStorage.consume();
@@ -451,17 +483,17 @@ public final class Lexer {
                                     int defaultValueLine = token.line();
                                     int defaultValueColumn = token.column();
 
-                                    while (token != null && token.type() != TokenType.EOF) {
+                                    while (token != null && !token.isOfType(TokenType.EOF)) {
 
-                                        if (token.type() == TokenType.COMMA || (token.type() == TokenType.CLOSE_PARENTHESIS && depth == 0)) {
+                                        if (token.isOfType(TokenType.COMMA) || (token.isOfType(TokenType.CLOSE_PARENTHESIS) && depth == 0)) {
                                             defaultValue.add(new Token(TokenType.EOF, defaultValueLine, defaultValueColumn, "<ARG DEFAULT VAL END>"));
                                             break;
-                                        } else if (token.type() == TokenType.SEMI)
-                                            throw new RuntimeException("Unexpected semi-colon in argument list");
+                                        } else if (isMultiStatement(token))
+                                            throw new UnexpectedTokenException(token);
                                         else {
-                                            if (token.type() == TokenType.OPEN_PARENTHESIS)
+                                            if (token.isOfType(TokenType.OPEN_PARENTHESIS))
                                                 ++depth;
-                                            else if (token.type() == TokenType.CLOSE_PARENTHESIS)
+                                            else if (token.isOfType(TokenType.CLOSE_PARENTHESIS))
                                                 --depth;
 
                                             defaultValue.add(token);
@@ -486,7 +518,7 @@ public final class Lexer {
                                 defaultValue = new ArrayList<>();
 
                                 assert token != null;
-                                if (token.type() == TokenType.CLOSE_PARENTHESIS)
+                                if (token.isOfType(TokenType.CLOSE_PARENTHESIS))
                                     break;
                             }
 
@@ -498,7 +530,7 @@ public final class Lexer {
                 // We can set the body of the function to null for now, it'll be fixed later
                 FunctionDefinitionData data = new FunctionDefinitionData(functionIdentifier, args, null);
                 newTokens.add(new Token(TokenType.FUNC_SIG, funcDefStartLine, funcDefStartCol, data));
-            } else if (token.type() == TokenType.OPEN_BRACE) {
+            } else if (token.isOfType(TokenType.OPEN_BRACE)) {
 
                 // Parse braces
                 int braceStartLine = token.line();
@@ -507,15 +539,15 @@ public final class Lexer {
 
                 List<Token> body = new ArrayList<>();
                 token = tokenStorage.consume();
-                while (token != null && token.type() != TokenType.EOF) {
+                while (token != null && !token.isOfType(TokenType.EOF)) {
 
-                    if (token.type() == TokenType.CLOSE_BRACE && depth == 0) {
+                    if (token.isOfType(TokenType.CLOSE_BRACE) && depth == 0) {
                         body.add(new Token(TokenType.EOF, token.line(), token.column(), "<CLOSE BRACE>"));
                         break;
                     } else {
-                        if (token.type() == TokenType.OPEN_BRACE)
+                        if (token.isOfType(TokenType.OPEN_BRACE))
                             ++depth;
-                        else if (token.type() == TokenType.CLOSE_BRACE)
+                        else if (token.isOfType(TokenType.CLOSE_BRACE))
                             --depth;
 
                         body.add(token);
@@ -525,7 +557,7 @@ public final class Lexer {
                 }
 
                 newTokens.add(new Token(TokenType.BRACE, braceStartLine, braceStartCol, simplify(body)));
-            } else if (token.type() == TokenType.IF || token.type() == TokenType.ELIF || token.type() == TokenType.WHILE) {
+            } else if (token.isOfType(TokenType.IF) || token.isOfType(TokenType.ELIF) || token.isOfType(TokenType.WHILE)) {
 
                 TokenType statementType = token.type();
                 int statementStartLine = token.line();
@@ -533,13 +565,13 @@ public final class Lexer {
 
                 token = tokenStorage.consume();
                 List<Token> condition = new ArrayList<>();
-                while (token != null && token.type() != TokenType.EOF && token.type() != TokenType.OPEN_BRACE) {
+                while (token != null && !token.isOfType(TokenType.EOF) && !token.isOfType(TokenType.OPEN_BRACE)) {
                     condition.add(token);
                     token = tokenStorage.consume();
                 }
 
                 assert token != null;
-                if (token.type() == TokenType.EOF)
+                if (token.isOfType(TokenType.EOF))
                     throw new RuntimeException("Unexpected end of file while parsing conditional statement");
 
                 if (condition.size() == 0) {
@@ -567,36 +599,69 @@ public final class Lexer {
 
                 // We already consumed the brace, so parse the brace statement
                 continue;
-            } else if (token.type() == TokenType.FOR) {
+            } else if (token.isOfType(TokenType.FOR)) {
                 int loopStartLine = token.line();
                 int loopStartCol = token.column();
+
+                boolean hasWrappingParentheses = false;
 
                 // Get the variable
                 token = tokenStorage.consume();
                 Token assignee = null;
                 boolean isConstVar = false;
-                while (assignee == null && token != null && token.type() != TokenType.EOF) {
-                    if (token.type() == TokenType.VARIABLE || token.type() == TokenType.CONST_VAR) {
+                while (assignee == null && !token.isOfType(TokenType.EOF)) {
+                    if (token.isOfType(TokenType.VARIABLE, TokenType.CONST_VAR)) {
                         assignee = token;
-                        isConstVar = token.type() == TokenType.CONST_VAR;
+                        isConstVar = token.isOfType(TokenType.CONST_VAR);
+                    } else if (token.isOfType(TokenType.OPEN_PARENTHESIS) && !hasWrappingParentheses)
+                        hasWrappingParentheses = true;
+                    else if (!token.isOfType(TokenType.EOL)) {
+                        if (token.isOfType(TokenType.OPEN_PARENTHESIS))
+                            throw new UnexpectedTokenException(token, "Only one set of parentheses can surround a for loop.");
+                        throw new UnexpectedTokenException(token);
                     }
                     token = tokenStorage.consume();
                 }
 
                 if (assignee == null)
-                    throw new RuntimeException("Unexpected end of file");
+                    throw new UnexpectedTokenException(token);
 
                 // Look for the in token
-                if (token.type() != TokenType.IN)
-                    throw new RuntimeException("In statement must follow variable assignment in for loop");
+                while (token.isOfType(TokenType.EOL))
+                    token = tokenStorage.consume();
+
+                if (!token.isOfType(TokenType.IN))
+                    throw new UnexpectedTokenException(token, "\"in\" must follow variable assignment in for loop.");
 
                 // Consume the IN token
                 token = tokenStorage.consume();
 
                 List<Token> iterable = new ArrayList<>();
-                while (token != null && token.type() != TokenType.EOF && token.type() != TokenType.OPEN_BRACE) {
+                while (token != null && !token.isOfType(TokenType.EOF) && !token.isOfType(TokenType.OPEN_BRACE)) {
+                    if (isMultiStatement(token))
+                        throw new UnexpectedTokenException(token);
+
                     iterable.add(token);
                     token = tokenStorage.consume();
+                }
+
+                if (hasWrappingParentheses && iterable.size() > 0) {
+                    int closeParenIndex = iterable.size() - 1;
+                    if (iterable.get(closeParenIndex).isOfType(TokenType.CLOSE_PARENTHESIS))
+                        iterable.remove(closeParenIndex);
+                    else {
+                        Token lastToken = iterable.get(closeParenIndex);
+
+                        while (closeParenIndex > 0 && lastToken.isOfType(TokenType.EOL))
+                            lastToken = iterable.get(--closeParenIndex);
+
+                        if (!lastToken.isOfType(TokenType.CLOSE_PARENTHESIS))
+                            throw new UnclosedParenthesisException(lastToken.line(), lastToken.column());
+                        iterable.remove(closeParenIndex);
+                    }
+                } else if (iterable.size() == 0) {
+                    assert token != null;
+                    throw new UnexpectedTokenException(token, "Missing iterable value of for loop.");
                 }
 
                 assert token != null;
@@ -626,18 +691,22 @@ public final class Lexer {
 
         token = tokenStorage.consume();
 
-        while (token != null && token.type() != TokenType.EOF) {
+        while (token != null && !token.isOfType(TokenType.EOF)) {
 
-            if (token.type() == TokenType.FUNC_SIG) {
+            if (token.isOfType(TokenType.FUNC_SIG)) {
                 if (!isRoot)
                     throw new RuntimeException("Functions can only be declared in the global scope");
 
-                if (tokenStorage.peek().type() != TokenType.BRACE)
-                    throw new RuntimeException("Function signature not followed by brace");
-
                 FunctionDefinitionData data = (FunctionDefinitionData) token.value();
-                newTokens.add(new Token(TokenType.FUNC_DEF, token.line(), token.column(), data.addBody(tokenStorage.consume())));
-            } else if (token.type() == TokenType.IF_COND || token.type() == TokenType.WHILE_COND || token.type() == TokenType.FOR_ASSIGN) {
+                int funcSigLine = token.line();
+                int funcSigCol = token.column();
+
+                token = tokenStorage.nextNonEOLToken();
+                if (!token.isOfType(TokenType.BRACE))
+                    throw new UnexpectedTokenException(token);
+
+                newTokens.add(new Token(TokenType.FUNC_DEF, funcSigLine, funcSigCol, data.addBody(token)));
+            } else if (token.isOfType(TokenType.IF_COND, TokenType.WHILE_COND, TokenType.FOR_ASSIGN)) {
                 int statementStartLine = token.line();
                 int statementStartCol = token.column();
 
@@ -645,20 +714,19 @@ public final class Lexer {
                 Object statementTokenValue = token.value();
 
                 List<Token> condition = null;
-                if (token.type() != TokenType.FOR_ASSIGN)
+                if (!token.isOfType(TokenType.FOR_ASSIGN))
 
                     //noinspection unchecked
                     condition = (List<Token>) token.value();
 
-                tokenStorage.printTokens();
                 Token body = tokenStorage.consume();
-                if (body.type() != TokenType.BRACE) {
+                if (!body.isOfType(TokenType.BRACE)) {
                     String statementName = "If";
                     if (statementType == TokenType.WHILE_COND)
                         statementName = "While";
                     else if (statementType == TokenType.FOR_ASSIGN)
                         statementName = "For";
-                    throw new RuntimeException("%s statement must be followed by a brace statement".formatted(statementName));
+                    throw new SakuraException(token.line(), token.column(), "%s statement must be followed by a brace statement.".formatted(statementName));
                 }
 
                 if (statementType == TokenType.IF_COND) {
@@ -676,23 +744,31 @@ public final class Lexer {
                     ForLoopData data = ((ForLoopData) statementTokenValue).addBody(body);
                     newTokens.add(new Token(TokenType.FOR_LOOP, statementStartLine, statementStartCol, data));
                 }
-            } else if (token.type() == TokenType.ELIF_COND || token.type() == TokenType.ELSE) {
+            } else if (token.isOfType(TokenType.ELIF_COND, TokenType.ELSE)) {
                 if (newTokens.size() == 0)
-                    throw new RuntimeException("If-statement branch must be preceded by an if-statement");
-                Token lastToken = newTokens.get(newTokens.size() - 1);
-                if (lastToken.type() != TokenType.IF_STATEMENT)
-                    throw new RuntimeException("If-statement branch must be preceded by an if-statement");
+                    throw new SakuraException(token.line(), token.column(), "If-statement branch must be preceded by an if-statement");
+
+                int lastTokenIndex = newTokens.size() - 1;
+                Token lastToken = newTokens.get(lastTokenIndex);
+                while (lastTokenIndex > 0 && lastToken.isOfType(TokenType.EOL))
+                    lastToken = newTokens.get(--lastTokenIndex);
+
+                if (!lastToken.isOfType(TokenType.IF_STATEMENT))
+                    throw new SakuraException(token.line(), token.column(), "If-statement branch must be preceded by an if-statement");
 
                 IfData data = (IfData) lastToken.value();
-                if (token.type() == TokenType.ELIF_COND) {
+                if (token.isOfType(TokenType.ELIF_COND)) {
                     @SuppressWarnings("unchecked")
                     List<Token> condition = (List<Token>) token.value();
                     data.conditions().add(condition);
                 }
 
                 Token branch = tokenStorage.consume();
-                if (branch.type() != TokenType.BRACE)
-                    throw new RuntimeException("Else-if or else statements must be followed by a brace statement");
+                if (!branch.isOfType(TokenType.BRACE)) {
+                    if (token.isOfType(TokenType.ELIF_COND))
+                        throw new SakuraException(token.line(), token.column(), "Else-if statement must be followed by a brace statement");
+                    throw new SakuraException(token.line(), token.column(), "Else statements must be followed by a brace statement");
+                }
 
                 data.branches().add(branch);
             } else
@@ -702,7 +778,6 @@ public final class Lexer {
         }
 
         newTokens.add(eofToken);
-
         return newTokens;
     }
 }

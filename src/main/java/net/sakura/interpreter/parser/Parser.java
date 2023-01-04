@@ -15,7 +15,8 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.SakuraException;
+import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.exceptions.UnexpectedTokenException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.ExecutionResult;
@@ -85,18 +86,18 @@ public final class Parser {
 
         while (true) {
             Token token = tokenStorage.consume();
-            if (token.type() == TokenType.EOF) {
+            if (token.isOfType(TokenType.EOF)) {
                 if (root != null)
                     expressions.add(root);
                 break;
-            } else if (token.type() == TokenType.SEMI) {
+            } else if (token.isOfType(TokenType.SEMI)) {
                 if (root != null) {
                     expressions.add(root);
                     root = null;
                     currentNode = null;
                 }
                 continue;
-            } else if (token.type() == TokenType.EOL) {
+            } else if (token.isOfType(TokenType.EOL)) {
                 if (root != null && root.isCompletelyFull()) {
                     expressions.add(root);
                     root = null;
@@ -140,8 +141,15 @@ public final class Parser {
                 case PARENTHETICAL_EXPR -> new ParentheticalNode(token);
                 case NUM_LITERAL -> new NumberLiteral(token);
                 case SYMBOL -> new Symbol(token);
-                default ->
-                        throw new IllegalStateException("Unexpected value: " + type);
+                default -> {
+                    String message = switch (type) {
+                        case CLOSE_PARENTHESIS ->
+                                "Do you have a matching opening parenthesis?";
+                        default -> null;
+                    };
+                    throw new UnexpectedTokenException(token, message);
+
+                }
             };
 
             // Do not add expressions to tree
@@ -184,7 +192,7 @@ public final class Parser {
             currentNode = newNode;
         }
 
-        if (checkTopLevel){
+        if (checkTopLevel) {
             checkLoopControl(expressions);
             for (FunctionDefinition function : functions)
                 checkLoopControl(List.of(function.children));
@@ -209,7 +217,7 @@ public final class Parser {
         }
 
         for (Node expression : expressions) {
-                        expression.print();
+//            expression.print();
             ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {
@@ -237,12 +245,15 @@ public final class Parser {
      * @param nodes The nodes to check.
      */
     private void checkLoopControl(List<Node> nodes) {
-        for (Node node : nodes){
+        for (Node node : nodes) {
+            if (node instanceof NoOpExpression)
+                continue;
+
             Token token = node.getToken();
-            if (token.type() == TokenType.CONTINUE || token.type() == TokenType.BREAK)
-                throw new SakuraException(token.line(), token.column(), "A \"%s\" statement can only be within a loop.".formatted(token.type() == TokenType.CONTINUE ? "continue" : "break"));
-            else if (token.type() == TokenType.IF_STATEMENT || token.type() == TokenType.BRACE) {
-                for (int i = 0; i < node.childCount; i++){
+            if (token.isOfType(TokenType.CONTINUE) || token.isOfType(TokenType.BREAK))
+                throw new SakuraException(token.line(), token.column(), "A \"%s\" statement can only be within a loop.".formatted(token.isOfType(TokenType.CONTINUE) ? "continue" : "break"));
+            else if (token.isOfType(TokenType.IF_STATEMENT) || token.isOfType(TokenType.BRACE)) {
+                for (int i = 0; i < node.childCount; i++) {
                     Node child = node.getChild(i);
                     checkLoopControl(Collections.singletonList(child));
                 }

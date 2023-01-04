@@ -15,7 +15,7 @@
 
 package net.sakura.interpreter.functions;
 
-import net.sakura.interpreter.SakuraException;
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.Value;
 
 import java.util.List;

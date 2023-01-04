@@ -15,7 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.SakuraException;
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.FunctionCallData;

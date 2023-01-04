@@ -13,7 +13,7 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter;
+package net.sakura.interpreter.exceptions;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;

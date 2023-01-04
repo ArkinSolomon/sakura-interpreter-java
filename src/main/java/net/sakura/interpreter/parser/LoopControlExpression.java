@@ -34,7 +34,7 @@ final class LoopControlExpression extends Expression {
      */
     public LoopControlExpression(Token token) {
         super(token, 0);
-        returnType = token.type() == TokenType.BREAK ? EarlyReturnType.BREAK : EarlyReturnType.CONTINUE;
+        returnType = token.isOfType(TokenType.BREAK) ? EarlyReturnType.BREAK : EarlyReturnType.CONTINUE;
     }
 
     /**

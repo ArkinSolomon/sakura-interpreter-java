@@ -15,7 +15,7 @@
 
 package net.sakura.interpreter.execution;
 
-import net.sakura.interpreter.SakuraException;
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.functions.Function;
 import net.sakura.interpreter.functions.PrintFunction;
 import net.sakura.interpreter.functions.RangeFunction;

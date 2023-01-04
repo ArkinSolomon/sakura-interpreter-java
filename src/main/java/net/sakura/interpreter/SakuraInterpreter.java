@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter;
 
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
@@ -112,11 +113,13 @@ public class SakuraInterpreter {
         try {
             SakuraInterpreter interpreter = new SakuraInterpreter(opts);
             Value retVal = interpreter.executeFile(Path.of(Objects.requireNonNull(SakuraInterpreter.class.getResource("/test.ska")).getFile()));
-            System.out.println("\n\nRETURN VALUE: " + retVal);
+            System.out.println("\nRETURN VALUE: " + retVal);
         }catch (SakuraException e) {
             System.err.println(e.getMessage());
             for (String call : e.getStacktrace())
                 System.err.println("\tat " + call);
+            System.err.println("");
+            e.printStackTrace();
         }
     }
 }

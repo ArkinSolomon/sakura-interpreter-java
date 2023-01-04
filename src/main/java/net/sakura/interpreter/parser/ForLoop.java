@@ -54,8 +54,12 @@ final class ForLoop extends Expression {
         TokenStorage iterableTS = new TokenStorage(data.iterable());
         Parser iterableParser = new Parser(iterableTS);
         List<Node> iterableNodes = iterableParser.parse(false);
-        if (iterableNodes.size() != 1)
+
+        if (iterableNodes.size() > 1)
             throw new RuntimeException("For loop iterable can only be one expression");
+        else if (iterableNodes.size() == 0)
+            throw new RuntimeException("For loop iterable not provided");
+
         setChild(0, iterableNodes.get(0));
 
         ArrayList<Token> bodyList = new ArrayList<>();
