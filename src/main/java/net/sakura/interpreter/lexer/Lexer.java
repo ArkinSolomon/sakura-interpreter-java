@@ -454,8 +454,8 @@ public final class Lexer {
                 if (tokenStorage.peekNextNonEOLToken().isOfType(TokenType.OPEN_PARENTHESIS)) {
 
                     // Get rid of the first parenthesis and start with the first item in it
-                    tokenStorage.consume();
-                    token = tokenStorage.consume();
+                    tokenStorage.nextNonEOLToken();
+                    token = tokenStorage.nextNonEOLToken();
 
                     int argStartPos = -1;
 
