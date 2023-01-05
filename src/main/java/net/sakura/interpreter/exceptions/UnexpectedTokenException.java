@@ -40,7 +40,29 @@ public class UnexpectedTokenException extends SakuraException {
      * @param msg   Additional details about why the token was unexpected.
      */
     public UnexpectedTokenException(Token token, String msg) {
-        super(token.line(), token.column(), "Unexpected token: " + tokenChar(token) + "." + (msg == null ? "" : " " + msg));
+        this(token.line(), token.column(), tokenChar(token), msg);
+    }
+
+    /**
+     * Create a new exception with just a string and a position, Useful for throwing exceptions for tokens that haven't been created yet.
+     *
+     * @param line     The line of the unexpected token.
+     * @param col      The column of the unexpected token.
+     * @param tokenVal The value of the unexpected token.
+     */
+    public UnexpectedTokenException(int line, int col, String tokenVal) {
+        this(line, col, tokenVal, null);
+    }
+
+    /**
+     * Create a new exception with just a string, position, and message. Useful for throwing exceptions for tokens that haven't been created yet.
+     *
+     * @param line     The line of the unexpected token.
+     * @param col      The column of the unexpected token.
+     * @param tokenVal The value of the unexpected token.
+     */
+    public UnexpectedTokenException(int line, int col, String tokenVal, String msg) {
+        super(line, col, "Unexpected token: " + tokenVal + "." + (msg == null ? "" : " " + msg));
     }
 
     /**

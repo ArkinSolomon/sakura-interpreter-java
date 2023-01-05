@@ -100,6 +100,11 @@ public class SakuraInterpreter {
         return retVal;
     }
 
+    /**
+     * Create a new execution context with the provided options.
+     *
+     * @return A new execution context configured with the given options.
+     */
     private ExecutionContext createContext() {
         Map<String, Value> envVars = options.envVariables;
         envVars.put("@__executor", new Value(DataType.STRING, options.executor, false));

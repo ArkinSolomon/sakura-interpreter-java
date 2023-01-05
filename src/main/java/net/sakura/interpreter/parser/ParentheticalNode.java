@@ -15,6 +15,8 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.exceptions.UnexpectedTokenException;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
@@ -38,9 +40,9 @@ final class ParentheticalNode extends Node {
         Parser parser = new Parser(content);
         List<Node> childExpressions = parser.parse();
         if (childExpressions.size() > 1)
-            throw new RuntimeException("Parentheses has more than one expression");
+            throw new SakuraException(token.line(), token.column(), "Parentheses can not have more than one expression.");
         else if (childExpressions.size() < 1)
-            throw new RuntimeException("Unexpected empty parentheses");
+            throw new SakuraException(token.line(), token.column(), "Unexpected empty parentheses.");
         setChild(0, childExpressions.get(0));
     }
 

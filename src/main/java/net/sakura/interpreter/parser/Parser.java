@@ -98,7 +98,7 @@ public final class Parser {
                 }
                 continue;
             } else if (token.isOfType(TokenType.EOL)) {
-                if (root != null && root.isCompletelyFull()) {
+                if (root != null && root.isCompletelyFull() && root.childCount != 0) {
                     expressions.add(root);
                     root = null;
                     currentNode = null;
@@ -192,6 +192,12 @@ public final class Parser {
             currentNode = newNode;
         }
 
+
+        if (root != null && !root.isCompletelyFull())
+            throw new UnexpectedTokenException(root.token);
+        else if (root != null)
+            expressions.add(root);
+
         if (checkTopLevel) {
             checkLoopControl(expressions);
             for (FunctionDefinition function : functions)
@@ -217,7 +223,7 @@ public final class Parser {
         }
 
         for (Node expression : expressions) {
-//            expression.print();
+            //            expression.print();
             ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {

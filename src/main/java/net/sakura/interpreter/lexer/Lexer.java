@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.lexer;
 
+import net.sakura.interpreter.exceptions.FileEmptyException;
 import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.exceptions.UnclosedParenthesisException;
 import net.sakura.interpreter.exceptions.UnexpectedTokenException;
@@ -43,7 +44,7 @@ public final class Lexer {
         try {
             scanner = new PeekableScanner(path);
         } catch (NoSuchElementException e) {
-            throw new RuntimeException("File is empty", e);
+            throw new FileEmptyException(path.toString());
         }
     }
 
@@ -56,7 +57,7 @@ public final class Lexer {
         try {
             scanner = new PeekableScanner(input);
         } catch (NoSuchElementException e) {
-            throw new RuntimeException("Input is empty", e);
+            throw new FileEmptyException(null);
         }
     }
 
@@ -136,7 +137,6 @@ public final class Lexer {
             if (thisChar == '\n')
                 incLine = true;
 
-
             String next = scanner.peek();
             Character nextChar = next == null ? null : next.charAt(0);
 
@@ -162,7 +162,7 @@ public final class Lexer {
                     currentType = TokenType.ENV_VARIABLE;
                 else if (thisChar == '=') {
                     if (nextChar == null)
-                        throw new RuntimeException("Dangling equals");
+                        throw new UnexpectedTokenException(currentLine, currentCol, "=");
 
                     if (nextChar == '=') {
                         tokens.add(new Token(TokenType.DOUBLE_EQUALS, currentLine, currentCol, "=="));
@@ -174,7 +174,7 @@ public final class Lexer {
                         tokens.add(new Token(TokenType.EQUALS, currentLine, currentCol, "="));
                 } else if (thisChar == '<') {
                     if (nextChar == null)
-                        throw new RuntimeException("Dangling less than");
+                        throw new UnexpectedTokenException(currentLine, currentCol, "<");
 
                     if (nextChar == '=') {
                         tokens.add(new Token(TokenType.LTE, currentLine, currentCol, "<="));
@@ -185,7 +185,7 @@ public final class Lexer {
                         tokens.add(new Token(TokenType.LT, currentLine, currentCol, "<"));
                 } else if (thisChar == '>') {
                     if (nextChar == null)
-                        throw new RuntimeException("Dangling greater than");
+                        throw new UnexpectedTokenException(currentLine, currentCol, ">");
 
                     if (nextChar == '=') {
                         tokens.add(new Token(TokenType.GTE, currentLine, currentCol, ">="));
@@ -196,7 +196,7 @@ public final class Lexer {
                         tokens.add(new Token(TokenType.GT, currentLine, currentCol, ">"));
                 } else if (thisChar == '!') {
                     if (nextChar == null)
-                        throw new RuntimeException("Dangling exclamation point ");
+                        throw new UnexpectedTokenException(currentLine, currentCol, "!");
 
                     if (nextChar == '=') {
                         tokens.add(new Token(TokenType.NOT_EQUALS, currentLine, currentCol, "!="));
@@ -240,7 +240,7 @@ public final class Lexer {
                         if (isNumeric(thisCharStr))
                             currentType = TokenType.NUM_LITERAL;
                         else if (!isIdentifierChar(thisChar))
-                            throw new RuntimeException("Invalid character");
+                            throw new UnexpectedTokenException(currentLine, currentCol, thisCharStr);
 
                         tokens.add(new Token(currentType, currentLine, currentCol, thisCharStr));
                         currentType = null;
@@ -314,7 +314,7 @@ public final class Lexer {
             Token nextToken = ts.nextNonEOLToken();
 
             if (!nextToken.isOfType(TokenType.SYMBOL))
-                throw new RuntimeException("Invalid function declaration");
+                throw new UnexpectedTokenException(nextToken);
 
             Token newToken = new Token(TokenType.FUNC, thisToken.line(), thisToken.column(), nextToken.value());
             tokens.set(i, newToken);
@@ -397,6 +397,8 @@ public final class Lexer {
                 int argStartLine = -1;
                 int argStartCol = -1;
 
+                Token lastComma = null;
+
                 if (!token.isOfType(TokenType.CLOSE_PARENTHESIS)) {
                     while (token != null && !token.isOfType(TokenType.EOF)) {
                         if (argStartLine < 0) {
@@ -409,13 +411,14 @@ public final class Lexer {
                             args.add(simplify(currentArg));
                             currentArg = new ArrayList<>();
                             argStartLine = -1;
+                            lastComma = token;
                         } else if (token.isOfType(TokenType.CLOSE_PARENTHESIS) && depth == 0) {
                             currentArg.add(new Token(TokenType.EOF, argStartLine, argStartCol, "<ARG LIST END>"));
                             args.add(simplify(currentArg));
                             currentArg = new ArrayList<>();
                             break;
-                        } else if (token.isOfType(TokenType.SEMI))
-                            throw new RuntimeException("Can not put multiple statements within parentheses");
+                        } else if (isMultiStatement(token))
+                            throw new UnexpectedTokenException(token);
                         else {
                             if (token.isOfType(TokenType.OPEN_PARENTHESIS))
                                 ++depth;
@@ -429,13 +432,14 @@ public final class Lexer {
                     }
                 }
 
-                if (currentArg.size() != 0){
-                    tokenStorage.printTokens();
-                    throw new RuntimeException("Function missing closing parentheses");
-                }
+                assert token != null;
+                if (currentArg.size() != 0 || token.isOfType(TokenType.EOF))
+                    throw new UnexpectedTokenException(token, "Function missing closing parentheses");
 
-                if (args.size() > 0 && args.get(args.size() - 1).size() == 1)
-                    throw new RuntimeException("Extra comma in function call");
+                if (args.size() > 0 && args.get(args.size() - 1).size() == 1) {
+                    assert lastComma != null;
+                    throw new UnexpectedTokenException(lastComma, "Extra comma in function call");
+                }
 
                 FunctionCallData data = new FunctionCallData(identifier, args);
                 newTokens.add(new Token(TokenType.FUNC_CALL, callStartLine, callStartCol, data));
@@ -443,7 +447,7 @@ public final class Lexer {
 
                 //Function definitions
                 if (!isRoot)
-                    throw new RuntimeException("Functions must be declared in global scope");
+                    throw new UnexpectedTokenException(token, "Functions must be defined in global scope.");
 
                 String functionIdentifier = (String) token.value();
                 int funcDefStartLine = token.line();
