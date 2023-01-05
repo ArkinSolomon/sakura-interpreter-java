@@ -97,6 +97,8 @@ public final class Parser {
                 if (root != null) {
                     //                    if (expectNewLine)
                     //                        throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
+                    if (!root.isCompletelyFull())
+                        throw new UnexpectedTokenException(exprStartToken);
                     expressions.add(root);
                 }
                 break;
@@ -246,6 +248,11 @@ public final class Parser {
                 }
             }
             currentNode = newNode;
+        }
+
+        for (Node expr : expressions) {
+            if (expr instanceof Literal)
+                throw new UnexpectedTokenException(expr.getToken(), "Stand-alone literals are not allowed.");
         }
 
         if (checkTopLevel) {
