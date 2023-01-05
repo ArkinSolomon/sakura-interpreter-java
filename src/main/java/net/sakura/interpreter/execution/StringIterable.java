@@ -39,4 +39,9 @@ public class StringIterable implements Iterable {
         currentPos++;
         return new Value(DataType.STRING, returnVal, false);
     }
+
+    @Override
+    public Iterable copy() {
+        return new StringIterable(str);
+    }
 }

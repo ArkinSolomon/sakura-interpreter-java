@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class ListIterable implements Iterable{
 
-    private List<Value> values;
+    private final List<Value> values;
     private int current = 0;
 
     /**
@@ -42,5 +42,10 @@ public class ListIterable implements Iterable{
         Value returnVal = values.get(current);
         current++;
         return returnVal.setMutability(false);
+    }
+
+    @Override
+    public Iterable copy() {
+        return new ListIterable(values);
     }
 }

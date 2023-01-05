@@ -34,8 +34,14 @@ public record Value(DataType type, Object value, boolean isMutable) {
      */
     @Override
     public String toString() {
-        if (value == null)
+        if (type == DataType.NULL || value == null)
             return "NULL";
+        else if (type == DataType.ITERABLE)
+            return  "<iterable>";
+        else if (type == DataType.FUNCTION)
+            return "<function>";
+        else if (type == DataType.__BRACE_RETURN)
+            return "<_brace return_>";
         return value.toString();
     }
 
@@ -46,6 +52,9 @@ public record Value(DataType type, Object value, boolean isMutable) {
      * @return A new value with the same datatype and value, except with the new mutability value.
      */
     public Value setMutability(boolean isMutable) {
-        return new Value(type, value, isMutable);
+        Object val = value;
+        if (type == DataType.ITERABLE)
+            val = ((Iterable) value).copy();
+        return new Value(type, val, isMutable);
     }
 }

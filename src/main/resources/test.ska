@@ -1,45 +1,4 @@
-func
+$x = 3
+$y = 4
 
-list(%name
-,
-
-%values...)
-
-{
-    print
-
-
-    (name)
-    for $value
-
-
-    in values
-    {
-        print(value)
-    }
-    return
-
-     values
-}
-
-$val
-
-=
-list("test", 1,
-
-2
-, 3
-
-
-, 4)
-
-for
-$v
-in
-val
-{
-print
-(
-v
-)
-}
+print(x == 3 | y > 4 & y < 6)

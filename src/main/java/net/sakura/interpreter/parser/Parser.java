@@ -95,8 +95,8 @@ public final class Parser {
 
             if (token.isOfType(TokenType.EOF)) {
                 if (root != null) {
-                    if (expectNewLine)
-                        throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
+                    //                    if (expectNewLine)
+                    //                        throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
                     expressions.add(root);
                 }
                 break;
@@ -112,12 +112,12 @@ public final class Parser {
                 expectNewLine = false;
                 continue;
             } else if (token.isOfType(TokenType.EOL)) {
-//                if (root != null && root.isCompletelyFull()) {
-//                    expressions.add(root);
-//                    root = null;
-//                    currentNode = null;
-//                    exprStartToken = null;
-//                }
+                //                if (root != null && root.isCompletelyFull()) {
+                //                    expressions.add(root);
+                //                    root = null;
+                //                    currentNode = null;
+                //                    exprStartToken = null;
+                //                }
                 expectNewLine = false;
                 continue;
             }
@@ -161,6 +161,8 @@ public final class Parser {
                     String message = switch (type) {
                         case CLOSE_PARENTHESIS ->
                                 "Do you have a matching opening parenthesis?";
+                        case CLOSE_BRACE ->
+                                "Do you have a matching opening brace?";
                         default -> null;
                     };
                     throw new UnexpectedTokenException(token, message);
@@ -250,7 +252,6 @@ public final class Parser {
             checkLoopControl(expressions);
             for (FunctionDefinition function : functions)
                 checkLoopControl(List.of(function.children));
-
         }
 
         return expressions;
@@ -272,7 +273,7 @@ public final class Parser {
         }
 
         for (Node expression : expressions) {
-//            expression.print();
+            expression.print();
             ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {

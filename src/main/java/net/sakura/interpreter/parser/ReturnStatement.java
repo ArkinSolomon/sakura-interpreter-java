@@ -37,7 +37,7 @@ final class ReturnStatement extends Node {
     public Value evaluate(ExecutionContext ctx) {
         if (getChild(0) == null)
             return Value.NULL;
-        return getChild(0).evaluate(ctx);
+        return getChild(0).evaluate(ctx).setMutability(false);
     }
 
     @Override

@@ -26,4 +26,9 @@ public interface Iterable {
      * @return The next value of the iterable.
      */
     Value next();
+
+    /**
+     * Copy the iterable to reset all pointers.
+     */
+    Iterable copy();
 }

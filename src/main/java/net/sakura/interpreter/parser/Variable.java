@@ -49,6 +49,6 @@ class Variable extends Node {
     public void assign(ExecutionContext ctx, Value val) {
         if (ctx.hasLocalIdentifier(identifier))
             throw new RuntimeException("Identifier exists");
-        ctx.defineIdentifier(identifier, val);
+        ctx.defineIdentifier(identifier, val.setMutability(true));
     }
 }

@@ -24,6 +24,7 @@ import net.sakura.interpreter.execution.Value;
  */
 public final class RangeIterator implements Iterable {
 
+    private final int start;
     private final int end;
     private final int step;
     private int current;
@@ -36,9 +37,10 @@ public final class RangeIterator implements Iterable {
      * @param step  The step value of the iterator.
      */
     public RangeIterator(int start, int end, int step) {
-        current = start - step;
+        this.start = start;
         this.end = end;
         this.step = step;
+        current = start - step;
 
         if (step == 0)
             throw new RuntimeException("Range function step can not be zero");
@@ -50,5 +52,10 @@ public final class RangeIterator implements Iterable {
         if (current >= end)
             return null;
         return new Value(DataType.NUMBER, (double) current, false);
+    }
+
+    @Override
+    public Iterable copy() {
+        return new RangeIterator(start, end, step);
     }
 }

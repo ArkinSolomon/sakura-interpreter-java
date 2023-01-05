@@ -39,7 +39,7 @@ final class BinaryBooleanOperator extends Operator {
     @Override
     public Value evaluate(ExecutionContext ctx) {
         if (!isFull())
-            throw new RuntimeException("Addition requires both operands");
+            throw new RuntimeException("Binary boolean operators requires both operands");
 
         Value lhs = leftChild().evaluate(ctx);
         Value rhs = rightChild().evaluate(ctx);
@@ -58,6 +58,6 @@ final class BinaryBooleanOperator extends Operator {
 
     @Override
     public int getPrecedence() {
-        return Precedences.BINARY_BOOLEAN;
+        return token.value() == "|" ?  Precedences.BINARY_OR : Precedences.BINARY_AND;
     }
 }
