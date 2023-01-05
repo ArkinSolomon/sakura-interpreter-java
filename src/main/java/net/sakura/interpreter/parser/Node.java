@@ -27,10 +27,9 @@ import java.util.Objects;
  */
 public abstract class Node {
 
+    protected final Token token;
     protected int childCount;
     protected Node[] children;
-    protected final Token token;
-
     private Node parent;
 
     /**
@@ -107,8 +106,8 @@ public abstract class Node {
      */
     public final int findChild(Node node) {
         for (int i = 0; i < childCount; ++i) {
-           if (children[i] == node)
-               return i;
+            if (children[i] == node)
+                return i;
         }
         return -1;
     }
@@ -196,5 +195,19 @@ public abstract class Node {
             }
             child.print(indentCount + 4);
         }
+    }
+
+    /**
+     * True if the node can be a child of another node.
+     *
+     * @return True if the node can be a child of another node.
+     */
+    public boolean canBeChild() {
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + getClass().getSimpleName() + "] " + token.toString();
     }
 }

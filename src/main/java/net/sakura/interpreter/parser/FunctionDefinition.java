@@ -15,7 +15,9 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.execution.ListIterable;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.functions.Function;
 import net.sakura.interpreter.lexer.FunctionArgData;
@@ -36,6 +38,9 @@ final class FunctionDefinition extends Expression implements Function {
     private final List<Node> defaultArgExpressions = new ArrayList<>();
     private ExecutionContext rootCtx;
 
+    private boolean hasRest;
+    private boolean isRestConst;
+
     /**
      * Create a new function definition.
      *
@@ -50,13 +55,13 @@ final class FunctionDefinition extends Expression implements Function {
         parsedFunc = new Parser(body);
         parsedFunc.parse();
 
-        boolean hasDefault = false;
+        hasRest = false;
         for (FunctionArgData argData : data.args()) {
-            if (argData.hasDefault())
-                hasDefault = true;
-            else {
-                if (hasDefault)
-                    throw new RuntimeException("Required argument can not follow default argument");
+            if (argData.isRest()) {
+                hasRest = true;
+                isRestConst = argData.isConstant();
+                break;
+            } else if (!argData.hasDefault()) {
                 defaultArgExpressions.add(null);
                 continue;
             }
@@ -102,10 +107,17 @@ final class FunctionDefinition extends Expression implements Function {
                 .map(node -> node == null ? null : node.evaluate(rootCtx))
                 .toList());
 
-        // Pick the default value if no argument is provided
-        int minLen = Math.min(argValues.size(), args.size());
-        for (int i = 0; i < minLen; i++)
-            argValues.set(i, args.get(i));
+        if (!hasRest) {
+
+            // Pick the default value if no argument is provided
+            int minLen = Math.min(argValues.size(), args.size());
+            for (int i = 0; i < minLen; i++)
+                argValues.set(i, args.get(i));
+        } else {
+            for (int i = 0; i < argValues.size(); i++)
+                argValues.set(i, args.get(i));
+            argValues.add(new Value(DataType.ITERABLE, new ListIterable(args.subList(argValues.size(), args.size())), !isRestConst));
+        }
 
         // Assign variables to the temporary context
         for (int i = 0; i < argValues.size(); i++) {

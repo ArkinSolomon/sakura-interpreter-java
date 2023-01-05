@@ -80,6 +80,8 @@ public enum TokenType {
     CLOSE_BRACE, // }
     BRACE, // A series of expressions wrapped in braces.
 
+    ELLIPSIS, // ...
+
     NUM_LITERAL, // floats and integers
     SYMBOL // any other text
 }

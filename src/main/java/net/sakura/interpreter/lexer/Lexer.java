@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /**
  * An instance of this class performs lexical analysis on a given string input
@@ -231,6 +232,18 @@ public final class Lexer {
                     tokens.add(new Token(TokenType.CLOSE_BRACE, currentLine, currentCol, "}"));
                 else if (thisChar == ',')
                     tokens.add(new Token(TokenType.COMMA, currentLine, currentCol, ","));
+                else if (thisChar == '.'){
+                    if (!Objects.equals(next, "."))
+                        throw new UnexpectedTokenException(currentLine, currentCol, "\"%s\"".formatted(next), "A period must be followed by two subsequent periods to form an ellipsis.");
+                    scanner.next();
+                    if (!scanner.hasNext())
+                        throw new UnexpectedTokenException(new Token(TokenType.EOF, currentLine, currentCol + 1, "<ELLIPSIS UNEXPECTED EOF>"), "A period must be followed by two subsequent periods to form an ellipsis.");
+                    next = scanner.next();
+                    if (!Objects.equals(next, "."))
+                        throw new UnexpectedTokenException(currentLine, currentCol + 1, "\"%s\"".formatted(next), "A period must be followed by two subsequent periods to form an ellipsis.");
+                    tokens.add(new Token(TokenType.ELLIPSIS, currentLine, currentCol, "..."));
+                    currentCol += 2;
+                }
                 else {
                     currentType = TokenType.SYMBOL;
                     currentValue.append(thisChar);
@@ -240,7 +253,7 @@ public final class Lexer {
                         if (isNumeric(thisCharStr))
                             currentType = TokenType.NUM_LITERAL;
                         else if (!isIdentifierChar(thisChar))
-                            throw new UnexpectedTokenException(currentLine, currentCol, thisCharStr);
+                            throw new UnexpectedTokenException(currentLine, currentCol, "\"%c\"".formatted(thisChar));
 
                         tokens.add(new Token(currentType, currentLine, currentCol, thisCharStr));
                         currentType = null;
@@ -314,7 +327,7 @@ public final class Lexer {
             Token nextToken = ts.nextNonEOLToken();
 
             if (!nextToken.isOfType(TokenType.SYMBOL))
-                throw new UnexpectedTokenException(nextToken);
+                throw new UnexpectedTokenException(nextToken, "Did you name your function?");
 
             Token newToken = new Token(TokenType.FUNC, thisToken.line(), thisToken.column(), nextToken.value());
             tokens.set(i, newToken);
@@ -351,7 +364,8 @@ public final class Lexer {
         while (token != null && !token.isOfType(TokenType.EOF)) {
 
             // Parse a parenthetical expression
-            if (token.isOfType(TokenType.OPEN_PARENTHESIS) && !tokenStorage.lastNonEOLToken().isOfType(TokenType.FUNC)) {
+            Token lastNonEolToken = tokenStorage.lastNonEOLToken();
+            if (token.isOfType(TokenType.OPEN_PARENTHESIS) && (lastNonEolToken == null || !lastNonEolToken.isOfType(TokenType.FUNC))) {
                 List<Token> toSimplify = new ArrayList<>();
                 final int startLine = token.line();
                 final int startCol = token.column();
@@ -453,6 +467,9 @@ public final class Lexer {
                 int funcDefStartLine = token.line();
                 int funcDefStartCol = token.column();
 
+                Token firstDefaultToken = null;
+                boolean hasAnyDefault = false;
+
                 // Parse arguments if there are parentheses
                 List<FunctionArgData> args = new ArrayList<>();
                 if (tokenStorage.peekNextNonEOLToken().isOfType(TokenType.OPEN_PARENTHESIS)) {
@@ -461,8 +478,7 @@ public final class Lexer {
                     tokenStorage.nextNonEOLToken();
                     token = tokenStorage.nextNonEOLToken();
 
-                    int argStartPos = -1;
-
+                    Token argStartToken = null;
                     String argId = null;
                     boolean isConstant = false;
                     boolean hasDefault = false;
@@ -470,17 +486,21 @@ public final class Lexer {
 
                     if (!token.isOfType(TokenType.CLOSE_PARENTHESIS)) {
                         while (token != null && !token.isOfType(TokenType.EOF)) {
-                            if (argStartPos < 0)
-                                argStartPos = token.line();
 
                             if (token.isOfType(TokenType.CONST_VAR)) {
+                                argStartToken = token;
                                 argId = (String) token.value();
                                 isConstant = true;
-                            } else if (token.isOfType(TokenType.VARIABLE))
+                            } else if (token.isOfType(TokenType.VARIABLE)) {
+                                argStartToken = token;
                                 argId = (String) token.value();
-                            else if (token.isOfType(TokenType.EQUALS) || token.isOfType(TokenType.COMMA) || token.isOfType(TokenType.CLOSE_PARENTHESIS)) {
+                            }
+                            else if (token.isOfType(TokenType.EQUALS, TokenType.COMMA, TokenType.CLOSE_PARENTHESIS)) {
                                 if (token.isOfType(TokenType.EQUALS)) {
                                     hasDefault = true;
+
+                                    if (firstDefaultToken == null)
+                                        firstDefaultToken = argStartToken;
 
                                     token = tokenStorage.consume();
                                     int depth = 0;
@@ -513,7 +533,11 @@ public final class Lexer {
                                 if (hasDefault && defaultValue.size() <= 1)
                                     throw new RuntimeException("Unexpected equals sign");
 
-                                FunctionArgData data = new FunctionArgData(argId, isConstant, hasDefault, defaultValue.size() == 0 ? null : simplify(defaultValue));
+                                if (hasDefault && hasAnyDefault)
+                                    throw new SakuraException(argStartToken.line(), argStartToken.column(), "Required parameters can not follow optional parameters.");
+
+                                hasAnyDefault = hasDefault;
+                                FunctionArgData data = new FunctionArgData(argId, isConstant, false, hasDefault, defaultValue.size() == 0 ? null : simplify(defaultValue));
                                 args.add(data);
 
                                 argId = null;
@@ -524,6 +548,22 @@ public final class Lexer {
                                 assert token != null;
                                 if (token.isOfType(TokenType.CLOSE_PARENTHESIS))
                                     break;
+                            }
+
+                            if (token.isOfType(TokenType.CONST_VAR, TokenType.VARIABLE)){
+                                if (tokenStorage.peek().isOfType(TokenType.ELLIPSIS)){
+                                    tokenStorage.consume();
+
+                                    if (!tokenStorage.nextNonEOLToken().isOfType(TokenType.CLOSE_PARENTHESIS))
+                                        throw new UnexpectedTokenException(tokenStorage.currentToken(), "A closing parenthesis must follow a rest argument.");
+
+                                    if (firstDefaultToken != null)
+                                        throw new SakuraException(firstDefaultToken.line(), firstDefaultToken.column(), "Functions with rest arguments can not have arguments with defaults.");
+
+                                    FunctionArgData argData = new FunctionArgData(argId, isConstant, true, false, null);
+                                    args.add(argData);
+                                    break;
+                                }
                             }
 
                             token = tokenStorage.consume();
@@ -699,7 +739,7 @@ public final class Lexer {
 
             if (token.isOfType(TokenType.FUNC_SIG)) {
                 if (!isRoot)
-                    throw new RuntimeException("Functions can only be declared in the global scope");
+                    throw new UnexpectedTokenException(token, "Functions can only be declared in the global scope.");
 
                 FunctionDefinitionData data = (FunctionDefinitionData) token.value();
                 int funcSigLine = token.line();
@@ -707,7 +747,7 @@ public final class Lexer {
 
                 token = tokenStorage.nextNonEOLToken();
                 if (!token.isOfType(TokenType.BRACE))
-                    throw new UnexpectedTokenException(token);
+                    throw new UnexpectedTokenException(token, "Function definitions require bodies wrapped in braces.");
 
                 newTokens.add(new Token(TokenType.FUNC_DEF, funcSigLine, funcSigCol, data.addBody(token)));
             } else if (token.isOfType(TokenType.IF_COND, TokenType.WHILE_COND, TokenType.FOR_ASSIGN)) {

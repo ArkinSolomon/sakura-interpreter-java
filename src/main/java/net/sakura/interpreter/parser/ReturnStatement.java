@@ -49,4 +49,9 @@ final class ReturnStatement extends Node {
     public int getPrecedence() {
         return Precedences.RETURN;
     }
+
+    @Override
+    public boolean canBeChild() {
+        return false;
+    }
 }

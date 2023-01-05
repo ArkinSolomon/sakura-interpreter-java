@@ -43,4 +43,9 @@ abstract class Expression extends Node {
     public final int getPrecedence() {
         throw new RuntimeException("Can not get precedence of expression");
     }
+
+    @Override
+    public final boolean canBeChild() {
+        return false;
+    }
 }

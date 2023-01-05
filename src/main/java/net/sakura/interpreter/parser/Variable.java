@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.exceptions.UnexpectedTokenException;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
@@ -41,11 +42,13 @@ class Variable extends Node {
 
     @Override
     public final Value evaluate(ExecutionContext ctx) {
-        throw new UnsupportedOperationException("Can not evaluate a variable declaration");
+        throw new UnexpectedTokenException(token.line(), token.column(), "\"$%s\"".formatted(identifier), "Can not evaluate a variable declaration. Did you mean \"%s\"?".formatted(identifier));
     }
 
     @Override
     public void assign(ExecutionContext ctx, Value val) {
+        if (ctx.hasLocalIdentifier(identifier))
+            throw new RuntimeException("Identifier exists");
         ctx.defineIdentifier(identifier, val);
     }
 }

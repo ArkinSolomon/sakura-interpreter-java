@@ -84,25 +84,41 @@ public final class Parser {
         Node root = null;
         Node currentNode = null;
 
+        boolean expectNewLine = false;
+        Token exprStartToken = null;
+
         while (true) {
             Token token = tokenStorage.consume();
+
+            if (exprStartToken == null)
+                exprStartToken = token;
+
             if (token.isOfType(TokenType.EOF)) {
-                if (root != null)
+                if (root != null) {
+                    if (expectNewLine)
+                        throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
                     expressions.add(root);
+                }
                 break;
             } else if (token.isOfType(TokenType.SEMI)) {
                 if (root != null) {
+                    if (expectNewLine)
+                        throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
                     expressions.add(root);
                     root = null;
+                    exprStartToken = null;
                     currentNode = null;
                 }
+                expectNewLine = false;
                 continue;
             } else if (token.isOfType(TokenType.EOL)) {
-                if (root != null && root.isCompletelyFull() && root.childCount != 0) {
-                    expressions.add(root);
-                    root = null;
-                    currentNode = null;
-                }
+//                if (root != null && root.isCompletelyFull()) {
+//                    expressions.add(root);
+//                    root = null;
+//                    currentNode = null;
+//                    exprStartToken = null;
+//                }
+                expectNewLine = false;
                 continue;
             }
 
@@ -115,12 +131,12 @@ public final class Parser {
                 case AND, OR -> new BinaryBooleanOperator(token);
                 case NOT -> new NotOperator(token);
                 case PLUS -> {
-                    if (tokenStorage.lastToken() == null || tokenStorage.lastToken().isOperator())
+                    if (tokenStorage.lastNonEOLToken() == null || tokenStorage.lastNonEOLToken().isOperator())
                         yield new PositiveOperator(token);
                     yield new AdditionOperator(token);
                 }
                 case MINUS -> {
-                    if (tokenStorage.lastToken() == null || tokenStorage.lastToken().isOperator())
+                    if (tokenStorage.lastNonEOLToken() == null || tokenStorage.lastNonEOLToken().isOperator() || tokenStorage.lastNonEOLToken().isOfType(TokenType.FUNC_DEF, TokenType.IF_STATEMENT, TokenType.WHILE_LOOP, TokenType.FOR_LOOP))
                         yield new NegativeOperator(token);
                     yield new SubtractionOperator(token);
                 }
@@ -148,43 +164,81 @@ public final class Parser {
                         default -> null;
                     };
                     throw new UnexpectedTokenException(token, message);
-
                 }
             };
 
-            // Do not add expressions to tree
-            if (newNode instanceof Expression) {
-                if (root != null)
-                    throw new RuntimeException("Function definitions or statements can not be part of other expressions");
+            // Do not add anything with a keyword basically (if/func/return/etc.)
+            if (!newNode.canBeChild()) {
+                if (root != null) {
+                    if (root.isCompletelyFull()) {
+                        expressions.add(root);
+                        root = null;
+                    } else
+                        throw new UnexpectedTokenException(token, "Statements can not be part of other expressions.");
+                }
 
-                if (newNode instanceof FunctionDefinition)
-                    functions.add((FunctionDefinition) newNode);
-                else
-                    expressions.add(newNode);
+                if (newNode instanceof Expression) {
+                    if (newNode instanceof FunctionDefinition)
+                        functions.add((FunctionDefinition) newNode);
+                    else {
+                        if (expectNewLine)
+                            throw new UnexpectedTokenException(token, "Can not have multiple expressions on a single line.");
+                        expressions.add(newNode);
+                    }
 
+                    // We always expect an EOL to follow a statement
+                    expectNewLine = true;
+                    exprStartToken = null;
+                } else {
+                    root = newNode;
+                    currentNode = newNode;
+                    exprStartToken = token;
+                }
                 continue;
             }
 
-            if (root == null)
+            if (root == null) {
                 root = newNode;
-            else {
+                if (expectNewLine)
+                    throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
+                exprStartToken = token;
+            } else {
                 Node insertionPoint = currentNode;
                 Node replacementChild = null;
 
+                // Climb the tree until we find somewhere to insert
                 while (insertionPoint != null && insertionPoint.getPrecedence() >= newNode.getPrecedence()) {
                     replacementChild = insertionPoint;
                     insertionPoint = insertionPoint.getParent();
                 }
 
-                // Insert at root
+                // Insert as root
                 if (insertionPoint == null) {
-                    newNode.insertChild(root);
+                    if (!newNode.isFull())
+                        newNode.insertChild(root);
+                    else {
+                        if (expectNewLine)
+                            throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
+                        expressions.add(root);
+                        expectNewLine = true;
+                    }
+                    exprStartToken = token;
                     root = newNode;
                 } else {
                     if (replacementChild != null) {
                         int replacementIndex = insertionPoint.findChild(replacementChild);
-                        newNode.insertChild(replacementChild);
-                        insertionPoint.setChild(replacementIndex, newNode);
+
+                        if (!newNode.isFull()) {
+                            newNode.insertChild(replacementChild);
+                            insertionPoint.setChild(replacementIndex, newNode);
+                        } else {
+                            if (expectNewLine)
+                                throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
+                            expressions.add(root);
+                            exprStartToken = token;
+                            root = newNode;
+                            expectNewLine = true;
+                        }
                     } else
                         insertionPoint.insertChild(newNode);
                 }
@@ -192,23 +246,18 @@ public final class Parser {
             currentNode = newNode;
         }
 
-
-        if (root != null && !root.isCompletelyFull())
-            throw new UnexpectedTokenException(root.token);
-        else if (root != null)
-            expressions.add(root);
-
         if (checkTopLevel) {
             checkLoopControl(expressions);
             for (FunctionDefinition function : functions)
                 checkLoopControl(List.of(function.children));
+
         }
 
         return expressions;
     }
 
     /**
-     * Execute every expression.
+     * Execute every expression, return the value as the result.
      *
      * @param ctx The context in which to execute the expressions.
      */
@@ -223,13 +272,15 @@ public final class Parser {
         }
 
         for (Node expression : expressions) {
-            //            expression.print();
+//            expression.print();
             ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {
                 braceReturnResult = (ExecutionResult) value.value();
                 value = braceReturnResult.returnValue();
             }
+
+            // If the expression was a brace we want to handle it differently
             if (expression instanceof Expression && stop || expression instanceof ReturnStatement || expression instanceof LoopControlExpression) {
                 EarlyReturnType type = EarlyReturnType.RETURN;
 

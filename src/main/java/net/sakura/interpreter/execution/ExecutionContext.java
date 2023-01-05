@@ -118,7 +118,7 @@ public class ExecutionContext {
     }
 
     /**
-     * Check if this context contains an identifier.
+     * Check if this context or any parent context contains an identifier.
      *
      * @param identifier The identifier to check for.
      * @return True if the identifier exists.
@@ -126,6 +126,16 @@ public class ExecutionContext {
     public boolean hasIdentifier(String identifier) {
         final boolean parentHasKey = this.parent != null && this.parent.hasIdentifier(identifier);
         return identifiers.containsKey(identifier) || parentHasKey;
+    }
+
+    /**
+     * Check if this context contains an identifier, ignoring parent contexts.
+     *
+     * @param identifier The identifier to check for.
+     * @return True if this context contains such an identifier.
+     */
+    public boolean hasLocalIdentifier(String identifier){
+        return identifiers.containsKey(identifier);
     }
 
     /**

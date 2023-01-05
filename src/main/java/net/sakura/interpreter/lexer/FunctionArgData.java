@@ -22,8 +22,9 @@ import java.util.List;
  *
  * @param identifier The identifier of the argument.
  * @param isConstant True if the variable is a constant.
+ * @param isRest True if this argument is the "rest" argument.
  * @param hasDefault True if the variable has a default value.
  * @param defaultValue The tokens to parse for the default value.
  */
-public record FunctionArgData(String identifier, boolean isConstant, boolean hasDefault, List<Token> defaultValue) {
+public record FunctionArgData(String identifier, boolean isConstant, boolean isRest, boolean hasDefault, List<Token> defaultValue) {
 }
