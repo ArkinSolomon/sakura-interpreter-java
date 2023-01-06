@@ -72,7 +72,7 @@ public class TokenStorage {
      * @return True if there is another token.
      */
     public boolean hasNext() {
-        return current >= 0 && current < tokens.size() - 1;
+        return current >= -1 && current < tokens.size() - 1;
     }
 
 

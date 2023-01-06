@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
@@ -35,6 +36,8 @@ final class ConstVariable extends Variable {
 
     @Override
     public void assign(ExecutionContext ctx, Value val) {
-        ctx.defineIdentifier(identifier, new Value(val.type(), val.value(), false));
+        if (ctx.hasLocalIdentifier(identifier))
+            throw new SakuraException(token.line(), token.column(), "Identifier \"%s\" already exists.".formatted(identifier));
+        ctx.defineIdentifier(identifier, val.setMutability(false));
     }
 }

@@ -1,4 +1,3 @@
-$x = 3
-$y = 4
-
-print(x == 3 | y > 4 & y < 6)
+%hello = "idk lol a path"
+$x = READ @root/src/main/java/net/sakura/interpreter/"SakuraInterpreter.java"
+print(x)

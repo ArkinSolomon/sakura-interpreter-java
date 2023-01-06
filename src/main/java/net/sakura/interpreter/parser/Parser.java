@@ -159,6 +159,7 @@ public final class Parser {
                 case PARENTHETICAL_EXPR -> new ParentheticalNode(token);
                 case NUM_LITERAL -> new NumberLiteral(token);
                 case SYMBOL -> new Symbol(token);
+                case READ -> new ReadStatement(token);
                 default -> {
                     String message = switch (type) {
                         case CLOSE_PARENTHESIS ->
@@ -171,7 +172,7 @@ public final class Parser {
                 }
             };
 
-            // Do not add anything with a keyword basically (if/func/return/etc.)
+            // Do not add anything that is not allowed to be a child
             if (!newNode.canBeChild()) {
                 if (root != null) {
                     if (root.isCompletelyFull()) {
@@ -265,6 +266,53 @@ public final class Parser {
     }
 
     /**
+     * Parse the tokens provided in the constructor as a path.
+     *
+     * @param trigger The token that triggered the creation of the path. A read/write/delete/etc. token.
+     * @return The tokens parsed as a path.
+     */
+    public PathNode parseAsPath(Token trigger) {
+        tokenStorage.printTokens();
+        if (!tokenStorage.hasNext())
+            throw new SakuraException("Can not parse empty path.");
+
+        PathNode node = new PathNode(trigger);
+
+        Token token = tokenStorage.consume();
+
+        // Determine what the path is relative too (the path root)
+        if (token.isOfType(TokenType.SLASH))
+            node.addChild(new RootPath(token));
+        else if (token.isOfType(TokenType.ENV_VARIABLE, TokenType.PARENTHETICAL_EXPR)) {
+            node.addChild(token.isOfType(TokenType.ENV_VARIABLE) ? new EnvVariable(token) : new ParentheticalNode(token));
+            tokenStorage.consume();
+        }
+
+        token = tokenStorage.consume();
+        while (token != null && !token.isOfType(TokenType.EOF)) {
+            Node newNode = switch (token.type()) {
+                case PATH_LITERAL -> new PathLiteral(token);
+                case ENV_VARIABLE -> new EnvVariable(token);
+                case PARENTHETICAL_EXPR -> new ParentheticalNode(token);
+                default ->
+                        throw new UnexpectedTokenException(token, "Invalid token in path literal.");
+            };
+            node.addChild(newNode);
+
+            Token nextToken = tokenStorage.peek();
+            if (!nextToken.isOfType(TokenType.SLASH, TokenType.EOF))
+                throw new UnexpectedTokenException(nextToken, "Path parts must be separated by slashes");
+
+            token = tokenStorage.consume();
+            if (token.isOfType(TokenType.EOF))
+                break;
+            token = tokenStorage.consume();
+        }
+
+        return node;
+    }
+
+    /**
      * Execute every expression, return the value as the result.
      *
      * @param ctx The context in which to execute the expressions.
@@ -280,7 +328,7 @@ public final class Parser {
         }
 
         for (Node expression : expressions) {
-            expression.print();
+                        expression.print();
             ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {

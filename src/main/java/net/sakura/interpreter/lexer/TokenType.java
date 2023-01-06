@@ -72,6 +72,7 @@ public enum TokenType {
     FUNC_DEF, // Function definition, a FUNC token followed by a BRACE token
     FUNC_CALL, // Function call, a symbol followed by parentheses
 
+    PATH_OPEN_PARENTHESIS, // $(
     OPEN_PARENTHESIS, // (
     CLOSE_PARENTHESIS, // )
     PARENTHETICAL_EXPR, // Full parentheses expression
@@ -82,6 +83,9 @@ public enum TokenType {
 
     ELLIPSIS, // ...
 
+    READ, // read
+
+    PATH_LITERAL,
     NUM_LITERAL, // floats and integers
     SYMBOL // any other text
 }

@@ -25,5 +25,6 @@ public enum DataType {
     NULL,
     FUNCTION,
     ITERABLE,
+    PATH,
     __BRACE_RETURN
 }

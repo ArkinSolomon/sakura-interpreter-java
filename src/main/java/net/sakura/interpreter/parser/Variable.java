@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.exceptions.UnexpectedTokenException;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
@@ -48,7 +49,7 @@ class Variable extends Node {
     @Override
     public void assign(ExecutionContext ctx, Value val) {
         if (ctx.hasLocalIdentifier(identifier))
-            throw new RuntimeException("Identifier exists");
+            throw new SakuraException(token.line(), token.column(), "Identifier \"%s\" already exists.".formatted(identifier));
         ctx.defineIdentifier(identifier, val.setMutability(true));
     }
 }

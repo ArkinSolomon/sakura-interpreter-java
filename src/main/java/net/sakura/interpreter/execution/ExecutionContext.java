@@ -22,6 +22,8 @@ import net.sakura.interpreter.functions.RangeFunction;
 import net.sakura.interpreter.functions.TerminateFunction;
 import net.sakura.interpreter.parser.Node;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,8 @@ public class ExecutionContext {
     private final Map<String, Value> identifiers = new HashMap<>();
     private final ExecutionContext root;
     private ExecutionContext parent = null;
+
+    private File rootPath = Paths.get("").toFile();
 
     /**
      * Create a new blank root execution context
@@ -62,6 +66,15 @@ public class ExecutionContext {
     public ExecutionContext(ExecutionContext parent) {
         this.parent = parent;
         root = parent.root;
+    }
+
+    /**
+     * Get the root path of the execution context.
+     *
+     * @return The root path of the execution context.
+     */
+    public File getRootPath() {
+        return rootPath;
     }
 
     /**
@@ -134,7 +147,7 @@ public class ExecutionContext {
      * @param identifier The identifier to check for.
      * @return True if this context contains such an identifier.
      */
-    public boolean hasLocalIdentifier(String identifier){
+    public boolean hasLocalIdentifier(String identifier) {
         return identifiers.containsKey(identifier);
     }
 
@@ -177,6 +190,8 @@ public class ExecutionContext {
         identifiers.put("TRUE", Value.TRUE);
         identifiers.put("FALSE", Value.FALSE);
 
+        identifiers.put("@root", new Value(DataType.PATH, rootPath, false));
+
         identifiers.put("@__lang_version", new Value(DataType.STRING, "1.0.0-alpha", false));
         identifiers.put("@__interpreter", new Value(DataType.STRING, "sakura.official.java", false));
         identifiers.put("@__interpreter_version", new Value(DataType.STRING, "1.0-SNAPSHOT", false));
@@ -196,17 +211,17 @@ public class ExecutionContext {
                 .sorted()
                 .toArray(String[]::new);
 
-        for (String k : ctxIds){
+        for (String k : ctxIds) {
             Value val = identifiers.get(k);
             String output = val.toString();
-            if (val.value() instanceof Function){
+            if (val.value() instanceof Function) {
                 if (val.value() instanceof Node)
                     output = "<defined function>";
                 else
                     output = val.value().getClass().getCanonicalName();
             }
 
-            System.out.printf("%s: %s%n", k, output);
+            System.out.printf("%s: %s%n", k, output.replaceAll("\n", "\\\\n"));
         }
 
     }

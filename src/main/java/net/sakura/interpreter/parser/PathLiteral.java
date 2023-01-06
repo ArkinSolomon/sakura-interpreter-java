@@ -13,33 +13,29 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.functions;
+package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.execution.DataType;
+import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
-
-import java.util.List;
+import net.sakura.interpreter.lexer.Token;
 
 /**
- * The print function to print a value.
+ * A token for a path literal.
  */
-public final class PrintFunction implements Function {
+final class PathLiteral extends Literal {
 
     /**
-     * Print the values provided.
+     * Create a path literal node from a path literal token.
      *
-     * @param args The arguments of the function.
-     * @return Always returns {@link Value#NULL}.
+     * @param token The path literal token.
      */
-    @Override
-    public Value execute(List<Value> args) {
-        StringBuilder printStr = new StringBuilder();
-        for (Value arg : args) {
-            printStr.append(arg);
-            printStr.append(" ");
-        }
-        String printValue = printStr.toString();
+    public PathLiteral(Token token) {
+        super(token);
+    }
 
-        System.out.println(printValue);
-        return null;
+    @Override
+    public Value evaluate(ExecutionContext ctx) {
+        return new Value(DataType.STRING, token.value(), false);
     }
 }

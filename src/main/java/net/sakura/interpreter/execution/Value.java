@@ -15,6 +15,8 @@
 
 package net.sakura.interpreter.execution;
 
+import java.io.File;
+
 /**
  * A single value, consisting of its type and actual value.
  *
@@ -42,6 +44,8 @@ public record Value(DataType type, Object value, boolean isMutable) {
             return "<function>";
         else if (type == DataType.__BRACE_RETURN)
             return "<_brace return_>";
+        else if (type == DataType.PATH)
+            return ((File) value).getAbsolutePath();
         return value.toString();
     }
 

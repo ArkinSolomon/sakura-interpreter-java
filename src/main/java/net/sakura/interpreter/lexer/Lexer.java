@@ -155,9 +155,15 @@ public final class Lexer {
 
                 startLine = currentLine;
                 startCol = currentCol;
-                if (thisChar == '$')
-                    currentType = TokenType.VARIABLE;
-                else if (thisChar == '%')
+                if (thisChar == '$') {
+                    if (nextChar != null && nextChar != '(')
+                        currentType = TokenType.VARIABLE;
+                    else {
+                        tokens.add(new Token(TokenType.PATH_OPEN_PARENTHESIS, currentLine, currentCol, "$("));
+                        currentCol++;
+                        scanner.next();
+                    }
+                } else if (thisChar == '%')
                     currentType = TokenType.CONST_VAR;
                 else if (thisChar == '@')
                     currentType = TokenType.ENV_VARIABLE;
@@ -232,7 +238,7 @@ public final class Lexer {
                     tokens.add(new Token(TokenType.CLOSE_BRACE, currentLine, currentCol, "}"));
                 else if (thisChar == ',')
                     tokens.add(new Token(TokenType.COMMA, currentLine, currentCol, ","));
-                else if (thisChar == '.'){
+                else if (thisChar == '.') {
                     if (!Objects.equals(next, "."))
                         throw new UnexpectedTokenException(currentLine, currentCol, "\"%s\"".formatted(next), "A period must be followed by two subsequent periods to form an ellipsis.");
                     scanner.next();
@@ -243,8 +249,7 @@ public final class Lexer {
                         throw new UnexpectedTokenException(currentLine, currentCol + 1, "\"%s\"".formatted(next), "A period must be followed by two subsequent periods to form an ellipsis.");
                     tokens.add(new Token(TokenType.ELLIPSIS, currentLine, currentCol, "..."));
                     currentCol += 2;
-                }
-                else {
+                } else {
                     currentType = TokenType.SYMBOL;
                     currentValue.append(thisChar);
 
@@ -277,12 +282,13 @@ public final class Lexer {
                         }
                         case "break" -> currentType = TokenType.BREAK;
                         case "continue" -> currentType = TokenType.CONTINUE;
+                        case "return" -> currentType = TokenType.RETURN;
                         case "else" -> currentType = TokenType.ELSE;
                         case "while" -> currentType = TokenType.WHILE;
                         case "func" -> currentType = TokenType.FUNC;
                         case "in" -> currentType = TokenType.IN;
                         case "for" -> currentType = TokenType.FOR;
-                        case "return" -> currentType = TokenType.RETURN;
+                        case "READ" -> currentType = TokenType.READ;
                         default -> {
                             if (isNumeric(value))
                                 currentType = TokenType.NUM_LITERAL;
@@ -392,7 +398,7 @@ public final class Lexer {
 
                     token = tokenStorage.consume();
                 }
-            } else if (token.isOfType(TokenType.SYMBOL) && tokenStorage.peekNextNonEOLToken().isOfType(TokenType.OPEN_PARENTHESIS)) {
+            } else if (token.isOfType(TokenType.SYMBOL) && tokenStorage.peekNextNonEOLToken() != null && tokenStorage.peekNextNonEOLToken().isOfType(TokenType.OPEN_PARENTHESIS)) {
 
                 // Function calls
                 String identifier = (String) token.value();
@@ -494,8 +500,7 @@ public final class Lexer {
                             } else if (token.isOfType(TokenType.VARIABLE)) {
                                 argStartToken = token;
                                 argId = (String) token.value();
-                            }
-                            else if (token.isOfType(TokenType.EQUALS, TokenType.COMMA, TokenType.CLOSE_PARENTHESIS)) {
+                            } else if (token.isOfType(TokenType.EQUALS, TokenType.COMMA, TokenType.CLOSE_PARENTHESIS)) {
                                 if (token.isOfType(TokenType.EQUALS)) {
                                     hasDefault = true;
 
@@ -550,8 +555,8 @@ public final class Lexer {
                                     break;
                             }
 
-                            if (token.isOfType(TokenType.CONST_VAR, TokenType.VARIABLE)){
-                                if (tokenStorage.peek().isOfType(TokenType.ELLIPSIS)){
+                            if (token.isOfType(TokenType.CONST_VAR, TokenType.VARIABLE)) {
+                                if (tokenStorage.peek().isOfType(TokenType.ELLIPSIS)) {
                                     tokenStorage.consume();
 
                                     if (!tokenStorage.nextNonEOLToken().isOfType(TokenType.CLOSE_PARENTHESIS))
@@ -716,6 +721,81 @@ public final class Lexer {
 
                 // We already consumed the brace
                 continue;
+            } else if (token.isOfType(TokenType.READ)) {
+                token = tokenStorage.consume();
+                Token readStart = token;
+
+                List<Token> readPath = new ArrayList<>();
+                while (token != null && (!token.isOfType(TokenType.EOF, TokenType.EOL) || tokenStorage.lastToken() != null && !tokenStorage.lastToken().isOfType(TokenType.BACKSLASH) || token.isOfType(TokenType.SEMI))) {
+
+                    // Replace \$ and \@s with literals
+                    if (token.isOfType(TokenType.ENV_VARIABLE)) {
+                        if (tokenStorage.lastToken() != null && tokenStorage.lastToken().isOfType(TokenType.BACKSLASH)) {
+                            token = new Token(TokenType.PATH_LITERAL, token.line(), token.column(), (token.isOfType(TokenType.ENV_VARIABLE) ? "@" : "$") + token.value());
+                            readPath.remove(readPath.size() - 1);
+                        }
+                    } else if (token.isOfType(TokenType.SYMBOL, TokenType.QUOTE)) {
+                        if (token.isOfType(TokenType.QUOTE)) {
+                            String quoteVal = (String) token.value();
+                            if (quoteVal.contains("/"))
+                                throw new UnexpectedTokenException(token.line(), token.column() + quoteVal.indexOf("/") + 1, "\"/\"", "Path can not contain slashes within quotes.");
+                            else if (quoteVal.contains("\n"))
+                                throw new UnexpectedTokenException(token.line(), token.column() + quoteVal.indexOf("\n") + 1, "\"\\n\"", "Path can not contain newlines within quotes.");
+                        }
+                        token = new Token(TokenType.PATH_LITERAL, token.line(), token.column(), token.value());
+                    } else if (token.isOfType(TokenType.BACKSLASH)) {
+                        Token lastToken = tokenStorage.lastToken();
+                        if (lastToken != null && lastToken.isOfType(TokenType.BACKSLASH)) {
+                            token = new Token(TokenType.PATH_LITERAL, lastToken.line(), lastToken.column(), "\\");
+                            readPath.remove(readPath.size() - 1);
+                        }
+                    } else if (token.isOfType(TokenType.PATH_OPEN_PARENTHESIS)) {
+
+                        List<Token> toSimplify = new ArrayList<>();
+                        final int startLine = token.line();
+                        final int startCol = token.column();
+
+                        token = tokenStorage.consume();
+                        int depth = 0;
+                        while (token != null && !token.isOfType(TokenType.EOF)) {
+                            if (token.isOfType(TokenType.CLOSE_PARENTHESIS) && depth == 0) {
+                                toSimplify.add(new Token(TokenType.EOF, token.line(), token.column(), "<CLOSE PATH PARENTHESIS>"));
+
+                                List<Token> content = simplify(toSimplify);
+                                token = new Token(TokenType.PARENTHETICAL_EXPR, startLine, startCol, content);
+                                break;
+                            } else if (isMultiStatement(token))
+                                throw new UnexpectedTokenException(token);
+                            else {
+                                if (token.isOfType(TokenType.OPEN_PARENTHESIS))
+                                    ++depth;
+                                else if (token.isOfType(TokenType.CLOSE_PARENTHESIS))
+                                    --depth;
+
+                                toSimplify.add(token);
+                                token = tokenStorage.consume();
+                            }
+                        }
+                    } else if (token.isOfType(TokenType.EOL) || token.isOfType(TokenType.SEMI)) {
+                        newTokens.add(token);
+                        break;
+                    } else if (!token.isOfType(TokenType.SLASH))
+                        throw new UnexpectedTokenException(token, "Unexpected token in path literal.");
+
+                    readPath.add(token);
+                    token = tokenStorage.consume();
+                }
+
+                if (readPath.size() == 0) {
+
+                    // We know that it won't be null, but it may be an EOF
+                    assert readStart != null;
+                    throw new SakuraException(readStart.line(), readStart.column(), "READ keyword must be followed by a path");
+                }
+
+                Token last = readPath.get(readPath.size() - 1);
+                readPath.add(new Token(TokenType.EOF, last.line(), last.column(), "<READ END>"));
+                newTokens.add(new Token(TokenType.READ, readStart.line(), readStart.column(), readPath));
             } else
 
                 // Simply every other token

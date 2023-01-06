@@ -187,7 +187,7 @@ public abstract class Node {
      * @param indentCount The indent for this node.
      */
     public final void print(int indentCount) {
-        System.out.println("-".repeat(indentCount) + token);
+        System.out.println("-".repeat(indentCount) + this);
         for (Node child : children) {
             if (child == null) {
                 System.out.println("-".repeat(indentCount + 2) + "<NULL CHILD>");
