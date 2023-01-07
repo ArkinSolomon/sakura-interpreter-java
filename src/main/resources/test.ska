@@ -11,8 +11,8 @@ func readDir(%dir) {
             print("")
             readDir(file)
         } else {
-            %contents = READ $(file)
             print("Printing file: " + file)
+            %contents = READ $(file)
             print(contents)
         }
     }

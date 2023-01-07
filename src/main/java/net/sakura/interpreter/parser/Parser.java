@@ -270,8 +270,10 @@ public final class Parser {
                             newNode.insertChild(replacementChild);
                             insertionPoint.setChild(replacementIndex, newNode);
                         } else {
-                            if (expectNewLine)
+                            if (expectNewLine){
+                                tokenStorage.printTokens();
                                 throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
+                            }
                             expressions.add(root);
                             exprStartToken = token;
                             root = newNode;

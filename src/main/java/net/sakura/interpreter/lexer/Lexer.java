@@ -118,6 +118,7 @@ public final class Lexer {
         TokenType currentType = null;
         StringBuilder currentValue = new StringBuilder();
 
+        boolean isInComment = false;
         boolean incLine = false;
 
         while (scanner.hasNext()) {
@@ -135,8 +136,17 @@ public final class Lexer {
                 currentCol = 1;
             }
 
-            if (thisChar == '\n')
+            // These following if statements handle comments properly, only continuing if it's a comment, which only occurs on non-newline chars, since the switch statement can handle newlines
+            if (thisChar == '\n') {
+                if (isInComment)
+                    tokens.add(new Token(TokenType.EOL, currentLine, ++currentCol, "\\n"));
+
+                isInComment = false;
                 incLine = true;
+            }
+
+            if (isInComment)
+                continue;
 
             String next = scanner.peek();
             Character nextChar = next == null ? null : next.charAt(0);
@@ -167,6 +177,8 @@ public final class Lexer {
                     currentType = TokenType.CONST_VAR;
                 else if (thisChar == '@')
                     currentType = TokenType.ENV_VARIABLE;
+                else if (thisChar == '#')
+                    isInComment = true;
                 else if (thisChar == '=') {
                     if (nextChar == null)
                         throw new UnexpectedTokenException(currentLine, currentCol, "=");
@@ -272,6 +284,9 @@ public final class Lexer {
                         currentValue.append(thisChar);
 
                     String value = currentValue.toString();
+                    if ((currentType == TokenType.VARIABLE || currentType == TokenType.CONST_VAR || currentType == TokenType.ENV_VARIABLE) && !isValidIdentifier(value))
+                        throw new SakuraException(startLine, startCol, "The identifier \"%s\" is invalid.".formatted(value));
+
                     switch (value) {
                         case "if" -> {
                             currentType = TokenType.IF;
@@ -298,7 +313,8 @@ public final class Lexer {
                         }
                     }
 
-                    tokens.add(new Token(currentType, startLine, startCol, value));
+                    Token newToken = new Token(currentType, startLine, startCol, value);
+                    tokens.add(newToken);
                     currentType = null;
                     currentValue = new StringBuilder();
                 } else {
@@ -730,7 +746,7 @@ public final class Lexer {
                 token = tokenStorage.consume();
 
                 List<Token> path = new ArrayList<>();
-                while (token != null && !token.isOfType(TokenType.EOF, TokenType.EOL, TokenType.SEMI) && tokenStorage.lastToken() != null && !tokenStorage.lastToken().isOfType(TokenType.BACKSLASH)) {
+                while (token != null && !token.isOfType(TokenType.EOF)) {
 
                     // Replace \$ and \@s with literals
                     if (token.isOfType(TokenType.ENV_VARIABLE)) {
