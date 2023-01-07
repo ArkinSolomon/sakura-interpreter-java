@@ -1,3 +1,19 @@
-%hello = "idk lol a path"
-$x = READ @root/src/main/java/net/sakura/interpreter/"SakuraInterpreter.java"
-print(x)
+$path = PATH /src/
+
+readDir(path)
+
+func readDir(%dir) {
+    print("Reading files in directory: " + dir)
+    for %file in dir {
+        %isDir = ISDIR $(file)
+
+        if isDir {
+            print("")
+            readDir(file)
+        } else {
+            %contents = READ $(file)
+            print("Printing file: " + file)
+            print(contents)
+        }
+    }
+}

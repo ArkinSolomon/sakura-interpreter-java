@@ -208,6 +208,6 @@ public abstract class Node {
 
     @Override
     public String toString() {
-        return "[" + getClass().getSimpleName() + "] " + token.toString();
+        return "[" + getClass().getSimpleName() + "] " + (token == null ? "NO TOKEN" : token.toString());
     }
 }

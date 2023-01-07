@@ -51,6 +51,20 @@ public final class Parser {
     }
 
     /**
+     * Helper function to parse nodes directly as a path.
+     *
+     * @param trigger The node that triggered the parsing.
+     * @param pathTokens    The nodes to parse.
+     * @return The tokens parsed as a path.
+     */
+    public static PathNode parseNodesAsPath(Token trigger, List<Token> pathTokens) {
+        TokenStorage ts = new TokenStorage(pathTokens);
+
+        Parser pathParser = new Parser(ts);
+        return pathParser.parseAsPath(trigger);
+    }
+
+    /**
      * Stop execution of this parser.
      */
     void stop() {
@@ -65,7 +79,7 @@ public final class Parser {
     }
 
     /**
-     * Create the tree and check the top level and if-statements of the tree for any break or continue statements.
+     * Create the tree and check the top level and if-statements of the tree for any break or continue statements, and without checking for standalone variables.
      *
      * @return The nodes from the created tree.
      */
@@ -74,12 +88,23 @@ public final class Parser {
     }
 
     /**
-     * Create the tree.
+     * Create the tree, without checking for standalone variables.
      *
      * @param checkTopLevel True if to check for break or continue statements in the top level and if-statements of the tree.
      * @return The nodes from the created tree.
      */
     List<Node> parse(boolean checkTopLevel) {
+        return parse(checkTopLevel, false);
+    }
+
+    /**
+     * Create the tree.
+     *
+     * @param checkTopLevel      True if to check for break or continue statements in the top level and if-statements of the tree.
+     * @param checkForStandalone True if to check for literals without operators.
+     * @return The nodes from the created tree.
+     */
+    List<Node> parse(boolean checkTopLevel, boolean checkForStandalone) {
 
         Node root = null;
         Node currentNode = null;
@@ -125,6 +150,7 @@ public final class Parser {
             }
 
             TokenType type = token.type();
+
             Node newNode = switch (type) {
                 case EQUALS -> new AssignmentOperator(token);
                 case NOT_EQUALS -> new NotEqualsOperator(token);
@@ -160,6 +186,13 @@ public final class Parser {
                 case NUM_LITERAL -> new NumberLiteral(token);
                 case SYMBOL -> new Symbol(token);
                 case READ -> new ReadStatement(token);
+                case PATH -> {
+                    @SuppressWarnings("unchecked")
+                    List<Token> pathTokens = (List<Token>) token.value();
+                    yield parseNodesAsPath(token, pathTokens);
+                }
+                case ISDIR -> new IsDirCommand(token);
+                case ISFILE -> new IsFileCommand(token);
                 default -> {
                     String message = switch (type) {
                         case CLOSE_PARENTHESIS ->
@@ -251,9 +284,14 @@ public final class Parser {
             currentNode = newNode;
         }
 
-        for (Node expr : expressions) {
-            if (expr instanceof Literal)
-                throw new UnexpectedTokenException(expr.getToken(), "Stand-alone literals are not allowed.");
+        if (checkForStandalone) {
+            for (Node expr : expressions) {
+                expr.print();
+                if (expr instanceof Literal) {
+                    throw new UnexpectedTokenException(expr.getToken(), "Stand-alone literals are not allowed.");
+
+                }
+            }
         }
 
         if (checkTopLevel) {
@@ -286,9 +324,13 @@ public final class Parser {
         else if (token.isOfType(TokenType.ENV_VARIABLE, TokenType.PARENTHETICAL_EXPR)) {
             node.addChild(token.isOfType(TokenType.ENV_VARIABLE) ? new EnvVariable(token) : new ParentheticalNode(token));
             tokenStorage.consume();
-        }
+        } else
+            throw new UnexpectedTokenException(token, "Unexpected start of path, path must start with an expression of type \"Path\" or a slash to start from root. Did you mean to wrap your token in \"$()\"");
 
-        token = tokenStorage.consume();
+        if (tokenStorage.hasNext())
+            token = tokenStorage.consume();
+        else
+            return node;
         while (token != null && !token.isOfType(TokenType.EOF)) {
             Node newNode = switch (token.type()) {
                 case PATH_LITERAL -> new PathLiteral(token);
@@ -301,7 +343,7 @@ public final class Parser {
 
             Token nextToken = tokenStorage.peek();
             if (!nextToken.isOfType(TokenType.SLASH, TokenType.EOF))
-                throw new UnexpectedTokenException(nextToken, "Path parts must be separated by slashes");
+                throw new UnexpectedTokenException(nextToken, "Path parts must be separated by forward slashes.");
 
             token = tokenStorage.consume();
             if (token.isOfType(TokenType.EOF))
@@ -328,7 +370,7 @@ public final class Parser {
         }
 
         for (Node expression : expressions) {
-                        expression.print();
+            //            expression.print();
             ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {

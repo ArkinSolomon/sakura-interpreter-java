@@ -22,7 +22,7 @@ import net.sakura.interpreter.execution.Value;
 /**
  * An iterator for a certain range.
  */
-public final class RangeIterator implements Iterable {
+public final class RangeIterable implements Iterable {
 
     private final int start;
     private final int end;
@@ -36,7 +36,7 @@ public final class RangeIterator implements Iterable {
      * @param end   The ending value of the iterator.
      * @param step  The step value of the iterator.
      */
-    public RangeIterator(int start, int end, int step) {
+    public RangeIterable(int start, int end, int step) {
         this.start = start;
         this.end = end;
         this.step = step;
@@ -56,6 +56,6 @@ public final class RangeIterator implements Iterable {
 
     @Override
     public Iterable copy() {
-        return new RangeIterator(start, end, step);
+        return new RangeIterable(start, end, step);
     }
 }

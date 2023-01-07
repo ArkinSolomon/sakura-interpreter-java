@@ -83,7 +83,10 @@ public enum TokenType {
 
     ELLIPSIS, // ...
 
-    READ, // read
+    PATH, // PATH (file command)
+    READ, // READ (file command)
+    ISDIR, // ISDIR (file command)
+    ISFILE, // ISFILE (file command)
 
     PATH_LITERAL,
     NUM_LITERAL, // floats and integers

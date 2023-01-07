@@ -49,7 +49,7 @@ final class FunctionCall extends Node {
             TokenStorage storage = new TokenStorage(tokens);
             Parser parser = new Parser(storage);
 
-            List<Node> argument = parser.parse(false);
+            List<Node> argument = parser.parse(false, false);
 
             if (argument.size() != 1)
                 throw new RuntimeException("Function arguments can only be one expression");

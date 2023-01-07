@@ -83,12 +83,12 @@ public final class Lexer {
     }
 
     /**
-     * Check for basic multi-statement tokens.
+     * Check for basic multi-statement tokens or commands.
      *
      * @return True if the token is of a type that is determined to be a multi-statement token.
      */
     private static boolean isMultiStatement(Token token) {
-        return token.isOfType(TokenType.SEMI, TokenType.RETURN, TokenType.CONTINUE, TokenType.BREAK, TokenType.IF, TokenType.ELSE, TokenType.ELIF, TokenType.WHILE, TokenType.FOR, TokenType.FUNC, TokenType.OPEN_BRACE, TokenType.CLOSE_BRACE);
+        return token.isOfType(TokenType.SEMI, TokenType.RETURN, TokenType.CONTINUE, TokenType.BREAK, TokenType.IF, TokenType.ELSE, TokenType.ELIF, TokenType.WHILE, TokenType.FOR, TokenType.FUNC, TokenType.OPEN_BRACE, TokenType.CLOSE_BRACE, TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR);
     }
 
     /**
@@ -289,6 +289,9 @@ public final class Lexer {
                         case "in" -> currentType = TokenType.IN;
                         case "for" -> currentType = TokenType.FOR;
                         case "READ" -> currentType = TokenType.READ;
+                        case "PATH" -> currentType = TokenType.PATH;
+                        case "ISDIR" -> currentType = TokenType.ISDIR;
+                        case "ISFILE" -> currentType = TokenType.ISFILE;
                         default -> {
                             if (isNumeric(value))
                                 currentType = TokenType.NUM_LITERAL;
@@ -360,10 +363,10 @@ public final class Lexer {
      */
     private List<Token> simplify(List<Token> tokens, boolean isRoot) {
         TokenStorage tokenStorage = new TokenStorage(tokens);
-        if (isRoot) {
-            tokenStorage.printTokens();
-            System.out.println();
-        }
+        //        if (isRoot) {
+        //            tokenStorage.printTokens();
+        //            System.out.println();
+        //        }
 
         List<Token> newTokens = new ArrayList<>();
         Token token = tokenStorage.consume();
@@ -721,20 +724,23 @@ public final class Lexer {
 
                 // We already consumed the brace
                 continue;
-            } else if (token.isOfType(TokenType.READ)) {
+            } else if (token.isOfType(TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR)) {
+                TokenType initialTokenType = token.type();
+                Token startToken = token;
                 token = tokenStorage.consume();
-                Token readStart = token;
 
-                List<Token> readPath = new ArrayList<>();
-                while (token != null && (!token.isOfType(TokenType.EOF, TokenType.EOL) || tokenStorage.lastToken() != null && !tokenStorage.lastToken().isOfType(TokenType.BACKSLASH) || token.isOfType(TokenType.SEMI))) {
+                List<Token> path = new ArrayList<>();
+                while (token != null && !token.isOfType(TokenType.EOF, TokenType.EOL, TokenType.SEMI) && tokenStorage.lastToken() != null && !tokenStorage.lastToken().isOfType(TokenType.BACKSLASH)) {
 
                     // Replace \$ and \@s with literals
                     if (token.isOfType(TokenType.ENV_VARIABLE)) {
                         if (tokenStorage.lastToken() != null && tokenStorage.lastToken().isOfType(TokenType.BACKSLASH)) {
                             token = new Token(TokenType.PATH_LITERAL, token.line(), token.column(), (token.isOfType(TokenType.ENV_VARIABLE) ? "@" : "$") + token.value());
-                            readPath.remove(readPath.size() - 1);
+                            path.remove(path.size() - 1);
                         }
                     } else if (token.isOfType(TokenType.SYMBOL, TokenType.QUOTE)) {
+
+                        // We want to treat quotes as a single path literal
                         if (token.isOfType(TokenType.QUOTE)) {
                             String quoteVal = (String) token.value();
                             if (quoteVal.contains("/"))
@@ -742,12 +748,14 @@ public final class Lexer {
                             else if (quoteVal.contains("\n"))
                                 throw new UnexpectedTokenException(token.line(), token.column() + quoteVal.indexOf("\n") + 1, "\"\\n\"", "Path can not contain newlines within quotes.");
                         }
+
                         token = new Token(TokenType.PATH_LITERAL, token.line(), token.column(), token.value());
                     } else if (token.isOfType(TokenType.BACKSLASH)) {
+
                         Token lastToken = tokenStorage.lastToken();
                         if (lastToken != null && lastToken.isOfType(TokenType.BACKSLASH)) {
                             token = new Token(TokenType.PATH_LITERAL, lastToken.line(), lastToken.column(), "\\");
-                            readPath.remove(readPath.size() - 1);
+                            path.remove(path.size() - 1);
                         }
                     } else if (token.isOfType(TokenType.PATH_OPEN_PARENTHESIS)) {
 
@@ -776,26 +784,28 @@ public final class Lexer {
                                 token = tokenStorage.consume();
                             }
                         }
-                    } else if (token.isOfType(TokenType.EOL) || token.isOfType(TokenType.SEMI)) {
+                    } else if (token.isOfType(TokenType.EOL, TokenType.SEMI)) {
                         newTokens.add(token);
                         break;
                     } else if (!token.isOfType(TokenType.SLASH))
                         throw new UnexpectedTokenException(token, "Unexpected token in path literal.");
 
-                    readPath.add(token);
-                    token = tokenStorage.consume();
+                    path.add(token);
+
+                    if (tokenStorage.hasNext())
+                        token = tokenStorage.consume();
+                    else {
+                        assert token != null;
+                        throw new UnexpectedTokenException(token, "Missing a closing parenthesis in path expression.");
+                    }
                 }
 
-                if (readPath.size() == 0) {
+                if (path.size() == 0)
+                    throw new SakuraException(startToken.line(), startToken.column(), "File operation commands must be followed by a path.");
 
-                    // We know that it won't be null, but it may be an EOF
-                    assert readStart != null;
-                    throw new SakuraException(readStart.line(), readStart.column(), "READ keyword must be followed by a path");
-                }
-
-                Token last = readPath.get(readPath.size() - 1);
-                readPath.add(new Token(TokenType.EOF, last.line(), last.column(), "<READ END>"));
-                newTokens.add(new Token(TokenType.READ, readStart.line(), readStart.column(), readPath));
+                Token last = path.get(path.size() - 1);
+                path.add(new Token(TokenType.EOF, last.line(), last.column(), "<FILE I/O CMD END>"));
+                newTokens.add(new Token(initialTokenType, startToken.line(), startToken.column(), path));
             } else
 
                 // Simply every other token

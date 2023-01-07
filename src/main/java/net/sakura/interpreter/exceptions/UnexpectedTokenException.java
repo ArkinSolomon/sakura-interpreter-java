@@ -16,6 +16,7 @@
 package net.sakura.interpreter.exceptions;
 
 import net.sakura.interpreter.lexer.FunctionCallData;
+import net.sakura.interpreter.lexer.FunctionDefinitionData;
 import net.sakura.interpreter.lexer.Token;
 import net.sakura.interpreter.lexer.TokenType;
 
@@ -88,7 +89,7 @@ public class UnexpectedTokenException extends SakuraException {
             case MINUS -> "-";
             case MULTIPLY -> "*";
             case QUOTE -> "\"";
-            case SYMBOL, VARIABLE, CONST_VAR, ENV_VARIABLE ->
+            case SYMBOL, VARIABLE, CONST_VAR, ENV_VARIABLE, PATH_LITERAL ->
                     (String) token.value();
             case COMMA -> ",";
             case IF -> "if";
@@ -109,6 +110,7 @@ public class UnexpectedTokenException extends SakuraException {
             case OPEN_BRACE -> "{";
             case CLOSE_BRACE -> "}";
             case NUM_LITERAL -> token.value().toString();
+            case FUNC_DEF -> "func " + ((FunctionDefinitionData) token.value()).identifier();
             default -> token.type().toString();
         };
         tokenStr += "\"";

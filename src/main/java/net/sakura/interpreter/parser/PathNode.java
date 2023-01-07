@@ -90,6 +90,6 @@ final class PathNode extends Node {
 
     @Override
     public int getPrecedence() {
-        throw new UnsupportedOperationException("Can not get the precedence of a path");
+        return Precedences.VALUE;
     }
 }

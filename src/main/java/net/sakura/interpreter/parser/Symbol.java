@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
@@ -39,7 +40,7 @@ final class Symbol extends Node {
         boolean hasId = ctx.hasIdentifier(identifier);
 
         if (!hasId)
-            throw new RuntimeException("Identifier not found, did you declare it?");
+            throw new SakuraException(token.line(), token.column(), "Identifier \"%s\"not found, did you declare it?".formatted(identifier));
        else if (!ctx.getIdentifier(identifier).isMutable())
             throw new UnsupportedOperationException("Can not assign to immutable variable");
         ctx.modifyIdentifier(identifier, val);

@@ -80,7 +80,8 @@ public class TokenStorage {
      * Get the last token.
      */
     public Token lastToken() {
-        if (current > 0) return tokens.get(current - 1);
+        if (current > 0)
+            return tokens.get(current - 1);
         return null;
     }
 

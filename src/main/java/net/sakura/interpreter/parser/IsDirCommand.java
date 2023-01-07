@@ -15,37 +15,30 @@
 
 package net.sakura.interpreter.parser;
 
-import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 
 /**
- * A node for reading entire files.
+ * A command for determining if a path is a directory.
  */
-final class ReadStatement extends SinglePathCommand {
+public class IsDirCommand extends SinglePathCommand {
 
     /**
-     * Create a new read statement from a token.
+     * Create a new node with the token that triggered this node's creation.
      *
-     * @param token The token for the read statement.
+     * @param token The token that created this node.
      */
-    public ReadStatement(Token token) {
+    public IsDirCommand(Token token){
         super(token);
     }
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        File path = getPath(ctx);
-        try {
-            String fileContents = FileUtils.readFileToString(path, "utf-8");
-            return new Value(DataType.STRING, fileContents, false);
-        } catch (Throwable e) {
-            throw new SakuraException("Error reading file", e);
-        }
+        File dir = getPath(ctx);
+        return new Value(DataType.BOOLEAN, dir.isDirectory(), false);
     }
 }

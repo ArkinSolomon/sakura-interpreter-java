@@ -16,6 +16,7 @@
 package net.sakura.interpreter.parser;
 
 import net.sakura.interpreter.execution.DataType;
+import net.sakura.interpreter.execution.DirectoryIterable;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.ExecutionResult;
 import net.sakura.interpreter.execution.Iterable;
@@ -26,6 +27,7 @@ import net.sakura.interpreter.lexer.Token;
 import net.sakura.interpreter.lexer.TokenStorage;
 import net.sakura.interpreter.lexer.TokenType;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,6 +90,8 @@ final class ForLoop extends Expression {
             loopIterable = new StringIterable((String) iterableEvalResult.value());
         else if (iterableEvalResult.type() == DataType.ITERABLE)
             loopIterable = (Iterable) iterableEvalResult.value();
+        else if (iterableEvalResult.type() == DataType.PATH)
+            loopIterable = new DirectoryIterable((File) iterableEvalResult.value());
         else
             throw new RuntimeException("For loops can only loop over iterables");
 
@@ -98,12 +102,11 @@ final class ForLoop extends Expression {
 
             Value braceReturn = getChild(1).evaluate(tempCtx);
             ExecutionResult result = (ExecutionResult) braceReturn.value();
-            if (result.earlyReturnType() != EarlyReturnType.NONE){
-                if (result.earlyReturnType() == EarlyReturnType.CONTINUE){
+            if (result.earlyReturnType() != EarlyReturnType.NONE) {
+                if (result.earlyReturnType() == EarlyReturnType.CONTINUE) {
                     curr = loopIterable.next();
                     continue;
-                }
-                else if (result.earlyReturnType() == EarlyReturnType.BREAK)
+                } else if (result.earlyReturnType() == EarlyReturnType.BREAK)
                     return Value.NULL;
                 else
                     parent.stop();

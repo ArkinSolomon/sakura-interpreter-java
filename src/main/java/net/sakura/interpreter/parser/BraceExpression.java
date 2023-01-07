@@ -46,7 +46,7 @@ final class BraceExpression extends Expression {
         List<Token> body = (List<Token>) token.value();
         TokenStorage ts = new TokenStorage(body);
         this.body = new Parser(ts);
-        this.body.parse(false);
+        this.body.parse(false, true);
     }
 
     @Override

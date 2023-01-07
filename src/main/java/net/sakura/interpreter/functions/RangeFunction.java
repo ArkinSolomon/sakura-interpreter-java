@@ -47,13 +47,13 @@ public final class RangeFunction implements Function {
                 })
                 .toArray(Integer[]::new);
 
-        RangeIterator i = null;
+        RangeIterable i;
         if (args.size() == 1)
-            i = new RangeIterator(0, numbers[0], 1);
+            i = new RangeIterable(0, numbers[0], 1);
         else if (args.size() == 2)
-            i = new RangeIterator(numbers[0], numbers[1], 1);
+            i = new RangeIterable(numbers[0], numbers[1], 1);
         else
-            i = new RangeIterator(numbers[0], numbers[1], numbers[2]);
+            i = new RangeIterable(numbers[0], numbers[1], numbers[2]);
 
         return new Value(DataType.ITERABLE, i, false);
     }
