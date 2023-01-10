@@ -22,6 +22,7 @@ import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Lexer;
 import net.sakura.interpreter.lexer.Token;
 import net.sakura.interpreter.lexer.TokenStorage;
+import net.sakura.interpreter.operations.OperationConfig;
 import net.sakura.interpreter.parser.Parser;
 
 import java.io.IOException;
@@ -51,6 +52,7 @@ public class SakuraInterpreter {
      */
     public SakuraInterpreter(InterpreterOptions options) {
         this.options = options;
+        OperationConfig.init();
     }
 
     /**
@@ -81,23 +83,27 @@ public class SakuraInterpreter {
      * @return The result of the analyzed tokens after execution.
      */
     private Value execLexer(Lexer lexer) {
-        List<Token> tokens = lexer.analyze();
-        TokenStorage tokenStorage = new TokenStorage(tokens);
-
-        System.out.println();
-        tokenStorage.printTokens();
-
-        Parser parser = new Parser(tokenStorage);
-        parser.parse();
-
-        System.out.println("\n--Output--\n");
         ExecutionContext ctx = createContext();
-        Value retVal = parser.execute(ctx).returnValue();
+        try {
+            List<Token> tokens = lexer.analyze();
+            TokenStorage tokenStorage = new TokenStorage(tokens);
 
-        System.out.println("\n--Execution context--\n");
-        ctx.printContext();
+//            System.out.println();
+//            tokenStorage.printTokens();
 
-        return retVal;
+            Parser parser = new Parser(tokenStorage);
+            parser.parse();
+
+//            System.out.println("\n--Output--\n");
+
+            Value retVal = parser.execute(ctx).returnValue();
+//            System.out.println("\n--Execution context--\n");
+//            ctx.printContext();
+            return retVal;
+        }catch (Throwable e){
+            ctx.getFileTracker().undoOperations();
+            throw e;
+        }
     }
 
     /**
@@ -123,7 +129,6 @@ public class SakuraInterpreter {
             System.err.println(e.getMessage());
             for (String call : e.getStacktrace())
                 System.err.println("\tat " + call);
-            System.err.println("");
             e.printStackTrace();
         }
     }

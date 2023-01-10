@@ -1,19 +1,5 @@
-$path = PATH /src/
-
-readDir(path)
-
-func readDir(%dir) {
-    print("Reading files in directory: " + dir)
-    for %file in dir {
-        %isDir = ISDIR $(file)
-
-        if isDir {
-            print("")
-            readDir(file)
-        } else {
-            print("Printing file: " + file)
-            %contents = READ $(file)
-            print(contents)
-        }
-    }
-}
+%path = PATH /src/main/resources/"Test File"
+%content = READ $(path)
+DELETE $(path)
+print(content)
+DELETE $(path)

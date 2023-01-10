@@ -20,6 +20,7 @@ import net.sakura.interpreter.functions.Function;
 import net.sakura.interpreter.functions.PrintFunction;
 import net.sakura.interpreter.functions.RangeFunction;
 import net.sakura.interpreter.functions.TerminateFunction;
+import net.sakura.interpreter.operations.FileTracker;
 import net.sakura.interpreter.parser.Node;
 
 import java.io.File;
@@ -37,8 +38,9 @@ public class ExecutionContext {
     private final Map<String, Value> identifiers = new HashMap<>();
     private final ExecutionContext root;
     private ExecutionContext parent = null;
+    private FileTracker fileTracker = new FileTracker();
 
-    private File rootPath = Paths.get("").toFile();
+    private final File rootPath = Paths.get("").toFile();
 
     /**
      * Create a new blank root execution context
@@ -65,6 +67,7 @@ public class ExecutionContext {
      */
     public ExecutionContext(ExecutionContext parent) {
         this.parent = parent;
+        this.fileTracker = parent.fileTracker;
         root = parent.root;
     }
 
@@ -84,6 +87,15 @@ public class ExecutionContext {
      */
     public ExecutionContext getRoot() {
         return root;
+    }
+
+    /**
+     * Get the current file tracker.
+     *
+     * @return This execution context's file tracker.
+     */
+    public FileTracker getFileTracker(){
+        return fileTracker;
     }
 
     /**

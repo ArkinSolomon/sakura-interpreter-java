@@ -307,6 +307,7 @@ public final class Lexer {
                         case "PATH" -> currentType = TokenType.PATH;
                         case "ISDIR" -> currentType = TokenType.ISDIR;
                         case "ISFILE" -> currentType = TokenType.ISFILE;
+                        case "DELETE" -> currentType = TokenType.DELETE;
                         default -> {
                             if (isNumeric(value))
                                 currentType = TokenType.NUM_LITERAL;
@@ -740,7 +741,7 @@ public final class Lexer {
 
                 // We already consumed the brace
                 continue;
-            } else if (token.isOfType(TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR)) {
+            } else if (token.isOfType(TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR, TokenType.DELETE)) {
                 TokenType initialTokenType = token.type();
                 Token startToken = token;
                 token = tokenStorage.consume();

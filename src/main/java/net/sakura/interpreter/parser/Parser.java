@@ -122,7 +122,8 @@ public final class Parser {
                 if (root != null) {
                     //                    if (expectNewLine)
                     //                        throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
-                    if (!root.isCompletelyFull())
+                    // Return statements have optional children so add a return statement, even if it's not full
+                    if (!root.isCompletelyFull() && !(root instanceof ReturnStatement))
                         throw new UnexpectedTokenException(exprStartToken);
                     expressions.add(root);
                 }
@@ -193,6 +194,7 @@ public final class Parser {
                 }
                 case ISDIR -> new IsDirCommand(token);
                 case ISFILE -> new IsFileCommand(token);
+                case DELETE -> new DeleteCommand(token);
                 default -> {
                     String message = switch (type) {
                         case CLOSE_PARENTHESIS ->
@@ -270,10 +272,8 @@ public final class Parser {
                             newNode.insertChild(replacementChild);
                             insertionPoint.setChild(replacementIndex, newNode);
                         } else {
-                            if (expectNewLine){
-                                tokenStorage.printTokens();
+                            if (expectNewLine)
                                 throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
-                            }
                             expressions.add(root);
                             exprStartToken = token;
                             root = newNode;
@@ -312,7 +312,6 @@ public final class Parser {
      * @return The tokens parsed as a path.
      */
     public PathNode parseAsPath(Token trigger) {
-        tokenStorage.printTokens();
         if (!tokenStorage.hasNext())
             throw new SakuraException("Can not parse empty path.");
 

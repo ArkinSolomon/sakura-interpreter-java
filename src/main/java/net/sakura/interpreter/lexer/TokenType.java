@@ -87,6 +87,7 @@ public enum TokenType {
     READ, // READ (file command)
     ISDIR, // ISDIR (file command)
     ISFILE, // ISFILE (file command)
+    DELETE, // DELETE (delete command)
 
     PATH_LITERAL,
     NUM_LITERAL, // floats and integers
