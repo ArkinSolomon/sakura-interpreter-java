@@ -1,5 +1,2 @@
-%path = PATH /src/main/resources/"Test File"
-%content = READ $(path)
-DELETE $(path)
-print(content)
+%path = PATH /src/main/resources/"new folder"
 DELETE $(path)

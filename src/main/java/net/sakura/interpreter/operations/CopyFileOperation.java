@@ -44,7 +44,7 @@ public final class CopyFileOperation extends Operation {
     }
 
     @Override
-    public void perform() {
+    void perform() {
         if (performed)
             throw new SakuraException("Can not re-perform operation.");
 
@@ -60,7 +60,7 @@ public final class CopyFileOperation extends Operation {
     }
 
     @Override
-    public void undo()  {
+    void undo()  {
         if (!performed)
             return;
 

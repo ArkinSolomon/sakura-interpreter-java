@@ -18,26 +18,26 @@ package net.sakura.interpreter.exceptions;
 import java.io.File;
 
 /**
- * An exception thrown when attempting an invalid operation on a non-existent file or directory.
+ * An exception thrown when attempting to perform an operation invalidly on a file or directory that already exists.
  */
-public class FileNotFoundException extends SakuraException {
+public class FileExistsException extends SakuraException{
 
     /**
-     * Create a new exception saying that the file was not found.
+     * Create a new exception saying that a file already exists.
      *
-     * @param file The file that was not found.
+     * @param file The file that already exists.
      */
-    public FileNotFoundException(File file) {
+    public FileExistsException(File file) {
         this(file, null);
     }
 
     /**
-     * Create an exception saying that the file was not found, and that this exception was caused by another one.
+     * Create a new exception saying that a file already exists, and that another exception caused this one.
      *
-     * @param file The file that was not found.
+     * @param file The file that already exists.
      * @param cause The exception that caused this one.
      */
-    public FileNotFoundException(File file, Throwable cause){
-        super("The file or directory at \"%s\" does not exist.".formatted(file.getAbsolutePath()), cause);
+    public FileExistsException(File file, Throwable cause){
+        super("The file or directory \"%s\" already exists.".formatted(file.getAbsolutePath()), cause);
     }
 }

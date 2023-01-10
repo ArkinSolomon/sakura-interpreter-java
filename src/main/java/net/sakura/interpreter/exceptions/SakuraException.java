@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class SakuraException extends RuntimeException {
 
-    private Deque<String> stacktrace = new ArrayDeque<>();
+    private Deque<String> callstack = new ArrayDeque<>();
     private boolean hasLoc = false;
     private String msg;
 
@@ -77,7 +77,7 @@ public class SakuraException extends RuntimeException {
 
     private SakuraException(int line, int col, String msg, Throwable cause, Deque<String> callstack){
         this(line, col, msg, cause);
-        this.stacktrace = callstack;
+        this.callstack = callstack;
     }
 
     /**
@@ -97,7 +97,7 @@ public class SakuraException extends RuntimeException {
      * @param identifier The function that made the call.
      */
     public void addStackTraceItem(int line, int col, String identifier) {
-        stacktrace.push("[%d:%d] %s".formatted(line, col, identifier));
+        callstack.push("[%d:%d] %s".formatted(line, col, identifier));
     }
 
     /**
@@ -105,8 +105,8 @@ public class SakuraException extends RuntimeException {
      *
      * @return The stacktrace.
      */
-    public String[] getStacktrace(){
-        List<String> traceList= Arrays.asList(stacktrace.toArray(String[]::new));
+    public String[] getCallstack(){
+        List<String> traceList= Arrays.asList(callstack.toArray(String[]::new));
          Collections.reverse(traceList);
          return traceList.toArray(String[]::new);
     }
@@ -120,6 +120,6 @@ public class SakuraException extends RuntimeException {
      */
     public SakuraException setPosition(int line, int col) {
         Throwable cause = getCause();
-        return new SakuraException(line, col, msg, cause == null ? this : cause, stacktrace);
+        return new SakuraException(line, col, msg, cause == null ? this : cause, callstack);
     }
 }

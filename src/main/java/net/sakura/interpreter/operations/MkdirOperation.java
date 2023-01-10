@@ -15,10 +15,12 @@
 
 package net.sakura.interpreter.operations;
 
+import net.sakura.interpreter.exceptions.FileExistsException;
 import net.sakura.interpreter.exceptions.SakuraException;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -44,7 +46,7 @@ public final class MkdirOperation extends Operation {
     }
 
     @Override
-    public void perform() {
+    void perform() {
         if (performed)
             throw new SakuraException("Can not re-perform operation.");
 
@@ -52,25 +54,32 @@ public final class MkdirOperation extends Operation {
         try {
             if (recursive) {
 
-                // Find the first directory that is created
-                Path lastExistingParent = new File(directory.getParent()).toPath();
+                // Find the first directory that is created (so that we can delete it on undo)
+                Path lastExistingParent = directory.toPath();
                 while (!Files.exists(lastExistingParent)) {
                     lastNonExistentParent = lastExistingParent;
                     lastExistingParent = lastExistingParent.getParent();
                 }
+
+                if (lastExistingParent.equals(directory.toPath()))
+                    throw new FileExistsException(directory);
 
                 Files.createDirectories(directory.toPath());
             } else
                 Files.createDirectory(directory.toPath());
 
             performed = true;
+        }catch (SakuraException e){
+            throw e;
+        }catch (FileAlreadyExistsException e){
+            throw new FileExistsException(directory, e);
         } catch (Throwable e) {
-            throw new SakuraException("There was an error creating a directory.", e);
+            throw new SakuraException("There was an unknown error creating the directory \"%s\".".formatted(directory.getAbsolutePath()), e);
         }
     }
 
     @Override
-    public void undo() {
+    void undo() {
         if (!performed)
             return;
         try {

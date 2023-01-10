@@ -19,22 +19,22 @@ import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
-import net.sakura.interpreter.operations.DeleteOperation;
+import net.sakura.interpreter.operations.MkdirOperation;
 import net.sakura.interpreter.operations.Operation;
 
 import java.io.File;
 
 /**
- * A command to delete a file, or in this case move it to a temporary directory.
+ * A command to make a directory (not recursively).
  */
-final class DeleteCommand extends SinglePathCommand {
+final class MkdirCommand extends SinglePathCommand {
 
     /**
-     * Create a node using a token.
+     * Create a new command using a token.
      *
-     * @param token The token that issued this command.
+     * @param token The token that created this command.
      */
-    public DeleteCommand(Token token) {
+    public MkdirCommand(Token token) {
         super(token);
     }
 
@@ -43,8 +43,8 @@ final class DeleteCommand extends SinglePathCommand {
         try {
             File path = getPath(ctx);
 
-            Operation delOp = new DeleteOperation(path);
-            ctx.getFileTracker().runOperation(delOp);
+            Operation mkdirOp = new MkdirOperation(path, false);
+            ctx.getFileTracker().runOperation(mkdirOp);
             return Value.NULL;
         } catch (SakuraException e){
             throw e.setPosition(token.line(), token.column());

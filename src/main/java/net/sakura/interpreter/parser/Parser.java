@@ -195,6 +195,8 @@ public final class Parser {
                 case ISDIR -> new IsDirCommand(token);
                 case ISFILE -> new IsFileCommand(token);
                 case DELETE -> new DeleteCommand(token);
+                case MKDIR -> new MkdirCommand(token);
+                case MKDIRS -> new MkdirsCommand(token);
                 default -> {
                     String message = switch (type) {
                         case CLOSE_PARENTHESIS ->

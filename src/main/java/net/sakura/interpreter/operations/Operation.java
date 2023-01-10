@@ -25,12 +25,12 @@ public abstract class Operation {
     /**
      * Perform the operation.
      */
-    public abstract void perform();
+    abstract void perform();
 
     /**
      * Undo the operation.
      */
-    public abstract void undo();
+    abstract void undo();
 
     /**
      * Force overriding for operations.

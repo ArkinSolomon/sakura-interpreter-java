@@ -127,8 +127,9 @@ public class SakuraInterpreter {
             System.out.println("\nRETURN VALUE: " + retVal);
         }catch (SakuraException e) {
             System.err.println(e.getMessage());
-            for (String call : e.getStacktrace())
+            for (String call : e.getCallstack())
                 System.err.println("\tat " + call);
+            System.err.println();
             e.printStackTrace();
         }
     }

@@ -88,6 +88,8 @@ public enum TokenType {
     ISDIR, // ISDIR (file command)
     ISFILE, // ISFILE (file command)
     DELETE, // DELETE (delete command)
+    MKDIR, // MKDIR (non-recursively create a directory)
+    MKDIRS, // MKDIRS (recursively create directories)
 
     PATH_LITERAL,
     NUM_LITERAL, // floats and integers

@@ -42,7 +42,7 @@ public final class DeleteOperation extends Operation {
     }
 
     @Override
-    public void perform() {
+    void perform() {
         if (performed)
             throw new SakuraException("Can not re-perform operations.");
 
@@ -58,7 +58,7 @@ public final class DeleteOperation extends Operation {
     }
 
     @Override
-    public void undo() {
+    void undo() {
         if (!performed)
             return;
 

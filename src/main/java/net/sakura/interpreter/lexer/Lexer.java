@@ -287,6 +287,7 @@ public final class Lexer {
                     if ((currentType == TokenType.VARIABLE || currentType == TokenType.CONST_VAR || currentType == TokenType.ENV_VARIABLE) && !isValidIdentifier(value))
                         throw new SakuraException(startLine, startCol, "The identifier \"%s\" is invalid.".formatted(value));
 
+                    // Find keywords
                     switch (value) {
                         case "if" -> {
                             currentType = TokenType.IF;
@@ -308,6 +309,8 @@ public final class Lexer {
                         case "ISDIR" -> currentType = TokenType.ISDIR;
                         case "ISFILE" -> currentType = TokenType.ISFILE;
                         case "DELETE" -> currentType = TokenType.DELETE;
+                        case "MKDIR" -> currentType = TokenType.MKDIR;
+                        case "MKDIRS" -> currentType = TokenType.MKDIRS;
                         default -> {
                             if (isNumeric(value))
                                 currentType = TokenType.NUM_LITERAL;
@@ -380,10 +383,6 @@ public final class Lexer {
      */
     private List<Token> simplify(List<Token> tokens, boolean isRoot) {
         TokenStorage tokenStorage = new TokenStorage(tokens);
-        //        if (isRoot) {
-        //            tokenStorage.printTokens();
-        //            System.out.println();
-        //        }
 
         List<Token> newTokens = new ArrayList<>();
         Token token = tokenStorage.consume();
@@ -741,7 +740,9 @@ public final class Lexer {
 
                 // We already consumed the brace
                 continue;
-            } else if (token.isOfType(TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR, TokenType.DELETE)) {
+            } else if (token.isOfType(TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR, TokenType.DELETE, TokenType.MKDIR, TokenType.MKDIRS)) {
+
+                //Parse single path commands
                 TokenType initialTokenType = token.type();
                 Token startToken = token;
                 token = tokenStorage.consume();
