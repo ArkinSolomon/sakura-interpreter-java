@@ -53,8 +53,8 @@ public final class Parser {
     /**
      * Helper function to parse nodes directly as a path.
      *
-     * @param trigger The node that triggered the parsing.
-     * @param pathTokens    The nodes to parse.
+     * @param trigger    The node that triggered the parsing.
+     * @param pathTokens The nodes to parse.
      * @return The tokens parsed as a path.
      */
     public static PathNode parseNodesAsPath(Token trigger, List<Token> pathTokens) {
@@ -74,7 +74,7 @@ public final class Parser {
     /**
      * Continue execution of the parser.
      */
-    void unstop() {
+    void resume() {
         stop = false;
     }
 
@@ -197,6 +197,7 @@ public final class Parser {
                 case DELETE -> new DeleteCommand(token);
                 case MKDIR -> new MkdirCommand(token);
                 case MKDIRS -> new MkdirsCommand(token);
+                case EXISTS -> new ExistsCommand(token);
                 default -> {
                     String message = switch (type) {
                         case CLOSE_PARENTHESIS ->
@@ -290,11 +291,8 @@ public final class Parser {
 
         if (checkForStandalone) {
             for (Node expr : expressions) {
-                expr.print();
-                if (expr instanceof Literal) {
+                if (expr instanceof Literal)
                     throw new UnexpectedTokenException(expr.getToken(), "Stand-alone literals are not allowed.");
-
-                }
             }
         }
 
@@ -373,7 +371,7 @@ public final class Parser {
         }
 
         for (Node expression : expressions) {
-            //            expression.print();
+//            expression.print();
             ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {

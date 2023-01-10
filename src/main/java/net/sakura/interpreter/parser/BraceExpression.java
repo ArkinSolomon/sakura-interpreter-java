@@ -52,7 +52,7 @@ final class BraceExpression extends Expression {
     @Override
     public Value evaluate(ExecutionContext ctx) {
         ExecutionContext tempCtx = new ExecutionContext(ctx);
-        body.unstop();
+        body.resume();
         ExecutionResult result = body.execute(tempCtx);
         if (result.earlyReturnType() == EarlyReturnType.RETURN)
             parent.stop();

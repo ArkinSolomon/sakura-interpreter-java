@@ -90,6 +90,7 @@ public enum TokenType {
     DELETE, // DELETE (delete command)
     MKDIR, // MKDIR (non-recursively create a directory)
     MKDIRS, // MKDIRS (recursively create directories)
+    EXISTS, // EXISTS (determine if a file or directory exists)
 
     PATH_LITERAL,
     NUM_LITERAL, // floats and integers

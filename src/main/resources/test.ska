@@ -1,2 +1,8 @@
 %path = PATH /src/main/resources/"new folder"
-DELETE $(path)
+$exists = EXISTS $(path)
+print(exists)
+if !exists {
+    MKDIR $(path)
+}
+exists = EXISTS $(path)
+print("Path created: \"" +  path + "\"")

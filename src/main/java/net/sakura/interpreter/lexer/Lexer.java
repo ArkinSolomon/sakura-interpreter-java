@@ -311,6 +311,7 @@ public final class Lexer {
                         case "DELETE" -> currentType = TokenType.DELETE;
                         case "MKDIR" -> currentType = TokenType.MKDIR;
                         case "MKDIRS" -> currentType = TokenType.MKDIRS;
+                        case "EXISTS" -> currentType = TokenType.EXISTS;
                         default -> {
                             if (isNumeric(value))
                                 currentType = TokenType.NUM_LITERAL;
@@ -323,14 +324,20 @@ public final class Lexer {
                     currentValue = new StringBuilder();
                 } else {
 
-                    // We can use whatever char and just skip the check for the first value
-                    final char lastVal = currentValue.length() > 1 ? currentValue.charAt(currentValue.length() - 1) : 'a';
+                    // We can use whatever char and just skip the check for the first value if the string's length is 0
+                    final char lastVal = currentValue.length() > 0 ? currentValue.charAt(currentValue.length() - 1) : 'a';
 
                     // If we're currently looking at a quote (make sure we check for escaped endings)
                     if (thisChar == '"' && lastVal != '\\') {
                         currentType = null;
                         tokens.add(new Token(TokenType.QUOTE, startLine, startCol, currentValue.toString()));
                         currentValue = new StringBuilder();
+                    } else if (thisChar == '"') {
+
+                        // Current value size > 0 at this point
+                        int lastIndex = currentValue.length() - 1;
+                        currentValue.delete(lastIndex, currentValue.length());
+                        currentValue.append('"');
                     } else
                         currentValue.append(thisChar);
                 }
@@ -740,7 +747,7 @@ public final class Lexer {
 
                 // We already consumed the brace
                 continue;
-            } else if (token.isOfType(TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR, TokenType.DELETE, TokenType.MKDIR, TokenType.MKDIRS)) {
+            } else if (token.isOfType(TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR, TokenType.DELETE, TokenType.MKDIR, TokenType.MKDIRS, TokenType.EXISTS)) {
 
                 //Parse single path commands
                 TokenType initialTokenType = token.type();
