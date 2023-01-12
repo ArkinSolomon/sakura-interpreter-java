@@ -1,8 +1,6 @@
-%path = PATH /src/main/resources/"new folder"
-$exists = EXISTS $(path)
-print(exists)
-if !exists {
-    MKDIR $(path)
-}
-exists = EXISTS $(path)
-print("Path created: \"" +  path + "\"")
+%path = PATH /src/main/resources/"Test File";
+WRITE "cheeseburger" TO $(path)
+%content  = READ $(path)
+print(content)
+DELETE $(path)
+terminate()

@@ -38,7 +38,9 @@ public final class FileTracker {
      * Undo all operations.
      */
     public void undoOperations() {
-        for (Operation operation : operations)
+        while (!operations.isEmpty()){
+            Operation operation = operations.pop();
             operation.undo();
+        }
     }
 }

@@ -88,7 +88,12 @@ public final class Lexer {
      * @return True if the token is of a type that is determined to be a multi-statement token.
      */
     private static boolean isMultiStatement(Token token) {
-        return token.isOfType(TokenType.SEMI, TokenType.RETURN, TokenType.CONTINUE, TokenType.BREAK, TokenType.IF, TokenType.ELSE, TokenType.ELIF, TokenType.WHILE, TokenType.FOR, TokenType.FUNC, TokenType.OPEN_BRACE, TokenType.CLOSE_BRACE, TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR);
+        return token.isOfType(TokenType.SEMI, TokenType.RETURN, TokenType.CONTINUE, TokenType.BREAK,
+                TokenType.IF, TokenType.ELIF, TokenType.ELSE,
+                TokenType.WHILE, TokenType.FOR,
+                TokenType.FUNC, TokenType.OPEN_BRACE, TokenType.CLOSE_BRACE,
+                TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR, TokenType.DELETE, TokenType.MKDIR, TokenType.MKDIRS, TokenType.EXISTS,
+                TokenType.WRITE, TokenType.APPEND, TokenType.COPY, TokenType.MOVE);
     }
 
     /**
@@ -312,6 +317,8 @@ public final class Lexer {
                         case "MKDIR" -> currentType = TokenType.MKDIR;
                         case "MKDIRS" -> currentType = TokenType.MKDIRS;
                         case "EXISTS" -> currentType = TokenType.EXISTS;
+                        case "TO" -> currentType = TokenType.TO;
+                        case "WRITE" -> currentType = TokenType.WRITE;
                         default -> {
                             if (isNumeric(value))
                                 currentType = TokenType.NUM_LITERAL;
@@ -747,12 +754,14 @@ public final class Lexer {
 
                 // We already consumed the brace
                 continue;
-            } else if (token.isOfType(TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR, TokenType.DELETE, TokenType.MKDIR, TokenType.MKDIRS, TokenType.EXISTS)) {
+            } else if (token.isOfType(TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR, TokenType.DELETE, TokenType.MKDIR, TokenType.MKDIRS, TokenType.EXISTS, TokenType.TO_PATH)) {
 
                 //Parse single path commands
                 TokenType initialTokenType = token.type();
                 Token startToken = token;
                 token = tokenStorage.consume();
+
+                Token terminator = null;
 
                 List<Token> path = new ArrayList<>();
                 while (token != null && !token.isOfType(TokenType.EOF)) {
@@ -810,7 +819,7 @@ public final class Lexer {
                             }
                         }
                     } else if (token.isOfType(TokenType.EOL, TokenType.SEMI)) {
-                        newTokens.add(token);
+                        terminator = token;
                         break;
                     } else if (!token.isOfType(TokenType.SLASH))
                         throw new UnexpectedTokenException(token, "Unexpected token in path literal.");
@@ -820,6 +829,8 @@ public final class Lexer {
                     if (tokenStorage.hasNext())
                         token = tokenStorage.consume();
                     else {
+
+                        // TODO figure out if this code even runs
                         assert token != null;
                         throw new UnexpectedTokenException(token, "Missing a closing parenthesis in path expression.");
                     }
@@ -831,6 +842,38 @@ public final class Lexer {
                 Token last = path.get(path.size() - 1);
                 path.add(new Token(TokenType.EOF, last.line(), last.column(), "<FILE I/O CMD END>"));
                 newTokens.add(new Token(initialTokenType, startToken.line(), startToken.column(), path));
+
+                if (terminator != null)
+                    newTokens.add(terminator);
+            } else if (token.isOfType(TokenType.WRITE, TokenType.APPEND)) {
+
+                // Parse [string] TO [path]
+                TokenType initialTokenType = token.type();
+                Token startToken = token;
+                token = tokenStorage.consume();
+
+                List<Token> firstPart = new ArrayList<>();
+                while (token != null && !token.isOfType(TokenType.EOF)) {
+                    if (token.isOfType(TokenType.TO)) {
+                        firstPart.add(new Token(TokenType.EOF, startToken.line(), startToken.column(), "<CMD STR/TO/PATH STR END>"));
+                        break;
+                    } else if (isMultiStatement(token))
+                        throw new UnexpectedTokenException(token, "A command can not contain multi-statement commands.");
+                    else
+                        firstPart.add(token);
+
+                    token = tokenStorage.consume();
+                }
+
+                assert token != null;
+                if (firstPart.size() == 0)
+                    throw new SakuraException("First part of a \"%s\" command can not be empty.".formatted(initialTokenType));
+                else if (!firstPart.get(firstPart.size() - 1).isOfType(TokenType.EOF))
+                    throw new UnexpectedTokenException(token, "A \"%s\" command requires an \"TO\" token to follow it.".formatted(initialTokenType));
+
+                newTokens.add(new Token(initialTokenType, startToken.line(), startToken.column(), simplify(firstPart)));
+                token = new Token(TokenType.TO_PATH, token.line(), token.column(), "TO_PATH");
+                continue;
             } else
 
                 // Simply every other token
@@ -844,7 +887,7 @@ public final class Lexer {
         Token eofToken = tokens.get(tokens.size() - 1);
         newTokens.add(eofToken);
 
-        // Link FUNC_SIG, IF_COND, FOR_COND, and WHILE_COND to their statements
+        // Link FUNC_SIG, IF_COND, FOR_COND, and WHILE_COND to their statements, as well as file commands to their TO
         tokenStorage = new TokenStorage(newTokens);
         newTokens = new ArrayList<>();
 
@@ -930,6 +973,25 @@ public final class Lexer {
                 }
 
                 data.branches().add(branch);
+            } else if (token.isOfType(TokenType.WRITE, TokenType.APPEND)) {
+
+                TokenType finalType = switch (token.type()) {
+                    case WRITE -> TokenType.WRITE_CMD;
+                    case APPEND -> TokenType.APPEND_CMD;
+                    default ->
+                            throw new IllegalStateException("Invalid/not implemented file command");
+                };
+
+                if (!tokenStorage.hasNext())
+                    throw new IllegalStateException("Missing EOF token");
+
+                Token nextToken = tokenStorage.consume();
+                if (!nextToken.isOfType(TokenType.TO, TokenType.TO_PATH))
+                    throw new UnexpectedTokenException(nextToken, "Expected a \"TO\" after a \"%s\" command.".formatted(token.type()));
+
+                @SuppressWarnings("unchecked")
+                DualArgCmdData data = new DualArgCmdData((List<Token>) token.value(), (List<Token>) nextToken.value());
+                newTokens.add(new Token(finalType, token.line(), token.column(), data));
             } else
                 newTokens.add(token);
 

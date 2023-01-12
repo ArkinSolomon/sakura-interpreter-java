@@ -51,17 +51,29 @@ public final class Parser {
     }
 
     /**
-     * Helper function to parse nodes directly as a path.
+     * Helper function to parse tokens directly as a path.
      *
      * @param trigger    The node that triggered the parsing.
      * @param pathTokens The nodes to parse.
      * @return The tokens parsed as a path.
      */
-    public static PathNode parseNodesAsPath(Token trigger, List<Token> pathTokens) {
+    public static PathNode parseTokensAsPath(Token trigger, List<Token> pathTokens) {
         TokenStorage ts = new TokenStorage(pathTokens);
 
         Parser pathParser = new Parser(ts);
         return pathParser.parseAsPath(trigger);
+    }
+
+    /**
+     * Helper function to parse a group of tokens into nodes.
+     *
+     * @param tokens The tokens to parse.
+     * @return The tokens parsed into nodes.
+     */
+    public static List<Node> parseTokens(List<Token> tokens) {
+        TokenStorage ts = new TokenStorage(tokens);
+        Parser parser = new Parser(ts);
+        return parser.parse();
     }
 
     /**
@@ -190,7 +202,7 @@ public final class Parser {
                 case PATH -> {
                     @SuppressWarnings("unchecked")
                     List<Token> pathTokens = (List<Token>) token.value();
-                    yield parseNodesAsPath(token, pathTokens);
+                    yield parseTokensAsPath(token, pathTokens);
                 }
                 case ISDIR -> new IsDirCommand(token);
                 case ISFILE -> new IsFileCommand(token);
@@ -198,6 +210,7 @@ public final class Parser {
                 case MKDIR -> new MkdirCommand(token);
                 case MKDIRS -> new MkdirsCommand(token);
                 case EXISTS -> new ExistsCommand(token);
+                case WRITE_CMD -> new WriteCommand(token);
                 default -> {
                     String message = switch (type) {
                         case CLOSE_PARENTHESIS ->
@@ -220,7 +233,7 @@ public final class Parser {
                         throw new UnexpectedTokenException(token, "Statements can not be part of other expressions.");
                 }
 
-                if (newNode instanceof Expression) {
+                if (newNode instanceof Expression || newNode instanceof DualArgCommand) {
                     if (newNode instanceof FunctionDefinition)
                         functions.add((FunctionDefinition) newNode);
                     else {
@@ -237,6 +250,7 @@ public final class Parser {
                     currentNode = newNode;
                     exprStartToken = token;
                 }
+
                 continue;
             }
 
@@ -371,7 +385,7 @@ public final class Parser {
         }
 
         for (Node expression : expressions) {
-//            expression.print();
+            //            expression.print();
             ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {

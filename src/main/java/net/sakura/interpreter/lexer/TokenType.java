@@ -92,6 +92,18 @@ public enum TokenType {
     MKDIRS, // MKDIRS (recursively create directories)
     EXISTS, // EXISTS (determine if a file or directory exists)
 
+    TO, // TO (token between arguments in commands)
+    TO_PATH, // A "TO" which is to be followed by a path
+
+    WRITE, // WRITE (overwrite a file with the new content)
+    WRITE_CMD, // A full write command
+    APPEND, // APPEND (add data to the end of a file)
+    APPEND_CMD, // A full append command
+
+    COPY, // COPY (copy a file or directory from one location to another)
+    MOVE, // MOVE (move a file or directory from one location to another)
+    RENAME, // RENAME (rename a file or directory)
+
     PATH_LITERAL,
     NUM_LITERAL, // floats and integers
     SYMBOL // any other text

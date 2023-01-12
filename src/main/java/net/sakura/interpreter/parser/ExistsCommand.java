@@ -25,7 +25,7 @@ import java.io.File;
 /**
  * A command to determine if a file exists.
  */
-public class ExistsCommand extends SinglePathCommand {
+final class ExistsCommand extends SinglePathCommand {
 
     /**
      * Create a new command from a token.

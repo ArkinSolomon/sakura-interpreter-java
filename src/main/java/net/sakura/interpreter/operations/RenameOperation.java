@@ -79,6 +79,6 @@ public final class RenameOperation extends Operation {
 
     @Override
     public String toString() {
-        return "[Rename Operation]: \"%s\" to \"%s\"".formatted(originalFile.getAbsolutePath(), newFile.toFile().getAbsolutePath());
+        return "[Rename Operation]: Rename \"%s\" to \"%s\"".formatted(originalFile.getAbsolutePath(), newFile.toFile().getAbsolutePath());
     }
 }
