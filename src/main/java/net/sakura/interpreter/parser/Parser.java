@@ -213,6 +213,7 @@ public final class Parser {
                 case WRITE_CMD -> new WriteCommand(token);
                 case APPEND_CMD -> new AppendCommand(token);
                 case MOVE_CMD -> new MoveCommand(token);
+                case COPY_CMD -> new CopyCommand(token);
                 default -> {
                     String message = switch (type) {
                         case CLOSE_PARENTHESIS ->

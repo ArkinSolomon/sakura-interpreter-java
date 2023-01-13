@@ -1000,7 +1000,7 @@ public final class Lexer {
                     case WRITE -> TokenType.WRITE_CMD;
                     case APPEND -> TokenType.APPEND_CMD;
                     case MOVE -> TokenType.MOVE_CMD;
-                    case COPY -> TokenType.COPY;
+                    case COPY -> TokenType.COPY_CMD;
                     default ->
                             throw new IllegalStateException("Invalid/not implemented file command");
                 };
