@@ -19,7 +19,7 @@ import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.functions.Function;
 import net.sakura.interpreter.functions.PrintFunction;
 import net.sakura.interpreter.functions.RangeFunction;
-import net.sakura.interpreter.functions.TerminateFunction;
+import net.sakura.interpreter.functions.ExitFunction;
 import net.sakura.interpreter.operations.FileTracker;
 import net.sakura.interpreter.parser.Node;
 
@@ -210,7 +210,7 @@ public class ExecutionContext {
 
         registerFunc("print", new PrintFunction());
         registerFunc("range", new RangeFunction());
-        registerFunc("terminate", new TerminateFunction());
+        registerFunc("exit", new ExitFunction());
     }
 
     /**

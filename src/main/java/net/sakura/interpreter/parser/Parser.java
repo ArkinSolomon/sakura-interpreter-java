@@ -211,6 +211,8 @@ public final class Parser {
                 case MKDIRS -> new MkdirsCommand(token);
                 case EXISTS -> new ExistsCommand(token);
                 case WRITE_CMD -> new WriteCommand(token);
+                case APPEND_CMD -> new AppendCommand(token);
+                case MOVE_CMD -> new MoveCommand(token);
                 default -> {
                     String message = switch (type) {
                         case CLOSE_PARENTHESIS ->
@@ -275,7 +277,7 @@ public final class Parser {
                         newNode.insertChild(root);
                     else {
                         if (expectNewLine)
-                            throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
+                            throw new UnexpectedTokenException(token, "Can not have multiple expressions on a single line.");
                         expressions.add(root);
                         expectNewLine = true;
                     }

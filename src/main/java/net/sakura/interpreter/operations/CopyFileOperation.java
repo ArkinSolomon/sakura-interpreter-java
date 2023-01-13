@@ -55,7 +55,7 @@ public final class CopyFileOperation extends Operation {
                 Files.copy(file.toPath(), target.toPath(), NOFOLLOW_LINKS);
             performed = true;
         }catch (Throwable e){
-            throw new SakuraException("Error copying files", e);
+            throw new SakuraException("Error copying file \"%s\" to \"%s\".".formatted(file.getAbsolutePath(), target.getAbsolutePath()), e);
         }
     }
 

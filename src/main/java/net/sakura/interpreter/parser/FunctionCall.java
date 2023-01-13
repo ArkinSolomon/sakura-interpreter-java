@@ -30,7 +30,7 @@ import java.util.List;
  */
 final class FunctionCall extends Node {
 
-    String identifier;
+    final String identifier;
 
     /**
      * Make a function call using a token.
@@ -66,7 +66,7 @@ final class FunctionCall extends Node {
     @Override
     public Value evaluate(ExecutionContext ctx) {
         if (!ctx.hasIdentifier(identifier))
-            throw new RuntimeException("Function does not exist");
+            throw new SakuraException(token, "Function does not exist");
 
         List<Value> argValues = new ArrayList<>();
         for (Node child : children)

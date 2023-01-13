@@ -15,7 +15,7 @@
 
 package net.sakura.interpreter.functions;
 
-import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.exceptions.ExitException;
 import net.sakura.interpreter.execution.Value;
 
 import java.util.List;
@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * A function that terminates script execution immediately.
  */
-public final class TerminateFunction implements Function {
+public final class ExitFunction implements Function {
 
     /**
      * Throw an exception that terminates execution.
@@ -31,9 +31,14 @@ public final class TerminateFunction implements Function {
     @Override
     public Value execute(List<Value> args) {
         String reason = "<unknown reason>";
-        if (args.size() > 0)
-            reason = args.get(0).value().toString();
+        byte code = 0;
 
-        throw new SakuraException("Script execution terminated: " + reason);
+        if (args.size() >= 1)
+            code = (byte) ((double) args.get(0).value());
+
+        if (args.size() >= 2)
+            reason = args.get(1).value().toString();
+
+        throw new ExitException(code, "Script execution terminated (code %d): %s".formatted(code, reason));
     }
 }

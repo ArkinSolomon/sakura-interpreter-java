@@ -93,7 +93,8 @@ public final class Lexer {
                 TokenType.WHILE, TokenType.FOR,
                 TokenType.FUNC, TokenType.OPEN_BRACE, TokenType.CLOSE_BRACE,
                 TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR, TokenType.DELETE, TokenType.MKDIR, TokenType.MKDIRS, TokenType.EXISTS,
-                TokenType.WRITE, TokenType.APPEND, TokenType.COPY, TokenType.MOVE);
+                TokenType.WRITE, TokenType.APPEND,
+                TokenType.COPY, TokenType.MOVE, TokenType.RENAME);
     }
 
     /**
@@ -319,6 +320,10 @@ public final class Lexer {
                         case "EXISTS" -> currentType = TokenType.EXISTS;
                         case "TO" -> currentType = TokenType.TO;
                         case "WRITE" -> currentType = TokenType.WRITE;
+                        case "APPEND" -> currentType = TokenType.APPEND;
+                        case "MOVE" -> currentType = TokenType.MOVE;
+                        case "COPY" -> currentType = TokenType.COPY;
+                        case "RENAME" -> currentType = TokenType.RENAME;
                         default -> {
                             if (isNumeric(value))
                                 currentType = TokenType.NUM_LITERAL;
@@ -754,16 +759,18 @@ public final class Lexer {
 
                 // We already consumed the brace
                 continue;
-            } else if (token.isOfType(TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR, TokenType.DELETE, TokenType.MKDIR, TokenType.MKDIRS, TokenType.EXISTS, TokenType.TO_PATH)) {
+            } else if (token.isOfType(TokenType.READ, TokenType.PATH, TokenType.ISFILE, TokenType.ISDIR, TokenType.DELETE, TokenType.MKDIR, TokenType.MKDIRS, TokenType.EXISTS, TokenType.TO_PATH, TokenType.COPY, TokenType.MOVE)) {
 
-                //Parse single path commands
+                // Parse tokens that expect a path to follow
                 TokenType initialTokenType = token.type();
                 Token startToken = token;
+                final boolean isPathToPathCmd = token.isOfType(TokenType.COPY, TokenType.MOVE);
                 token = tokenStorage.consume();
 
                 Token terminator = null;
 
                 List<Token> path = new ArrayList<>();
+                // TODO fix !isPathToPathCmd && !token.isOfType(TokenType.TO)
                 while (token != null && !token.isOfType(TokenType.EOF)) {
 
                     // Replace \$ and \@s with literals
@@ -793,6 +800,7 @@ public final class Lexer {
                         }
                     } else if (token.isOfType(TokenType.PATH_OPEN_PARENTHESIS)) {
 
+                        // Parse a path parentheses (parentheses that start with a $)
                         List<Token> toSimplify = new ArrayList<>();
                         final int startLine = token.line();
                         final int startCol = token.column();
@@ -821,7 +829,9 @@ public final class Lexer {
                     } else if (token.isOfType(TokenType.EOL, TokenType.SEMI)) {
                         terminator = token;
                         break;
-                    } else if (!token.isOfType(TokenType.SLASH))
+                    } else if (isPathToPathCmd && token.isOfType(TokenType.TO))
+                        break;
+                    else if (!token.isOfType(TokenType.SLASH))
                         throw new UnexpectedTokenException(token, "Unexpected token in path literal.");
 
                     path.add(token);
@@ -845,6 +855,15 @@ public final class Lexer {
 
                 if (terminator != null)
                     newTokens.add(terminator);
+
+                if (token == null || token.isOfType(TokenType.TO)) {
+                    if (token == null || !isPathToPathCmd)
+                        throw new UnexpectedTokenException(token);
+
+                    token = new Token(TokenType.TO_PATH, token.line(), token.column(), token.value());
+                    continue;
+                } else if (isPathToPathCmd)
+                    throw new UnexpectedTokenException(token, "Expected \"TO\" after a \"%s\" token.".formatted(initialTokenType));
             } else if (token.isOfType(TokenType.WRITE, TokenType.APPEND)) {
 
                 // Parse [string] TO [path]
@@ -859,6 +878,8 @@ public final class Lexer {
                         break;
                     } else if (isMultiStatement(token))
                         throw new UnexpectedTokenException(token, "A command can not contain multi-statement commands.");
+                    else if (token.isOfType(TokenType.EOL))
+                        throw new UnexpectedTokenException(token, "Commands must be contained on a single line.");
                     else
                         firstPart.add(token);
 
@@ -973,11 +994,13 @@ public final class Lexer {
                 }
 
                 data.branches().add(branch);
-            } else if (token.isOfType(TokenType.WRITE, TokenType.APPEND)) {
+            } else if (token.isOfType(TokenType.WRITE, TokenType.APPEND, TokenType.MOVE, TokenType.COPY)) {
 
                 TokenType finalType = switch (token.type()) {
                     case WRITE -> TokenType.WRITE_CMD;
                     case APPEND -> TokenType.APPEND_CMD;
+                    case MOVE -> TokenType.MOVE_CMD;
+                    case COPY -> TokenType.COPY;
                     default ->
                             throw new IllegalStateException("Invalid/not implemented file command");
                 };

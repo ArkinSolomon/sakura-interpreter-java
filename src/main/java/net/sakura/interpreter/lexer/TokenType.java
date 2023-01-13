@@ -101,8 +101,12 @@ public enum TokenType {
     APPEND_CMD, // A full append command
 
     COPY, // COPY (copy a file or directory from one location to another)
+    COPY_CMD, // A full copy command
     MOVE, // MOVE (move a file or directory from one location to another)
+    MOVE_CMD, // A full move command
+
     RENAME, // RENAME (rename a file or directory)
+    RENAME_CMD,
 
     PATH_LITERAL,
     NUM_LITERAL, // floats and integers

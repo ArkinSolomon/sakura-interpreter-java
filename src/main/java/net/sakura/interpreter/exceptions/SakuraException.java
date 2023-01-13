@@ -15,6 +15,8 @@
 
 package net.sakura.interpreter.exceptions;
 
+import net.sakura.interpreter.lexer.Token;
+
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,7 +44,7 @@ public class SakuraException extends RuntimeException {
     /**
      * Create an exception with a message and a cause.
      *
-     * @param msg The exception message.
+     * @param msg   The exception message.
      * @param cause The exception that caused this one.
      */
     public SakuraException(String msg, Throwable cause) {
@@ -51,11 +53,32 @@ public class SakuraException extends RuntimeException {
     }
 
     /**
+     * Create a new exception caused at the position of the token.
+     *
+     * @param token The token at the position of the exception.
+     * @param msg   The message of the exception.
+     */
+    public SakuraException(Token token, String msg) {
+        this(token, msg, null);
+    }
+
+    /**
+     * Create a new exception caused at the position of the token, with an exception that caused this one.
+     *
+     * @param token The token at the position of the exception.
+     * @param msg   The message of the exception.
+     * @param cause The exception that caused this one.
+     */
+    public SakuraException(Token token, String msg, Throwable cause) {
+        this(token.line(), token.column(), msg, cause);
+    }
+
+    /**
      * Create a new exception at a certain location with a message and a cause.
      *
-     * @param line The line number of the exception.
-     * @param col  The column number of the exception.
-     * @param msg  The exception message.
+     * @param line  The line number of the exception.
+     * @param col   The column number of the exception.
+     * @param msg   The exception message.
      * @param cause The exception that caused this one.
      */
     public SakuraException(int line, int col, String msg, Throwable cause) {
@@ -75,7 +98,16 @@ public class SakuraException extends RuntimeException {
         this(line, col, msg, null);
     }
 
-    private SakuraException(int line, int col, String msg, Throwable cause, Deque<String> callstack){
+    /**
+     * Create an exception with default values.
+     *
+     * @param line      The line of the exception.
+     * @param col       The column of the exception.
+     * @param msg       The message of the exception.
+     * @param cause     The cause of the exception.
+     * @param callstack The exception's callstack.
+     */
+    protected SakuraException(int line, int col, String msg, Throwable cause, Deque<String> callstack) {
         this(line, col, msg, cause);
         this.callstack = callstack;
     }
@@ -85,18 +117,18 @@ public class SakuraException extends RuntimeException {
      *
      * @return True if this exception already has a location.
      */
-    public boolean isLocationSet() {
+    public final boolean isLocationSet() {
         return hasLoc;
     }
 
     /**
      * Add an item to the error's callstack.
      *
-     * @param line The line of the call.
-     * @param col The column of the call.
+     * @param line       The line of the call.
+     * @param col        The column of the call.
      * @param identifier The function that made the call.
      */
-    public void addStackTraceItem(int line, int col, String identifier) {
+    public final void addStackTraceItem(int line, int col, String identifier) {
         callstack.push("[%d:%d] %s".formatted(line, col, identifier));
     }
 
@@ -105,21 +137,36 @@ public class SakuraException extends RuntimeException {
      *
      * @return The stacktrace.
      */
-    public String[] getCallstack(){
-        List<String> traceList= Arrays.asList(callstack.toArray(String[]::new));
-         Collections.reverse(traceList);
-         return traceList.toArray(String[]::new);
+    public final String[] getCallstack() {
+        List<String> traceList = Arrays.asList(callstack.toArray(String[]::new));
+        Collections.reverse(traceList);
+        return traceList.toArray(String[]::new);
     }
 
     /**
      * Create an exception with the same message and cause, but with a different position.
      *
      * @param line The line number of the position.
-     * @param col The column of the position.
+     * @param col  The column of the position.
      * @return A new exception at the position.
      */
-    public SakuraException setPosition(int line, int col) {
+    public final SakuraException setPosition(int line, int col) {
         Throwable cause = getCause();
+
+        // Propagate exit exceptions
+        if (this instanceof ExitException)
+            return new ExitException(line, col, ((ExitException) this).getCode(), msg, cause == null ? this : cause, callstack);
+
         return new SakuraException(line, col, msg, cause == null ? this : cause, callstack);
+    }
+
+    /**
+     * Create an exception with the same message and cause, but with a different position, at the location of a token.
+     *
+     * @param token The token at the position of the exception.
+     * @return A new exception at the position given by the token.
+     */
+    public final SakuraException setPosition(Token token) {
+        return setPosition(token.line(), token.column());
     }
 }

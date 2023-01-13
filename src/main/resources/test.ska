@@ -1,6 +1,18 @@
-%path = PATH /src/main/resources/"Test File";
-WRITE "cheeseburger" TO $(path)
-%content  = READ $(path)
+%path = PATH /src/main/resources/"Test File"
+%fileExists = EXISTS $(path)
+
+if fileExists {
+    DELETE $(path)
+}
+
+WRITE "cheese" TO $(path)
+APPEND "burger" TO $(path)
+
+%newDir = PATH /src/main/resources/new_directory/sub_dir
+MKDIRS $(newDir)
+
+%path2 = PATH $(newDir)/"Test File 2"
+MOVE $(path) TO $(path2)
+
+%content = READ $(path2)
 print(content)
-DELETE $(path)
-terminate()

@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter;
 
+import net.sakura.interpreter.exceptions.ExitException;
 import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
@@ -55,6 +56,30 @@ public class SakuraInterpreter {
         OperationConfig.init();
     }
 
+    public static void main(String[] args) throws IOException {
+        InterpreterOptions opts = new InterpreterOptions();
+        opts.setExecutor("dev-env");
+
+        try {
+            SakuraInterpreter interpreter = new SakuraInterpreter(opts);
+            Value retVal = interpreter.executeFile(Path.of(Objects.requireNonNull(SakuraInterpreter.class.getResource("/test.ska")).getFile()));
+            System.out.println("\nRETURN VALUE: " + retVal);
+        } catch (SakuraException e) {
+
+            if (e instanceof ExitException && ((ExitException) e).getCode() == 0) {
+                System.out.println(e.getMessage());
+                for (String call : e.getCallstack())
+                    System.out.println("\tat " + call);
+            } else {
+                System.err.println(e.getMessage());
+                for (String call : e.getCallstack())
+                    System.err.println("\tat " + call);
+                System.err.println();
+                e.printStackTrace();
+            }
+        }
+    }
+
     /**
      * Execute a file.
      *
@@ -88,20 +113,21 @@ public class SakuraInterpreter {
             List<Token> tokens = lexer.analyze();
             TokenStorage tokenStorage = new TokenStorage(tokens);
 
-//            System.out.println();
-//            tokenStorage.printTokens();
+            //            System.out.println();
+            //            tokenStorage.printTokens();
 
             Parser parser = new Parser(tokenStorage);
             parser.parse();
 
-//            System.out.println("\n--Output--\n");
+            //            System.out.println("\n--Output--\n");
 
             Value retVal = parser.execute(ctx).returnValue();
-//            System.out.println("\n--Execution context--\n");
-//            ctx.printContext();
+            //            System.out.println("\n--Execution context--\n");
+            //            ctx.printContext();
             return retVal;
-        }catch (Throwable e){
-            ctx.getFileTracker().undoOperations();
+        } catch (Throwable e) {
+            if (!(e instanceof ExitException) || ((ExitException) e).getCode() != 0)
+                ctx.getFileTracker().undoOperations();
             throw e;
         }
     }
@@ -115,22 +141,5 @@ public class SakuraInterpreter {
         Map<String, Value> envVars = options.envVariables;
         envVars.put("@__executor", new Value(DataType.STRING, options.executor, false));
         return new ExecutionContext(envVars);
-    }
-
-    public static void main(String[] args) throws IOException {
-        InterpreterOptions opts = new InterpreterOptions();
-        opts.setExecutor("dev-env");
-
-        try {
-            SakuraInterpreter interpreter = new SakuraInterpreter(opts);
-            Value retVal = interpreter.executeFile(Path.of(Objects.requireNonNull(SakuraInterpreter.class.getResource("/test.ska")).getFile()));
-            System.out.println("\nRETURN VALUE: " + retVal);
-        }catch (SakuraException e) {
-            System.err.println(e.getMessage());
-            for (String call : e.getCallstack())
-                System.err.println("\tat " + call);
-            System.err.println();
-            e.printStackTrace();
-        }
     }
 }

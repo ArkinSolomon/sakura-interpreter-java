@@ -31,6 +31,7 @@ public final class FileTracker {
      */
     public void runOperation(Operation operation) {
         operation.perform();
+        System.out.println("PERFORMED -- " + operation);
         operations.add(operation);
     }
 
@@ -41,6 +42,7 @@ public final class FileTracker {
         while (!operations.isEmpty()){
             Operation operation = operations.pop();
             operation.undo();
+            System.out.println("UNDID -- " + operation);
         }
     }
 }
