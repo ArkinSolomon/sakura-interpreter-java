@@ -25,7 +25,7 @@ import java.io.File;
 /**
  * A command for determining if a path is a file.
  */
-public class IsFileCommand extends SinglePathCommand {
+final class IsFileCommand extends SinglePathCommand {
 
     /**
      * Create a new node with the token that triggered this node's creation.

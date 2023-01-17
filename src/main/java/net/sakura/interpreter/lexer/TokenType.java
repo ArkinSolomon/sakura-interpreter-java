@@ -94,6 +94,7 @@ public enum TokenType {
 
     TO, // TO (token between arguments in commands)
     TO_PATH, // A "TO" which is to be followed by a path
+    TO_STR, // A "TO" which is to be followed by a string
 
     WRITE, // WRITE (overwrite a file with the new content)
     WRITE_CMD, // A full write command

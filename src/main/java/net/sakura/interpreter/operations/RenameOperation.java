@@ -32,8 +32,8 @@ public final class RenameOperation extends Operation {
     /**
      * Create a new operation to rename a file or directory at the location to the new name.
      *
-     * @param originalFile The original file path.
-     * @param newName      The new name of the file.
+     * @param originalFile The original file or directory.
+     * @param newName      The new name of the file or directory.
      */
     public RenameOperation(File originalFile, String newName) {
         this.originalFile = originalFile;

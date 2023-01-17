@@ -18,5 +18,4 @@ MOVE $(path) TO $(path2)
 %content = READ $(path2)
 print(content)
 
-COPY $(path2) TO $(newDir)/"Test File"
-DELETE $(path2)
+RENAME $(path2) TO "Test File blub blub blub"

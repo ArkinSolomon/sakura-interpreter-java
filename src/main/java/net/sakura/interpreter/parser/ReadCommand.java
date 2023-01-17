@@ -27,14 +27,14 @@ import java.io.File;
 /**
  * A node for reading entire files.
  */
-final class ReadStatement extends SinglePathCommand {
+final class ReadCommand extends SinglePathCommand {
 
     /**
      * Create a new read statement from a token.
      *
      * @param token The token for the read statement.
      */
-    public ReadStatement(Token token) {
+    public ReadCommand(Token token) {
         super(token);
     }
 

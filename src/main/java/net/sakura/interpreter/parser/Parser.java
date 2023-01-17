@@ -198,7 +198,7 @@ public final class Parser {
                 case PARENTHETICAL_EXPR -> new ParentheticalNode(token);
                 case NUM_LITERAL -> new NumberLiteral(token);
                 case SYMBOL -> new Symbol(token);
-                case READ -> new ReadStatement(token);
+                case READ -> new ReadCommand(token);
                 case PATH -> {
                     @SuppressWarnings("unchecked")
                     List<Token> pathTokens = (List<Token>) token.value();
@@ -214,6 +214,7 @@ public final class Parser {
                 case APPEND_CMD -> new AppendCommand(token);
                 case MOVE_CMD -> new MoveCommand(token);
                 case COPY_CMD -> new CopyCommand(token);
+                case RENAME_CMD -> new RenameCommand(token);
                 default -> {
                     String message = switch (type) {
                         case CLOSE_PARENTHESIS ->

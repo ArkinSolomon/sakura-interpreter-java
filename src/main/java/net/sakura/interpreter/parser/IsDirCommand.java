@@ -25,7 +25,7 @@ import java.io.File;
 /**
  * A command for determining if a path is a directory.
  */
-public class IsDirCommand extends SinglePathCommand {
+final class IsDirCommand extends SinglePathCommand {
 
     /**
      * Create a new node with the token that triggered this node's creation.
