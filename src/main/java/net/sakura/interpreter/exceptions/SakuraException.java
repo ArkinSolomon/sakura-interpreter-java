@@ -113,6 +113,15 @@ public class SakuraException extends RuntimeException {
     }
 
     /**
+     * Get just the text part of the message, ignoring the position.
+     *
+     * @return The text part of the message.
+     */
+    public String getMessageText() {
+        return msg;
+    }
+
+    /**
      * Check if this exception already has a location.
      *
      * @return True if this exception already has a location.

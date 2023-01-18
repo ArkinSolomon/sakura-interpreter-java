@@ -18,7 +18,7 @@ package net.sakura.interpreter.exceptions;
 /**
  * An exception thrown when a Sakura script is empty.
  */
-public class FileEmptyException extends SakuraException {
+public final class FileEmptyException extends SakuraException {
 
     /**
      * Create a new script saying that you can not execute empty files.

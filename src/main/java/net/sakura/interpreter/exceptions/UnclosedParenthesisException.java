@@ -18,7 +18,7 @@ package net.sakura.interpreter.exceptions;
 /**
  * An exception for unclosed parentheses.
  */
-public class UnclosedParenthesisException extends SakuraException {
+public final class UnclosedParenthesisException extends SakuraException {
 
     /**
      * Say that a closing parenthesis was expected at a certain location.

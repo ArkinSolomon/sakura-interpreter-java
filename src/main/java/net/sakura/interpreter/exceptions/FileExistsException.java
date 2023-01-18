@@ -22,7 +22,7 @@ import java.io.File;
 /**
  * An exception thrown when attempting to perform an operation invalidly on a file or directory that already exists.
  */
-public class FileExistsException extends SakuraException{
+public final class FileExistsException extends SakuraException{
 
     /**
      * Create a new exception saying that a file already exists.

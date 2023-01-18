@@ -23,7 +23,7 @@ import net.sakura.interpreter.lexer.TokenType;
 /**
  * Create a new exception saying that a token was not expected.
  */
-public class UnexpectedTokenException extends SakuraException {
+public final class UnexpectedTokenException extends SakuraException {
 
     /**
      * Create a new exception saying a token was unexpected using the unexpected token.

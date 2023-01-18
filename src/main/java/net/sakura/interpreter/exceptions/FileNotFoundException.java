@@ -22,7 +22,7 @@ import java.io.File;
 /**
  * An exception thrown when attempting an invalid operation on a non-existent file or directory.
  */
-public class FileNotFoundException extends SakuraException {
+public final class FileNotFoundException extends SakuraException {
 
     /**
      * Create a new exception saying that the file was not found.

@@ -50,6 +50,9 @@ public class WriteOperation extends Operation {
         if (performed)
             throw new SakuraException("Can not re-perform operation.");
 
+        if (!ctx.getOperationConfig().isValidWritePath(file.toFile()))
+            throw new SakuraException("No write permissions for file \"%s\".".formatted(getFilePathStr(file.toFile())));
+
         if (Files.exists(file)) {
             try {
                 oldContent = String.join("\n", Files.readAllLines(file));

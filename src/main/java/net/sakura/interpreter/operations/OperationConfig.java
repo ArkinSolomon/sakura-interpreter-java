@@ -18,7 +18,6 @@ package net.sakura.interpreter.operations;
 import net.sakura.interpreter.exceptions.SakuraException;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
@@ -68,11 +67,7 @@ public final class OperationConfig {
      * @return True if {@code directory} is an ancestor of {@code testFile}.
      */
     private static boolean isWithinDirectory(File testFile, File directory) {
-        try {
-            return testFile.getCanonicalPath().startsWith(directory.getCanonicalPath() + File.separator);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return Operation.getFilePathStr(testFile).startsWith(Operation.getFilePathStr(directory) + File.separator);
     }
 
     /**
@@ -98,6 +93,7 @@ public final class OperationConfig {
 
         if (allowWrite.isEmpty() && disallowWrite.isEmpty())
             return true;
+
 
         for (File writeable : allowWrite) {
             if (!isWithinDirectory(file, writeable))

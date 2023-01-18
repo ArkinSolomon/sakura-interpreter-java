@@ -1,0 +1,1 @@
+WRITE "this should fail I hope" TO /disallow-write/file.txt

@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter;
 
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.Iterable;
 import net.sakura.interpreter.execution.Value;
@@ -31,6 +32,8 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Run basic tests.
@@ -70,6 +73,13 @@ public class InterpreterTests {
         testRoot = new File(temp, "interpreter-test-files");
         Files.createDirectories(testRoot.toPath());
         options.setRoot(testRoot);
+
+        File disallowWritePath = new File(temp, "disallow-write");
+        Files.createDirectories(disallowWritePath.toPath());
+        options.allowWrite(testRoot);
+        options.disallowWrite(disallowWritePath);
+
+        options.allowRead(testRoot);
 
         printer = new TestPrintFunction();
         options.defineFunc("print", printer);
@@ -185,5 +195,12 @@ public class InterpreterTests {
 
         String output = printer.getOutput();
         assertEquals("Arg 1 was: John, and arg 2 was: Smith\n", output);
+    }
+
+    @Test
+    void testWriteSecurity() {
+        Path path = getResource("/test-write-security.ska");
+        SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
+        assertTrue(thrown.getMessageText().startsWith("Could not write to file"), "Expected an Sakura exception with a message that started with \"No write permissions for file\", but received a Sakura exception with the message \"%s\" instead".formatted(thrown.getMessageText()));
     }
 }
