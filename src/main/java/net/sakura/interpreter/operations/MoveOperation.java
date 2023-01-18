@@ -17,6 +17,7 @@ package net.sakura.interpreter.operations;
 
 import net.sakura.interpreter.exceptions.FileNotFoundException;
 import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.execution.ExecutionContext;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -34,10 +35,12 @@ public final class MoveOperation extends Operation {
     /**
      * Create a new operation to move a folder to another place.
      *
+     * @param ctx    The execution context in which to run this operation.
      * @param file   The original (source) file.
      * @param target The destination file to copy to.
      */
-    public MoveOperation(File file, File target) {
+    public MoveOperation(ExecutionContext ctx, File file, File target) {
+        super(ctx);
         this.file = file;
         this.target = target;
     }
@@ -50,10 +53,13 @@ public final class MoveOperation extends Operation {
         if (!file.exists())
             throw new FileNotFoundException(file);
 
+        if (target.exists())
+            ctx.getFileTracker().runOperation(new DeleteOperation(ctx, target));
+
         try {
             Files.move(file.toPath(), target.toPath(), NOFOLLOW_LINKS);
         } catch (Throwable e) {
-            throw new SakuraException("Could not move the file \"%s\" to \"%s\".".formatted(file.getAbsolutePath(), target.getAbsolutePath()), e);
+            throw new SakuraException("Could not move the file \"%s\" to \"%s\".".formatted(getFilePathStr(file), getFilePathStr(target)), e);
         }
 
         performed = true;
@@ -67,12 +73,12 @@ public final class MoveOperation extends Operation {
         try {
             Files.move(target.toPath(), file.toPath(), NOFOLLOW_LINKS);
         } catch (Throwable e) {
-            throw new SakuraException("Could not undo a move operation which moved \"%s\" to \"%s\".".formatted(file.getAbsolutePath(), target.getAbsolutePath()), e);
+            throw new SakuraException("Could not undo a move operation which moved \"%s\" to \"%s\".".formatted(getFilePathStr(file), getFilePathStr(target)), e);
         }
     }
 
     @Override
     public String toString() {
-        return "[Move Operation]: Move \"%s\" to \"%s\".".formatted(file.getAbsolutePath(), target.getAbsolutePath());
+        return "[Move Operation]: Move \"%s\" to \"%s\".".formatted(getFilePathStr(file), getFilePathStr(target));
     }
 }

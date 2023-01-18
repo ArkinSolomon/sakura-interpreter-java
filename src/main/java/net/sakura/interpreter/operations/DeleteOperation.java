@@ -17,6 +17,7 @@ package net.sakura.interpreter.operations;
 
 import net.sakura.interpreter.exceptions.FileNotFoundException;
 import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.execution.ExecutionContext;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -35,9 +36,11 @@ public final class DeleteOperation extends Operation {
     /**
      * Create a new operation to delete the file.
      *
+     * @param ctx The execution context in which to run this operation.
      * @param fileToDelete The file to delete.
      */
-    public DeleteOperation(File fileToDelete) {
+    public DeleteOperation(ExecutionContext ctx, File fileToDelete) {
+        super(ctx);
         this.fileToDelete = fileToDelete.toPath();
     }
 
@@ -47,7 +50,7 @@ public final class DeleteOperation extends Operation {
             throw new SakuraException("Can not re-perform operations.");
 
         try {
-            deletedFile = new File(OperationConfig.getTmpDir(), UUID.randomUUID().toString()).toPath();
+            deletedFile = new File(ctx.getOperationConfig().getTmpDir(), UUID.randomUUID().toString()).toPath();
             Files.move(fileToDelete, deletedFile);
             performed = true;
         } catch (NoSuchFileException e) {
@@ -71,6 +74,6 @@ public final class DeleteOperation extends Operation {
 
     @Override
     public String toString() {
-        return "[Delete Operation]: Deleting \"%s\" by moving it to \"%s\"".formatted(fileToDelete.toFile().getAbsolutePath(), deletedFile.toFile().getAbsolutePath());
+        return "[Delete Operation]: Deleting \"%s\" by moving it to \"%s\"".formatted(getFilePathStr(fileToDelete.toFile()), getFilePathStr(deletedFile.toFile()));
     }
 }

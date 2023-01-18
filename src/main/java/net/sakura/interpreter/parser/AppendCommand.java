@@ -53,7 +53,7 @@ final class AppendCommand extends DualArgCommand {
         File writeFile = (File) right.value();
 
         try {
-            Operation appendOp = new AppendOperation(writeFile, writeData);
+            Operation appendOp = new AppendOperation(ctx, writeFile, writeData);
             ctx.getFileTracker().runOperation(appendOp);
         } catch (SakuraException e) {
             throw e.setPosition(token.line(), token.column());

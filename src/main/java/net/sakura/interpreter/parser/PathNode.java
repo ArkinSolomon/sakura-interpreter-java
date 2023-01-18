@@ -21,6 +21,7 @@ import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
+import net.sakura.interpreter.operations.Operation;
 
 import java.io.File;
 
@@ -68,14 +69,14 @@ final class PathNode extends Node {
                 if (path == null)
                     path = new File(ctx.getRootPath(), childPath);
                 else
-                    path = new File(path.getAbsolutePath(), childPath);
+                    path = new File(Operation.getFilePathStr(path), childPath);
             } else if (childResult.type() == DataType.PATH) {
                 File childPath = (File) childResult.value();
 
                 if (path == null)
                     path = childPath;
                 else
-                    path = new File(path.getAbsolutePath(), String.valueOf(childPath));
+                    path = new File(Operation.getFilePathStr(path), String.valueOf(childPath));
             } else
                 throw new RuntimeException("Path parts must be strings or paths");
             hasParsedFirstPart = true;

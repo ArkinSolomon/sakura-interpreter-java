@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022. XPkg-Client Contributors.
+ * Copyright (c) 2022-2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package net.sakura.interpreter.operations;
 
 import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.execution.ExecutionContext;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -32,24 +33,17 @@ public final class RenameOperation extends Operation {
     /**
      * Create a new operation to rename a file or directory at the location to the new name.
      *
+     * @param ctx The execution context in which to run this operation.
      * @param originalFile The original file or directory.
      * @param newName      The new name of the file or directory.
      */
-    public RenameOperation(File originalFile, String newName) {
+    public RenameOperation(ExecutionContext ctx, File originalFile, String newName) {
+        super(ctx);
         this.originalFile = originalFile;
         newFile = originalFile.toPath().resolveSibling(newName);
 
         if (Files.exists(newFile))
             throw new SakuraException("File exists: " + newFile.toFile());
-    }
-
-    /**
-     * Get the path to the new file which the original file was renamed to.
-     *
-     * @return The path to the renamed file.
-     */
-    public Path getNewFile() {
-        return newFile;
     }
 
     @Override
@@ -79,6 +73,6 @@ public final class RenameOperation extends Operation {
 
     @Override
     public String toString() {
-        return "[Rename Operation]: Rename \"%s\" to \"%s\"".formatted(originalFile.getAbsolutePath(), newFile.toFile().getAbsolutePath());
+        return "[Rename Operation]: Rename \"%s\" to \"%s\"".formatted(getFilePathStr(originalFile), getFilePathStr(newFile.toFile()));
     }
 }

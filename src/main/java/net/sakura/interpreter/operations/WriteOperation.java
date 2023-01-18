@@ -16,6 +16,7 @@
 package net.sakura.interpreter.operations;
 
 import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.execution.ExecutionContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,10 +35,12 @@ public class WriteOperation extends Operation {
     /**
      * Create a new operation to write {@code content} to {@code file}.
      *
+     * @param ctx The execution context in which to perform the operation.
      * @param file    The file to write the content to.
      * @param content The new content of the file.
      */
-    public WriteOperation(File file, String content) {
+    public WriteOperation(ExecutionContext ctx, File file, String content) {
+        super(ctx);
         this.file = file.toPath();
         newContent = content;
     }
@@ -51,14 +54,14 @@ public class WriteOperation extends Operation {
             try {
                 oldContent = String.join("\n", Files.readAllLines(file));
             } catch (IOException e) {
-                throw new SakuraException("Could not read file \"%s\".".formatted(file.toFile().getAbsolutePath()), e);
+                throw new SakuraException("Could not read file \"%s\".".formatted(getFilePathStr(file.toFile())), e);
             }
         }
 
         try {
             Files.write(file, newContent.getBytes());
         } catch (IOException e) {
-            throw new SakuraException("Could not write to file \"%s\".".formatted(file.toFile().getAbsolutePath()), e);
+            throw new SakuraException("Could not write to file \"%s\".".formatted(getFilePathStr(file.toFile())), e);
         }
 
         performed = true;
@@ -81,6 +84,6 @@ public class WriteOperation extends Operation {
 
     @Override
     public String toString() {
-        return "[Write Operation]: Write \"%s\" to \"%s\"".formatted(newContent, file.toFile().getAbsolutePath());
+        return "[Write Operation]: Write \"%s\" to \"%s\"".formatted(newContent, getFilePathStr(file.toFile()));
     }
 }

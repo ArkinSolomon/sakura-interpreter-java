@@ -43,7 +43,7 @@ final class DeleteCommand extends SinglePathCommand {
         try {
             File path = getPath(ctx);
 
-            Operation delOp = new DeleteOperation(path);
+            Operation delOp = new DeleteOperation(ctx, path);
             ctx.getFileTracker().runOperation(delOp);
             return Value.NULL;
         } catch (SakuraException e){

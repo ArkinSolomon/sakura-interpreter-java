@@ -17,6 +17,7 @@ package net.sakura.interpreter.operations;
 
 import net.sakura.interpreter.exceptions.FileNotFoundException;
 import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.execution.ExecutionContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,10 +37,12 @@ public final class AppendOperation extends Operation {
     /**
      * Create a new operation to append some text to the end of a file.
      *
+     * @param ctx           The execution context in which to perform the operation.
      * @param file          The file to which to append to.
      * @param appendContent The content to append to the end of the file.
      */
-    public AppendOperation(File file, String appendContent) {
+    public AppendOperation(ExecutionContext ctx, File file, String appendContent) {
+        super(ctx);
         path = file.toPath();
         this.appendContent = appendContent;
     }
@@ -55,13 +58,13 @@ public final class AppendOperation extends Operation {
         try {
             oldContent = String.join("\n", Files.readAllLines(path));
         } catch (IOException e) {
-            throw new SakuraException("Could not read file \"%s\".".formatted(path.toFile().getAbsolutePath()), e);
+            throw new SakuraException("Could not read file \"%s\".".formatted(getFilePathStr(path.toFile())), e);
         }
 
         try {
             Files.write(path, appendContent.getBytes(), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
         } catch (IOException e) {
-            throw new SakuraException("Could not append to file \"%s\".".formatted(path.toFile().getAbsolutePath()), e);
+            throw new SakuraException("Could not append to file \"%s\".".formatted(getFilePathStr(path.toFile())), e);
         }
 
         performed = true;
@@ -75,12 +78,12 @@ public final class AppendOperation extends Operation {
         try {
             Files.write(path, oldContent.getBytes());
         } catch (Exception e) {
-            throw new SakuraException("Could not undo operation by writing old content to \"%s\"".formatted(path.toFile().getAbsolutePath()));
+            throw new SakuraException("Could not undo operation by writing old content to \"%s\"".formatted(getFilePathStr(path.toFile())));
         }
     }
 
     @Override
     public String toString() {
-        return "[Append Operation]: Append \"%s\" to \"%s\".".formatted(appendContent, path.toFile().getAbsolutePath());
+        return "[Append Operation]: Append \"%s\" to \"%s\".".formatted(appendContent, getFilePathStr(path.toFile()));
     }
 }

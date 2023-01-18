@@ -81,7 +81,8 @@ public enum TokenType {
     CLOSE_BRACE, // }
     BRACE, // A series of expressions wrapped in braces.
 
-    ELLIPSIS, // ...
+    PERIOD, // .
+    ELLIPSIS, // Three periods in a row
 
     PATH, // PATH (file command)
     READ, // READ (file command)

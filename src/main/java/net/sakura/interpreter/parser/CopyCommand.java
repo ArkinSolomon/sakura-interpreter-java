@@ -46,7 +46,7 @@ final class CopyCommand extends DualArgCommand {
         File dest = (File) right.value();
 
         try {
-            Operation copyOp = new CopyOperation(source, dest);
+            Operation copyOp = new CopyOperation(ctx, source, dest);
             ctx.getFileTracker().runOperation(copyOp);
         } catch (SakuraException e) {
             throw e.setPosition(token);

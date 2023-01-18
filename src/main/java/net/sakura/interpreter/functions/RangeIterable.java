@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.functions;
 
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.Iterable;
 import net.sakura.interpreter.execution.Value;
@@ -43,7 +44,7 @@ public final class RangeIterable implements Iterable {
         current = start - step;
 
         if (step == 0)
-            throw new RuntimeException("Range function step can not be zero");
+            throw new SakuraException("Range function step can not be zero");
     }
 
     @Override

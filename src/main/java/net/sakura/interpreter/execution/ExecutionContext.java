@@ -17,11 +17,14 @@ package net.sakura.interpreter.execution;
 
 import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.functions.Function;
+import net.sakura.interpreter.functions.ListFunction;
 import net.sakura.interpreter.functions.PrintFunction;
 import net.sakura.interpreter.functions.RangeFunction;
 import net.sakura.interpreter.functions.ExitFunction;
 import net.sakura.interpreter.operations.FileTracker;
+import net.sakura.interpreter.operations.OperationConfig;
 import net.sakura.interpreter.parser.Node;
+import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -36,35 +39,42 @@ public class ExecutionContext {
 
     // Map identifiers to values
     private final Map<String, Value> identifiers = new HashMap<>();
-    private final ExecutionContext root;
-    private ExecutionContext parent = null;
-    private FileTracker fileTracker = new FileTracker();
 
+    private final ExecutionContext rootContext;
+    private ExecutionContext parent = null;
+
+    private FileTracker fileTracker = new FileTracker();
+    private final OperationConfig operationConfig;
     private File rootPath = Paths.get("").toFile();
 
     /**
      * Create a new blank root execution context
      */
     public ExecutionContext() {
-        this(new HashMap<>(), new HashMap<>(), null);
+        this(new HashMap<>(), new HashMap<>(), null, new OperationConfig());
     }
 
     /**
      * Create a new root execution context with environment variables.
      *
      * @param envVars The environment variables to create.
+     * @param functions Overridden or additional functions provided by the executor.
+     * @param root The root directory.
+     * @param operationConfig The operation config for this execution.
      */
-    public ExecutionContext(Map<String, Value> envVars, Map<String, Function> functions, File root) {
+    public ExecutionContext(Map<String, Value> envVars, Map<String, Function> functions, File root, OperationConfig operationConfig) {
         identifiers.putAll(envVars);
-        assignDefaults();
+
+        this.operationConfig = operationConfig;
 
         if (root != null)
             rootPath = root;
+        rootContext = this;
+
+        assignDefaults();
 
         for (Map.Entry<String, Function> entry : functions.entrySet())
             registerFunc(entry.getKey(), entry.getValue());
-
-        this.root = this;
     }
 
     /**
@@ -74,8 +84,21 @@ public class ExecutionContext {
      */
     public ExecutionContext(ExecutionContext parent) {
         this.parent = parent;
-        this.fileTracker = parent.fileTracker;
-        root = parent.root;
+
+        rootContext = parent.rootContext;
+        rootPath = parent.rootPath;
+
+        fileTracker = parent.fileTracker;
+        operationConfig = parent.operationConfig;
+    }
+
+    /**
+     * Get the operation config for this context.
+     *
+     * @return The operation config for this context.
+     */
+    public OperationConfig getOperationConfig() {
+        return operationConfig;
     }
 
     /**
@@ -92,8 +115,8 @@ public class ExecutionContext {
      *
      * @return The root execution context.
      */
-    public ExecutionContext getRoot() {
-        return root;
+    public ExecutionContext getRootContext() {
+        return rootContext;
     }
 
     /**
@@ -209,15 +232,25 @@ public class ExecutionContext {
         identifiers.put("TRUE", Value.TRUE);
         identifiers.put("FALSE", Value.FALSE);
 
+        boolean isMacOS = SystemUtils.IS_OS_MAC;
+        boolean isWindows = SystemUtils.IS_OS_WINDOWS;
+        boolean isLinux = SystemUtils.IS_OS_LINUX;
+        boolean isOtherOS = !isMacOS && !isWindows && !isLinux;
+        identifiers.put("@isMacOS", new Value(DataType.BOOLEAN, isMacOS, false));
+        identifiers.put("@isWindows", new Value(DataType.BOOLEAN, isWindows, false));
+        identifiers.put("@isLinux", new Value(DataType.BOOLEAN, isLinux, false));
+        identifiers.put("@isOtherOS", new Value(DataType.BOOLEAN, isOtherOS, false));
+
         identifiers.put("@root", new Value(DataType.PATH, rootPath, false));
 
-        identifiers.put("@__lang_version", new Value(DataType.STRING, "1.0.0-alpha", false));
-        identifiers.put("@__interpreter", new Value(DataType.STRING, "sakura.official.java", false));
+        identifiers.put("@__lang_version", new Value(DataType.STRING, "1.0.0", false));
+        identifiers.put("@__interpreter", new Value(DataType.STRING, "sakura.official", false));
         identifiers.put("@__interpreter_version", new Value(DataType.STRING, "1.0-SNAPSHOT", false));
 
         registerFunc("print", new PrintFunction());
         registerFunc("range", new RangeFunction());
         registerFunc("exit", new ExitFunction());
+        registerFunc("list", new ListFunction());
     }
 
     /**

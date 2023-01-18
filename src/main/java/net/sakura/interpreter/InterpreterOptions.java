@@ -18,21 +18,32 @@ package net.sakura.interpreter;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.functions.Function;
+import net.sakura.interpreter.operations.OperationConfig;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Options for the interpreter.,
  */
 public class InterpreterOptions {
 
+    private final Set<File> allowRead = new HashSet<>();
+    private final Set<File> disallowRead = new HashSet<>();
+    private final Set<File> allowWrite = new HashSet<>();
+    private final Set<File> disallowWrite = new HashSet<>();
+
+    final OperationConfig operationConfig = new OperationConfig();
+
     String executor = "unknown";
 
     Map<String, Value> envVariables = new HashMap<>();
     Map<String, Function> functions = new HashMap<>();
-
     File root = new File("/");
 
     /**
@@ -45,19 +56,37 @@ public class InterpreterOptions {
     }
 
     /**
-     * Set the root of the interpreter.
+     * Set the root folder of the interpreter.
      *
-     * @param root The root of the interpreter.
+     * @param root The root folder of the interpreter.
      */
-    public void setRoot(File root){
+    public void setRoot(File root) {
+        if (!root.exists() || !root.isDirectory())
+            throw new RuntimeException("The root file of the Sakura interpreter must be an existing directory");
         this.root = root;
+    }
+
+    /**
+     * Get the operation config set by this interpreter.
+     *
+     * @return The operation config set by this interpreter.
+     */
+    OperationConfig getOperationConfig() {
+        return operationConfig;
+    }
+
+    /**
+     * Update restrictions for the operation config.
+     */
+    void updateRestrictions() {
+        operationConfig.updateRestrictions(allowRead, disallowRead, allowWrite, disallowWrite);
     }
 
     /**
      * Define a boolean environment variable for the interpreter.
      *
      * @param identifier The identifier for the variable, without the "@" prefix.
-     * @param value The value of the variable.
+     * @param value      The value of the variable.
      */
     public void defineEnvVar(String identifier, boolean value) {
         envVariables.put("@" + identifier, value ? Value.TRUE : Value.FALSE);
@@ -67,7 +96,7 @@ public class InterpreterOptions {
      * Define a string environment variable for the interpreter.
      *
      * @param identifier The identifier for the variable, without the "@" prefix.
-     * @param value The value of the variable.
+     * @param value      The value of the variable.
      */
     public void defineEnvVar(String identifier, String value) {
         envVariables.put("@" + identifier, new Value(DataType.STRING, value, false));
@@ -77,7 +106,7 @@ public class InterpreterOptions {
      * Define an environment variable of type number for the interpreter.
      *
      * @param identifier The identifier for the variable, without the "@" prefix.
-     * @param value The value of the number.
+     * @param value      The value of the number.
      */
     public void defineEnvVar(String identifier, double value) {
         envVariables.put("@" + identifier, new Value(DataType.NUMBER, value, false));
@@ -87,9 +116,117 @@ public class InterpreterOptions {
      * Override a default function, or define one.
      *
      * @param identifier The identifier of the function.
-     * @param function The code to execute.
+     * @param function   The code to execute.
      */
     public void defineFunc(String identifier, Function function) {
         functions.put(identifier, function);
+    }
+
+    /**
+     * Allow read operations on a certain file or directory.
+     *
+     * @param file The file or directory to allow read permissions to.
+     */
+    public void allowRead(File file) {
+        allowRead.add(file);
+    }
+
+    /**
+     * Allow read operations on a certain file or directory.
+     *
+     * @param path The path to the file or directory to allow read permissions to.
+     */
+    public void allowRead(Path path) {
+        allowRead(path.toFile());
+    }
+
+    /**
+     * Allow read operations on multiple files or directories.
+     *
+     * @param files The files or directories to allow read permissions to.
+     */
+    public void allowRead(List<File> files) {
+        allowRead.addAll(files);
+    }
+
+    /**
+     * Deny read operations on a certain file or directory.
+     *
+     * @param file The file or directory to deny read permissions to.
+     */
+    public void disallowRead(File file) {
+        disallowRead.add(file);
+    }
+
+    /**
+     * Deny read operations on a certain file or directory.
+     *
+     * @param path The path to the file or directory to deny read permissions to.
+     */
+    public void disallowRead(Path path) {
+        disallowRead(path.toFile());
+    }
+
+    /**
+     * Deny read operations on multiple files or directories.
+     *
+     * @param files The files or directories to deny read permissions to.
+     */
+    public void disallowRead(List<File> files) {
+        disallowRead.addAll(files);
+    }
+
+    /**
+     * Allow write operations on a certain file or directory.
+     *
+     * @param file The file or directory to allow write permissions to.
+     */
+    public void allowWrite(File file) {
+        allowWrite.add(file);
+    }
+
+    /**
+     * Allow write operations on a certain file or directory.
+     *
+     * @param path The path to the file or directory to allow write permissions to.
+     */
+    public void allowWrite(Path path) {
+        allowWrite(path.toFile());
+    }
+
+    /**
+     * Allow write operations on multiple files or directories.
+     *
+     * @param files The files or directories to allow write permissions to.
+     */
+    public void allowWrite(List<File> files) {
+        allowWrite.addAll(files);
+    }
+
+    /**
+     * Deny write operations on a certain file or directory.
+     *
+     * @param file The file or directory to deny write permissions to.
+     */
+    public void disallowWrite(File file) {
+        disallowWrite.add(file);
+    }
+
+    /**
+     * Deny write operations on a certain file or directory.
+     *
+     * @param path The path to the file or directory to deny write permissions to.
+     */
+    public void disallowWrite(Path path) {
+        disallowWrite(path.toFile());
+    }
+
+    /**
+     * Deny write operations on multiple files or directories.
+     *
+     * @param files The files or directories to deny write permissions to.
+     */
+    public void disallowWrite(List<File> files) {
+        disallowWrite.addAll(files);
     }
 }

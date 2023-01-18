@@ -60,7 +60,7 @@ final class RenameCommand extends DualArgCommand {
             throw new SakuraException(token, "A file's new name can not contain newline characters.");
 
         try {
-            Operation renameOp = new RenameOperation(original, newName);
+            Operation renameOp = new RenameOperation(ctx, original, newName);
             ctx.getFileTracker().runOperation(renameOp);
         } catch (SakuraException e) {
             throw e.setPosition(token);

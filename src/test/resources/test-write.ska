@@ -1,0 +1,1 @@
+WRITE "test-write\nline 2 here!" TO @root/file.txt

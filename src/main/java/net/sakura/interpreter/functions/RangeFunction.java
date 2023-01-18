@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.functions;
 
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.Value;
 
@@ -34,14 +35,14 @@ public final class RangeFunction implements Function {
     @Override
     public Value execute(List<Value> args) {
         if (args.size() == 0)
-            throw new RuntimeException("range() missing argument(s)");
+            throw new SakuraException("Range function requires at least one argument.");
 
         Integer[] numbers = args
                 .stream()
                 .limit(3)
                 .map(v -> {
                     if (v == null || v.type() != DataType.NUMBER)
-                        throw new RuntimeException("All arguments of range must be a number");
+                        throw new SakuraException("All arguments of range must be a number.");
 
                     return (int) Math.floor((double) v.value());
                 })

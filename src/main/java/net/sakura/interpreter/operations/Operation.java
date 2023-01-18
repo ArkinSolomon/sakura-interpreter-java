@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022. XPkg-Client Contributors.
+ * Copyright (c) 2022-2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,22 @@
 
 package net.sakura.interpreter.operations;
 
+import net.sakura.interpreter.execution.ExecutionContext;
+
+import java.io.File;
+import java.io.IOException;
+
 /**
  * An instance of this class is an operation done on the file system which can be undone.
  */
 public abstract class Operation {
 
     protected boolean performed = false;
+    protected final ExecutionContext ctx;
+
+    Operation(ExecutionContext ctx){
+        this.ctx = ctx;
+    }
 
     /**
      * Perform the operation.
@@ -39,4 +49,18 @@ public abstract class Operation {
      */
     @Override
     public abstract String toString();
+
+    /**
+     * Get the string representation of a path to a file.
+     *
+     * @param file The file to get the string representation of the path.
+     * @return The string representation of a path to a file.
+     */
+    public static String getFilePathStr(File file) {
+        try{
+            return file.getCanonicalPath();
+        } catch (IOException e) {
+            return file.getAbsolutePath();
+        }
+    }
 }

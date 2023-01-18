@@ -1,0 +1,5 @@
+printBoth("John", "Smith")
+
+func printBoth(%arg1, %arg2) {
+    print("Arg 1 was: " + arg1 + ", and arg 2 was: " + arg2)
+}

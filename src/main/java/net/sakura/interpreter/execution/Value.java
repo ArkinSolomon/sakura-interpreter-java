@@ -15,6 +15,8 @@
 
 package net.sakura.interpreter.execution;
 
+import net.sakura.interpreter.operations.Operation;
+
 import java.io.File;
 
 /**
@@ -45,7 +47,7 @@ public record Value(DataType type, Object value, boolean isMutable) {
         else if (type == DataType.__BRACE_RETURN)
             return "<_brace return_>";
         else if (type == DataType.PATH)
-            return ((File) value).getAbsolutePath();
+            return Operation.getFilePathStr((File) value);
         return value.toString();
     }
 

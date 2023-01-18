@@ -47,7 +47,7 @@ class EqualityOperator extends Operator {
             return Value.FALSE;
 
         boolean isEqual = switch (lhs.type()) {
-            case STRING -> lhs.value().equals(rhs.value());
+            case STRING, PATH -> lhs.value().equals(rhs.value());
             case NUMBER -> (double) lhs.value() == (double) rhs.value();
             case BOOLEAN -> (boolean) lhs.value() == (boolean) rhs.value();
             case NULL -> true;

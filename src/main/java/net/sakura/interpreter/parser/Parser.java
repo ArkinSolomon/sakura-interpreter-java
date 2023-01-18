@@ -384,7 +384,7 @@ public final class Parser {
     public ExecutionResult execute(ExecutionContext ctx) {
 
         // Register functions if we're executing the root context
-        final boolean isRoot = ctx.getRoot() == ctx;
+        final boolean isRoot = ctx.getRootContext() == ctx;
         if (isRoot && !registered) {
             registered = true;
             for (FunctionDefinition function : functions)

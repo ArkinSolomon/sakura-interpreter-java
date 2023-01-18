@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022. XPkg-Client Contributors.
+ * Copyright (c) 2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package net.sakura.interpreter.operations;
 
 import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.execution.ExecutionContext;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -34,11 +35,12 @@ public final class CopyOperation extends Operation {
     /**
      * Create a new operation to copy a file to another location.
      *
+     * @param ctx The execution context in which to run this operation.
      * @param file   The file to be copied.
      * @param target The destination for it to be copied to.
      */
-    public CopyOperation(File file, File target) {
-        super();
+    public CopyOperation(ExecutionContext ctx, File file, File target) {
+        super(ctx);
         this.file = file;
         this.target = target;
     }
@@ -48,19 +50,22 @@ public final class CopyOperation extends Operation {
         if (performed)
             throw new SakuraException("Can not re-perform operation.");
 
+        if (target.exists())
+            ctx.getFileTracker().runOperation(new DeleteOperation(ctx, target));
+
         try {
             if (file.isDirectory())
                 FileUtils.copyDirectory(file, target);
             else
                 Files.copy(file.toPath(), target.toPath(), NOFOLLOW_LINKS);
             performed = true;
-        }catch (Throwable e){
-            throw new SakuraException("Error copying file \"%s\" to \"%s\".".formatted(file.getAbsolutePath(), target.getAbsolutePath()), e);
+        } catch (Throwable e) {
+            throw new SakuraException("Error copying file \"%s\" to \"%s\".".formatted(getFilePathStr(file), getFilePathStr(target)), e);
         }
     }
 
     @Override
-    void undo()  {
+    void undo() {
         if (!performed)
             return;
 
@@ -70,13 +75,13 @@ public final class CopyOperation extends Operation {
             else if (!target.delete())
                 throw new SakuraException("Could not undo operation by deleting target file at " + target);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new SakuraException("Could not undo operation by deleting target file at " + target);
         }
     }
 
     @Override
     public String toString() {
-        return "[Copy Operation]: Copying \"%s\" to \"%s\"".formatted(file.getAbsolutePath(), target.getAbsolutePath());
+        return "[Copy Operation]: Copying \"%s\" to \"%s\"".formatted(getFilePathStr(file), getFilePathStr(target));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022. XPkg-Client Contributors.
+ * Copyright (c) 2022-2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package net.sakura.interpreter.operations;
 
 import net.sakura.interpreter.exceptions.FileExistsException;
 import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.execution.ExecutionContext;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -36,11 +37,12 @@ public final class MkdirOperation extends Operation {
     /**
      * Create a new operation to create a directory at a specified place. Assume the directory intending to be created does not exist.
      *
+     * @param ctx The execution context in which to run the operation.
      * @param directory The directory to create.
      * @param recursive True if parent directories should be created as well.
      */
-    public MkdirOperation(File directory, boolean recursive) {
-        super();
+    public MkdirOperation(ExecutionContext ctx, File directory, boolean recursive) {
+        super(ctx);
         this.directory = directory;
         this.recursive = recursive;
     }
@@ -74,7 +76,7 @@ public final class MkdirOperation extends Operation {
         }catch (FileAlreadyExistsException e){
             throw new FileExistsException(directory, e);
         } catch (Throwable e) {
-            throw new SakuraException("There was an unknown error creating the directory \"%s\".".formatted(directory.getAbsolutePath()), e);
+            throw new SakuraException("There was an unknown error creating the directory \"%s\".".formatted(getFilePathStr(directory)), e);
         }
     }
 
@@ -91,6 +93,6 @@ public final class MkdirOperation extends Operation {
 
     @Override
     public String toString() {
-        return "[Mkdir Operation]: Creating directory at \"%s\"".formatted(directory.getAbsolutePath()) + (recursive ? " recursively" : "");
+        return "[Mkdir Operation]: Creating directory at \"%s\"".formatted(getFilePathStr(directory)) + (recursive ? " recursively" : "");
     }
 }

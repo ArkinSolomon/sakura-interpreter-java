@@ -43,7 +43,7 @@ public class MkdirsCommand extends SinglePathCommand {
         try {
             File path = getPath(ctx);
 
-            Operation mkdirOp = new MkdirOperation(path, true);
+            Operation mkdirOp = new MkdirOperation(ctx, path, true);
             ctx.getFileTracker().runOperation(mkdirOp);
             return Value.NULL;
         } catch (SakuraException e){

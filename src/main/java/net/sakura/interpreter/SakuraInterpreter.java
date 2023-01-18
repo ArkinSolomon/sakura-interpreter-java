@@ -23,9 +23,9 @@ import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Lexer;
 import net.sakura.interpreter.lexer.Token;
 import net.sakura.interpreter.lexer.TokenStorage;
-import net.sakura.interpreter.operations.OperationConfig;
 import net.sakura.interpreter.parser.Parser;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -53,7 +53,6 @@ public class SakuraInterpreter {
      */
     public SakuraInterpreter(InterpreterOptions options) {
         this.options = options;
-        OperationConfig.init();
     }
 
     public static void main(String[] args) throws IOException {
@@ -83,12 +82,22 @@ public class SakuraInterpreter {
     /**
      * Execute a file.
      *
-     * @param file The  path to the file to execute.
+     * @param path The  path to the file to execute.
      * @return The value returned by the file. Will be {@link Value#NULL} if the file does not return anything.
      */
-    public Value executeFile(Path file) throws IOException {
-        Lexer lexer = new Lexer(file);
+    public Value executeFile(Path path) throws IOException {
+        Lexer lexer = new Lexer(path);
         return execLexer(lexer);
+    }
+
+    /**
+     * Execute a file.
+     *
+     * @param file The file to execute.
+     * @return The value returned by the file. Will be {@link Value#NULL} if the file does not return anything.
+     */
+    public Value executeFile(File file) throws IOException {
+        return executeFile(file.toPath());
     }
 
     /**
@@ -132,6 +141,8 @@ public class SakuraInterpreter {
     private ExecutionContext createContext() {
         Map<String, Value> envVars = options.envVariables;
         envVars.put("@__executor", new Value(DataType.STRING, options.executor, false));
-        return new ExecutionContext(envVars, options.functions, options.root);
+
+        options.updateRestrictions();
+        return new ExecutionContext(envVars, options.functions, options.root, options.operationConfig);
     }
 }

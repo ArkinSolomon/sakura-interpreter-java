@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022. XPkg-Client Contributors.
+ * Copyright (c) 2022-2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ public final class FileTracker {
      */
     public void runOperation(Operation operation) {
         operation.perform();
-        System.out.println("PERFORMED -- " + operation);
         operations.add(operation);
     }
 
@@ -42,7 +41,6 @@ public final class FileTracker {
         while (!operations.isEmpty()){
             Operation operation = operations.pop();
             operation.undo();
-            System.out.println("UNDID -- " + operation);
         }
     }
 }

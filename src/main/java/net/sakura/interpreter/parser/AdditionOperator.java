@@ -43,19 +43,15 @@ final class AdditionOperator extends Operator {
         Value lhs = leftChild().evaluate(ctx);
         Value rhs = rightChild().evaluate(ctx);
 
-        if (lhs.type() == DataType.STRING) {
-            String value = (String) lhs.value();
+        if (lhs.type() == DataType.STRING || rhs.value() == DataType.STRING) {
+            String lVal = lhs.value().toString();
+            String rVal = rhs.value().toString();
 
-            value += rhs.toString();
-            return new Value(DataType.STRING, value, false);
-        } else if (lhs.type() == DataType.NUMBER) {
-            if (rhs.type() != DataType.NUMBER)
-                throw new SakuraException(getChild(1).token, "Can not add a non-number to a number. Adding \"%s\" of type \"%s\" to \"%s\" of type \"%s\".".formatted(lhs.toString(), lhs.type(), rhs.toString(), rhs.type()));
-
+            return new Value(DataType.STRING, lVal + rVal, false);
+        } else if (lhs.type() == DataType.NUMBER && rhs.type() == DataType.NUMBER)
             return new Value(DataType.NUMBER, (double) lhs.value() + (double) rhs.value(), false);
-        }
 
-        throw new RuntimeException("Invalid operand types for addition operator");
+        throw new SakuraException(token, "Invalid operands for \"+\" operator. Adding \"%s\" of type \"%s\" to \"%s\" of type \"%s\".".formatted(lhs.toString(), lhs.type(), rhs.toString(), rhs.type()));
     }
 
     @Override

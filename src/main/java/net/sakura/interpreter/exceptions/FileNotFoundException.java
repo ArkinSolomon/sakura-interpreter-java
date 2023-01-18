@@ -15,6 +15,8 @@
 
 package net.sakura.interpreter.exceptions;
 
+import net.sakura.interpreter.operations.Operation;
+
 import java.io.File;
 
 /**
@@ -38,6 +40,6 @@ public class FileNotFoundException extends SakuraException {
      * @param cause The exception that caused this one.
      */
     public FileNotFoundException(File file, Throwable cause){
-        super("The file or directory at \"%s\" does not exist.".formatted(file.getAbsolutePath()), cause);
+        super("The file or directory at \"%s\" does not exist.".formatted(Operation.getFilePathStr(file)), cause);
     }
 }

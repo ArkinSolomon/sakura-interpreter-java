@@ -53,7 +53,7 @@ final class WriteCommand extends DualArgCommand {
         File writeFile = (File) right.value();
 
         try {
-            Operation writeOp = new WriteOperation(writeFile, writeData);
+            Operation writeOp = new WriteOperation(ctx, writeFile, writeData);
             ctx.getFileTracker().runOperation(writeOp);
         } catch (SakuraException e) {
             throw e.setPosition(token.line(), token.column());

@@ -1,0 +1,7 @@
+$sum = 0
+
+for %n in range(50){
+    sum = sum + n
+}
+
+return sum

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022. Sakura Contributors.
+ * Copyright (c) 2022-2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
@@ -40,9 +41,9 @@ final class SlashOperator extends Operator {
         if (leftVal.type() == DataType.NUMBER && rightVal.type() == DataType.NUMBER) {
             double val = ((double) leftVal.value()) / ((double) rightVal.value());
             return new Value(DataType.NUMBER, val, false);
-        } else {
-            return new Value(DataType.STRING, "NOT IMPLEMENTED", false);
         }
+
+        throw new SakuraException(token, "Invalid operands for \"/\" operator. Adding \"%s\" of type \"%s\" to \"%s\" of type \"%s\". If you meant to create a path, make sure you prefix it with \"PATH\".".formatted(leftVal.toString(), leftVal.type(), rightVal.toString(), rightVal.type()));
     }
 
     @Override

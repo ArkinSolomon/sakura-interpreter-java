@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * An iterable from a list.
  */
-public class ListIterable implements Iterable{
+public class ListIterable implements Iterable {
 
     private final List<Value> values;
     private int current = 0;

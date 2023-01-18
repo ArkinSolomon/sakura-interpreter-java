@@ -51,7 +51,7 @@ final class MoveCommand extends DualArgCommand {
         File dest = (File) right.value();
 
         try {
-            Operation moveOp = new MoveOperation(source, dest);
+            Operation moveOp = new MoveOperation(ctx, source, dest);
             ctx.getFileTracker().runOperation(moveOp);
         } catch (SakuraException e) {
             throw e.setPosition(token);

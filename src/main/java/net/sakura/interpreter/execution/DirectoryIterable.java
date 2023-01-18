@@ -16,6 +16,7 @@
 package net.sakura.interpreter.execution;
 
 import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.operations.Operation;
 
 import java.io.File;
 
@@ -34,7 +35,7 @@ public class DirectoryIterable implements Iterable {
      */
     public DirectoryIterable(File directory) {
         if (directory.isFile())
-            throw new SakuraException("The provided path: \"%s\" is not a directory.".formatted(directory.getAbsolutePath()));
+            throw new SakuraException("The provided path: \"%s\" is not a directory.".formatted(Operation.getFilePathStr(directory)));
         files = directory.listFiles();
     }
 

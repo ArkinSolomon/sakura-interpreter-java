@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023. Sakura Contributors.
+ * Copyright (c) 2023. Sakura Contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,29 +13,18 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.parser;
+package net.sakura.interpreter.functions;
 
 import net.sakura.interpreter.execution.DataType;
-import net.sakura.interpreter.execution.ExecutionContext;
+import net.sakura.interpreter.execution.ListIterable;
 import net.sakura.interpreter.execution.Value;
-import net.sakura.interpreter.lexer.Token;
 
-/**
- * A string in quotes.
- */
-final class StringLiteral extends Literal {
+import java.util.List;
 
-    /**
-     * Create a new string from a quote token.
-     *
-     * @param token The quote token.
-     */
-    public StringLiteral(Token token) {
-        super(token);
-    }
+public final class ListFunction implements Function{
 
     @Override
-    public Value evaluate(ExecutionContext ctx) {
-        return new Value(DataType.STRING, token.value(), false);
+    public Value execute(List<Value> args) {
+        return new Value(DataType.ITERABLE, new ListIterable(args), false);
     }
 }

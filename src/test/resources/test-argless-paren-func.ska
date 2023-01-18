@@ -1,0 +1,6 @@
+noArgs()
+noArgs()
+
+func noArgs() {
+    print("No args!")
+}

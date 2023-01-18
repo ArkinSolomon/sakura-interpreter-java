@@ -1,0 +1,7 @@
+noArgs()
+noArgs()
+noArgs()
+
+func noArgs {
+    print("cheeseburger")
+}

@@ -19,13 +19,13 @@ import net.sakura.interpreter.exceptions.FileEmptyException;
 import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.exceptions.UnclosedParenthesisException;
 import net.sakura.interpreter.exceptions.UnexpectedTokenException;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 /**
  * An instance of this class performs lexical analysis on a given string input
@@ -256,18 +256,9 @@ public final class Lexer {
                     tokens.add(new Token(TokenType.CLOSE_BRACE, currentLine, currentCol, "}"));
                 else if (thisChar == ',')
                     tokens.add(new Token(TokenType.COMMA, currentLine, currentCol, ","));
-                else if (thisChar == '.') {
-                    if (!Objects.equals(next, "."))
-                        throw new UnexpectedTokenException(currentLine, currentCol, "\"%s\"".formatted(next), "A period must be followed by two subsequent periods to form an ellipsis.");
-                    scanner.next();
-                    if (!scanner.hasNext())
-                        throw new UnexpectedTokenException(new Token(TokenType.EOF, currentLine, currentCol + 1, "<ELLIPSIS UNEXPECTED EOF>"), "A period must be followed by two subsequent periods to form an ellipsis.");
-                    next = scanner.next();
-                    if (!Objects.equals(next, "."))
-                        throw new UnexpectedTokenException(currentLine, currentCol + 1, "\"%s\"".formatted(next), "A period must be followed by two subsequent periods to form an ellipsis.");
-                    tokens.add(new Token(TokenType.ELLIPSIS, currentLine, currentCol, "..."));
-                    currentCol += 2;
-                } else {
+                else if (thisChar == '.')
+                    tokens.add(new Token(TokenType.PERIOD, currentLine, currentCol, "."));
+                else {
                     currentType = TokenType.SYMBOL;
                     currentValue.append(thisChar);
 
@@ -342,7 +333,11 @@ public final class Lexer {
                     // If we're currently looking at a quote (make sure we check for escaped endings)
                     if (thisChar == '"' && lastVal != '\\') {
                         currentType = null;
-                        tokens.add(new Token(TokenType.QUOTE, startLine, startCol, currentValue.toString()));
+
+                        String quoteValue = currentValue.toString();
+                        quoteValue = StringEscapeUtils.unescapeJava(quoteValue);
+
+                        tokens.add(new Token(TokenType.QUOTE, startLine, startCol, quoteValue));
                         currentValue = new StringBuilder();
                     } else if (thisChar == '"') {
 
@@ -362,12 +357,24 @@ public final class Lexer {
         if (currentType == TokenType.QUOTE)
             throw new SakuraException(startLine, startCol, "Unclosed string literal (you are missing a quotation mark).");
 
-        // Group FUNC then SYMBOL into one token
+        // Group FUNC then SYMBOL into one token and group three periods into an ellipsis
         for (int i = 0; i < tokens.size(); i++) {
             Token thisToken = tokens.get(i);
             if (thisToken.isOfType(TokenType.EOF))
                 break;
-            else if (!thisToken.isOfType(TokenType.FUNC))
+            else if (thisToken.isOfType(TokenType.PERIOD)) {
+                if (tokens.size() < i + 2)
+                    continue;
+                Token next = tokens.get(i + 1);
+                Token after = tokens.get(i + 2);
+
+                if (next.isOfType(TokenType.PERIOD) && after.isOfType(TokenType.PERIOD)) {
+                    tokens.set(i, new Token(TokenType.ELLIPSIS, thisToken.line(), thisToken.column(), "..."));
+                    tokens.remove(next);
+                    tokens.remove(after);
+                }
+                continue;
+            } else if (!thisToken.isOfType(TokenType.FUNC))
                 continue;
 
             // It's easier just to create a new TokenStore when there's a FUNC token, since we'd have to handle shifting the array
@@ -594,8 +601,7 @@ public final class Lexer {
                             }
 
                             if (token.isOfType(TokenType.CONST_VAR, TokenType.VARIABLE)) {
-                                if (tokenStorage.peek().isOfType(TokenType.ELLIPSIS)) {
-                                    tokenStorage.consume();
+                                if (tokenStorage.lastToken().isOfType(TokenType.ELLIPSIS)) {
 
                                     if (!tokenStorage.nextNonEOLToken().isOfType(TokenType.CLOSE_PARENTHESIS))
                                         throw new UnexpectedTokenException(tokenStorage.currentToken(), "A closing parenthesis must follow a rest argument.");
@@ -790,6 +796,24 @@ public final class Lexer {
                                 throw new UnexpectedTokenException(token.line(), token.column() + quoteVal.indexOf("/") + 1, "\"/\"", "Path can not contain slashes within quotes.");
                             else if (quoteVal.contains("\n"))
                                 throw new UnexpectedTokenException(token.line(), token.column() + quoteVal.indexOf("\n") + 1, "\"\\n\"", "Path can not contain newlines within quotes.");
+                        } else {
+                            if (path.size() > 0) {
+                                Token last = path.get(path.size() - 1);
+
+                                if (last.isOfType(TokenType.ENV_VARIABLE, TokenType.QUOTE, TokenType.PARENTHETICAL_EXPR))
+                                    throw new UnexpectedTokenException(token);
+                                else if (last.isOfType(TokenType.SLASH))
+                                    token = new Token(TokenType.PATH_LITERAL, token.line(), token.column(), token.value());
+                                else {
+                                    path.set(path.size() - 1, new Token(TokenType.PATH_LITERAL, last.line(), last.column(), last.value() + (String) token.value()));
+
+                                    // Continue without adding the token
+                                    token = tokenStorage.consume();
+                                    continue;
+                                }
+                            }
+
+                            token = new Token(TokenType.PATH_LITERAL, token.line(), token.column(), token.value());
                         }
 
                         token = new Token(TokenType.PATH_LITERAL, token.line(), token.column(), token.value());
@@ -833,8 +857,21 @@ public final class Lexer {
                         break;
                     } else if (isPathTo && token.isOfType(TokenType.TO))
                         break;
-                    else if (!token.isOfType(TokenType.SLASH))
-                        throw new UnexpectedTokenException(token, "Unexpected token in path literal.");
+                    else if (!token.isOfType(TokenType.SLASH)) {
+                        if (token.isOfType(TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.PERIOD)) {
+                            if (path.size() > 0) {
+                                Token last = path.get(path.size() - 1);
+
+                                if (last.isOfType(TokenType.PATH_LITERAL))
+                                    path.set(path.size() - 1, new Token(TokenType.PATH_LITERAL, last.line(), last.column(), last.value() + (String) token.value()));
+
+                                // Continue without adding the token
+                                token = tokenStorage.consume();
+                                continue;
+                            }
+                        } else
+                            throw new UnexpectedTokenException(token, "Unexpected token in path literal.");
+                    }
 
                     path.add(token);
                     token = tokenStorage.consume();

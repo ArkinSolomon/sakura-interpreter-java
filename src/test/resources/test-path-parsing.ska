@@ -1,0 +1,5 @@
+%file1 = PATH @root
+%file2 = PATH @root/subdir
+%file3 = PATH $(file2)/subdir2
+
+return list(file1, file2, file3)

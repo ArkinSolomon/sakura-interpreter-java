@@ -16,7 +16,9 @@
 package net.sakura.interpreter;
 
 import net.sakura.interpreter.execution.DataType;
+import net.sakura.interpreter.execution.Iterable;
 import net.sakura.interpreter.execution.Value;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +55,11 @@ public class InterpreterTests {
      * @return The absolute path to the resource,
      */
     private static Path getResource(String resourcePath) {
-        return Path.of(Objects.requireNonNull(InterpreterTests.class.getResource(resourcePath)).getFile());
+        try {
+            return Path.of(Objects.requireNonNull(InterpreterTests.class.getResource(resourcePath)).getFile());
+        } catch (NullPointerException e) {
+            throw new RuntimeException("Could not find resource: " + resourcePath);
+        }
     }
 
     @BeforeEach
@@ -62,8 +68,8 @@ public class InterpreterTests {
         options.setExecutor("sakura.tester");
 
         testRoot = new File(temp, "interpreter-test-files");
-        options.setRoot(testRoot);
         Files.createDirectories(testRoot.toPath());
+        options.setRoot(testRoot);
 
         printer = new TestPrintFunction();
         options.defineFunc("print", printer);
@@ -73,7 +79,7 @@ public class InterpreterTests {
 
     @AfterEach
     void teardown() throws IOException {
-        Files.delete(testRoot.toPath());
+        FileUtils.deleteDirectory(testRoot);
     }
 
     @Test
@@ -101,7 +107,83 @@ public class InterpreterTests {
     @Test
     void testReturn() throws IOException {
         Path path = getResource("/test-return.ska");
-        Value retVal = interpreter.executeFile(path);
-        assertEquals("A return value!", retVal.value());
+        Value val = interpreter.executeFile(path);
+        assertEquals("A return value!", val.value());
+    }
+
+    @Test
+    void testRangeSum() throws IOException {
+        Path path = getResource("/test-range-sum.ska");
+        Value val = interpreter.executeFile(path);
+        assertEquals(val.type(), DataType.NUMBER);
+        assertEquals(val.value(), 1225d);
+    }
+
+    @Test
+    void testPathParsing() throws IOException {
+        Path path = getResource("/test-path-parsing.ska");
+        Value val = interpreter.executeFile(path);
+        assertEquals(val.type(), DataType.ITERABLE);
+
+        Iterable iterable = ((Iterable) val.value()).copy();
+        Value currVal = iterable.next();
+
+        assertEquals(currVal.type(), DataType.PATH);
+        assertEquals(testRoot, currVal.value());
+
+        currVal = iterable.next();
+        assertEquals(currVal.type(), DataType.PATH);
+        File subDir = new File(testRoot, "subdir");
+        assertEquals(subDir.getCanonicalPath(), ((File) currVal.value()).getCanonicalPath());
+
+        currVal = iterable.next();
+        assertEquals(currVal.type(), DataType.PATH);
+        File subDir2 = new File(subDir, "subdir2");
+        assertEquals(subDir2.getCanonicalPath(), ((File) currVal.value()).getCanonicalPath());
+    }
+
+    @Test
+    void testWrite() throws IOException {
+        Path path = getResource("/test-write.ska");
+        interpreter.executeFile(path);
+
+        String content = String.join("\n", Files.readAllLines(new File(testRoot, "file.txt").toPath()));
+        assertEquals("test-write\nline 2 here!", content);
+    }
+
+    @Test
+    void testIterableFunc() throws IOException {
+        Path path = getResource("/test-iterable-func.ska");
+        Value val = interpreter.executeFile(path);
+
+        assertEquals(val.type(), DataType.NUMBER);
+        assertEquals(val.value(), 6d);
+    }
+
+    @Test
+    void testArglessFunc() throws IOException {
+        Path path = getResource("/test-argless-func.ska");
+        interpreter.executeFile(path);
+
+        String output = printer.getOutput();
+        assertEquals("cheeseburger\ncheeseburger\ncheeseburger\n", output);
+    }
+
+    @Test
+    void testArglessParenFunc() throws IOException {
+        Path path = getResource("/test-argless-paren-func.ska");
+        interpreter.executeFile(path);
+
+        String output = printer.getOutput();
+        assertEquals("No args!\nNo args!\n", output);
+    }
+
+    @Test
+    void testPrintBothArgs() throws IOException {
+        Path path = getResource("/test-print-both-args.ska");
+        interpreter.executeFile(path);
+
+        String output = printer.getOutput();
+        assertEquals("Arg 1 was: John, and arg 2 was: Smith\n", output);
     }
 }

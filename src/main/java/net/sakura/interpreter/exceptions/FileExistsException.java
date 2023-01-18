@@ -15,6 +15,8 @@
 
 package net.sakura.interpreter.exceptions;
 
+import net.sakura.interpreter.operations.Operation;
+
 import java.io.File;
 
 /**
@@ -38,6 +40,6 @@ public class FileExistsException extends SakuraException{
      * @param cause The exception that caused this one.
      */
     public FileExistsException(File file, Throwable cause){
-        super("The file or directory \"%s\" already exists.".formatted(file.getAbsolutePath()), cause);
+        super("The file or directory \"%s\" already exists.".formatted(Operation.getFilePathStr(file)), cause);
     }
 }
