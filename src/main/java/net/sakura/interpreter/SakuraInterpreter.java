@@ -113,18 +113,10 @@ public class SakuraInterpreter {
             List<Token> tokens = lexer.analyze();
             TokenStorage tokenStorage = new TokenStorage(tokens);
 
-            //            System.out.println();
-            //            tokenStorage.printTokens();
-
             Parser parser = new Parser(tokenStorage);
             parser.parse();
 
-            //            System.out.println("\n--Output--\n");
-
-            Value retVal = parser.execute(ctx).returnValue();
-            //            System.out.println("\n--Execution context--\n");
-            //            ctx.printContext();
-            return retVal;
+            return parser.execute(ctx).returnValue();
         } catch (Throwable e) {
             if (!(e instanceof ExitException) || ((ExitException) e).getCode() != 0)
                 ctx.getFileTracker().undoOperations();
@@ -140,6 +132,6 @@ public class SakuraInterpreter {
     private ExecutionContext createContext() {
         Map<String, Value> envVars = options.envVariables;
         envVars.put("@__executor", new Value(DataType.STRING, options.executor, false));
-        return new ExecutionContext(envVars);
+        return new ExecutionContext(envVars, options.functions, options.root);
     }
 }

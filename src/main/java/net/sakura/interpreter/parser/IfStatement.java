@@ -91,6 +91,7 @@ final class IfStatement extends Expression {
     @Override
     public Value evaluate(ExecutionContext ctx) {
         ExecutionContext tempCtx = new ExecutionContext(ctx);
+        parent.resume();
 
         int i;
         for (i = 0; i < conditions.size(); i++) {
@@ -109,9 +110,10 @@ final class IfStatement extends Expression {
                 break;
             }
         }
+
         if (i == conditions.size()) {
             Value elseReturn = getChild(i).evaluate(tempCtx);
-            ExecutionResult elseResult = ((ExecutionResult) elseReturn.value());
+            ExecutionResult elseResult = (ExecutionResult) elseReturn.value();
 
             // elseResult may be null since it can be a no-op
             if (elseResult != null && elseResult.earlyReturnType() != EarlyReturnType.NONE) {

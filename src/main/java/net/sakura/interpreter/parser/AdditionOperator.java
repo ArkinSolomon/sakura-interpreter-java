@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
@@ -49,7 +50,7 @@ final class AdditionOperator extends Operator {
             return new Value(DataType.STRING, value, false);
         } else if (lhs.type() == DataType.NUMBER) {
             if (rhs.type() != DataType.NUMBER)
-                throw new RuntimeException("Can not add a non-number to a number");
+                throw new SakuraException(getChild(1).token, "Can not add a non-number to a number. Adding \"%s\" of type \"%s\" to \"%s\" of type \"%s\".".formatted(lhs.toString(), lhs.type(), rhs.toString(), rhs.type()));
 
             return new Value(DataType.NUMBER, (double) lhs.value() + (double) rhs.value(), false);
         }

@@ -353,7 +353,10 @@ public final class Parser {
         while (token != null && !token.isOfType(TokenType.EOF)) {
             Node newNode = switch (token.type()) {
                 case PATH_LITERAL -> new PathLiteral(token);
-                case ENV_VARIABLE -> new EnvVariable(token);
+                case ENV_VARIABLE -> {
+                    Token pathLiteralToken = new Token(TokenType.PATH_LITERAL, token.line(), token.column(), '@' + (String) token.value());
+                    yield new PathLiteral(pathLiteralToken);
+                }
                 case PARENTHETICAL_EXPR -> new ParentheticalNode(token);
                 default ->
                         throw new UnexpectedTokenException(token, "Invalid token in path literal.");
@@ -389,7 +392,7 @@ public final class Parser {
         }
 
         for (Node expression : expressions) {
-            //            expression.print();
+//            expression.print();
             ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {
@@ -401,7 +404,7 @@ public final class Parser {
             if (expression instanceof Expression && stop || expression instanceof ReturnStatement || expression instanceof LoopControlExpression) {
                 EarlyReturnType type = EarlyReturnType.RETURN;
 
-                if (braceReturnResult != null) {
+                if (braceReturnResult != null && braceReturnResult.returner() != null) {
                     TokenType returnerType = braceReturnResult.returner().type();
                     if (returnerType == TokenType.BREAK || returnerType == TokenType.CONTINUE)
                         type = returnerType == TokenType.BREAK ? EarlyReturnType.BREAK : EarlyReturnType.CONTINUE;
@@ -410,6 +413,7 @@ public final class Parser {
                 return new ExecutionResult(type, value, expression.getToken());
             }
         }
+
         return new ExecutionResult(EarlyReturnType.NONE, Value.NULL, null);
     }
 

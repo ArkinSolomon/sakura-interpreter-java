@@ -46,7 +46,10 @@ final class BraceExpression extends Expression {
         List<Token> body = (List<Token>) token.value();
         TokenStorage ts = new TokenStorage(body);
         this.body = new Parser(ts);
-        this.body.parse(false, true);
+        List<Node> nodes = this.body.parse(false, true);
+
+        // Note that the children don't really do anything, but it's here to show up on the tree
+        children = nodes.toArray(Node[]::new);
     }
 
     @Override

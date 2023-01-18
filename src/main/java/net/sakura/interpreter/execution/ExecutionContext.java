@@ -40,13 +40,13 @@ public class ExecutionContext {
     private ExecutionContext parent = null;
     private FileTracker fileTracker = new FileTracker();
 
-    private final File rootPath = Paths.get("").toFile();
+    private File rootPath = Paths.get("").toFile();
 
     /**
      * Create a new blank root execution context
      */
     public ExecutionContext() {
-        this(new HashMap<>());
+        this(new HashMap<>(), new HashMap<>(), null);
     }
 
     /**
@@ -54,10 +54,17 @@ public class ExecutionContext {
      *
      * @param envVars The environment variables to create.
      */
-    public ExecutionContext(Map<String, Value> envVars) {
+    public ExecutionContext(Map<String, Value> envVars, Map<String, Function> functions, File root) {
         identifiers.putAll(envVars);
         assignDefaults();
-        root = this;
+
+        if (root != null)
+            rootPath = root;
+
+        for (Map.Entry<String, Function> entry : functions.entrySet())
+            registerFunc(entry.getKey(), entry.getValue());
+
+        this.root = this;
     }
 
     /**

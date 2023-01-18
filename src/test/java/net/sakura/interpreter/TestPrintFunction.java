@@ -13,23 +13,29 @@
  * either express or implied limitations under the License.
  */
 
-package net.sakura.interpreter.functions;
+package net.sakura.interpreter;
 
 import net.sakura.interpreter.execution.Value;
+import net.sakura.interpreter.functions.Function;
 
 import java.util.List;
 
 /**
- * The print function to print a value.
+ * A print function used for tests.
  */
-public final class PrintFunction implements Function {
+public class TestPrintFunction implements Function {
+
+    private String output = "";
 
     /**
-     * Print the values provided.
+     * Get the final output.
      *
-     * @param args The arguments of the function.
-     * @return Always returns {@link Value#NULL}.
+     * @return The final output of all calls to this function.
      */
+    public String getOutput() {
+        return output;
+    }
+
     @Override
     public Value execute(List<Value> args) {
         StringBuilder printStr = new StringBuilder();
@@ -41,6 +47,7 @@ public final class PrintFunction implements Function {
         }
         String printValue = printStr.toString();
 
+        output += printValue + "\n";
         System.out.println(printValue);
         return Value.NULL;
     }

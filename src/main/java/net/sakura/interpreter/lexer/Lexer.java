@@ -837,15 +837,7 @@ public final class Lexer {
                         throw new UnexpectedTokenException(token, "Unexpected token in path literal.");
 
                     path.add(token);
-
-                    if (tokenStorage.hasNext())
-                        token = tokenStorage.consume();
-                    else {
-
-                        // TODO figure out if this code even runs
-                        assert token != null;
-                        throw new UnexpectedTokenException(token, "Missing a closing parenthesis in path expression.");
-                    }
+                    token = tokenStorage.consume();
                 }
 
                 if (path.size() == 0)
@@ -912,6 +904,7 @@ public final class Lexer {
                     token = tokenStorage.consume();
                 }
 
+                assert token != null;
                 toSimplify.add(new Token(TokenType.EOF, token.line(), token.column(), "<TO_STR EOF>"));
                 newTokens.add(new Token(TokenType.TO_STR, initialLine, initialCol, simplify(toSimplify)));
             } else
