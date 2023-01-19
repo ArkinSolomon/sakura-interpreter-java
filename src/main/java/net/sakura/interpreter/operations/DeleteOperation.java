@@ -49,6 +49,9 @@ public final class DeleteOperation extends Operation {
         if (performed)
             throw new SakuraException("Can not re-perform operations.");
 
+        if (!ctx.getOperationConfig().isValidWritePath(fileToDelete.toFile()))
+            throw new SakuraException("No write permissions for file \"%s\".".formatted(getFilePathStr(fileToDelete.toFile())));
+
         try {
             deletedFile = new File(ctx.getOperationConfig().getTmpDir(), UUID.randomUUID().toString()).toPath();
             Files.move(fileToDelete, deletedFile);
@@ -74,6 +77,8 @@ public final class DeleteOperation extends Operation {
 
     @Override
     public String toString() {
+        if (deletedFile == null)
+            return "[Delete Operation] Will delete \"%s\"".formatted(getFilePathStr(fileToDelete.toFile()));
         return "[Delete Operation]: Deleting \"%s\" by moving it to \"%s\"".formatted(getFilePathStr(fileToDelete.toFile()), getFilePathStr(deletedFile.toFile()));
     }
 }

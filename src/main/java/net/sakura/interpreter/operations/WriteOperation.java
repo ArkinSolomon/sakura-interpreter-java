@@ -22,11 +22,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 /**
  * An operation to overwrite the contents of a file with new contents, or to create the file if it doesn't exist.
  */
-public class WriteOperation extends Operation {
+public final class WriteOperation extends Operation {
 
     private final Path file;
     private final String newContent;
@@ -35,7 +36,7 @@ public class WriteOperation extends Operation {
     /**
      * Create a new operation to write {@code content} to {@code file}.
      *
-     * @param ctx The execution context in which to perform the operation.
+     * @param ctx     The execution context in which to perform the operation.
      * @param file    The file to write the content to.
      * @param content The new content of the file.
      */
@@ -57,14 +58,20 @@ public class WriteOperation extends Operation {
             try {
                 oldContent = String.join("\n", Files.readAllLines(file));
             } catch (IOException e) {
-                throw new SakuraException("Could not read file \"%s\".".formatted(getFilePathStr(file.toFile())), e);
+                throw new SakuraException("Could not read old content from existing file file \"%s\".".formatted(getFilePathStr(file.toFile())), e);
             }
         }
 
         try {
-            Files.write(file, newContent.getBytes());
+            Files.write(file, newContent.getBytes(), StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
-            throw new SakuraException("Could not write to file \"%s\".".formatted(getFilePathStr(file.toFile())), e);
+            String msg;
+            if (!Files.exists(file.getParent()))
+                msg = "Could not write new content to file \"%s\". The parent directory \"%s\" does not exist.".formatted(getFilePathStr(file.toFile()), getFilePathStr(file.getParent().toFile()));
+            else
+                msg = "Could not write new content to file \"%s\".".formatted(getFilePathStr(file.toFile()));
+
+            throw new SakuraException(msg, e);
         }
 
         performed = true;

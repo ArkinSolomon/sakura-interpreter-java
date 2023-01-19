@@ -20,6 +20,7 @@ import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.Iterable;
 import net.sakura.interpreter.execution.Value;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,8 +28,10 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,7 +51,12 @@ public class InterpreterTests {
 
     @BeforeAll
     static void beforeAll() throws IOException {
-        temp = Files.createTempDirectory("interpreter-tests").toFile();
+        temp = Files.createTempDirectory("interpreter-tests-").toFile();
+    }
+
+    @AfterAll
+    static void afterAll() throws IOException {
+        Files.delete(temp.toPath());
     }
 
     /**
@@ -74,12 +82,22 @@ public class InterpreterTests {
         Files.createDirectories(testRoot.toPath());
         options.setRoot(testRoot);
 
-        File disallowWritePath = new File(temp, "disallow-write");
+        File disallowWritePath = new File(testRoot, "disallow-write");
+        File disallowReadPath = new File(testRoot, "disallow-read");
         Files.createDirectories(disallowWritePath.toPath());
+        Files.createDirectories(disallowReadPath.toPath());
+
+        File existingWriteFile = new File(disallowWritePath, "existing-file.txt");
+        File existingReadFile = new File(disallowReadPath, "existing-file.txt");
+
+        Files.writeString(existingWriteFile.toPath(), "existing write file", Charset.defaultCharset(), StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);
+        Files.writeString(existingReadFile.toPath(), "existing read file", Charset.defaultCharset(), StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);
+
         options.allowWrite(testRoot);
         options.disallowWrite(disallowWritePath);
 
         options.allowRead(testRoot);
+        options.disallowRead(disallowReadPath);
 
         printer = new TestPrintFunction();
         options.defineFunc("print", printer);
@@ -201,6 +219,52 @@ public class InterpreterTests {
     void testWriteSecurity() {
         Path path = getResource("/test-write-security.ska");
         SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
-        assertTrue(thrown.getMessageText().startsWith("Could not write to file"), "Expected an Sakura exception with a message that started with \"No write permissions for file\", but received a Sakura exception with the message \"%s\" instead".formatted(thrown.getMessageText()));
+        assertTrue(thrown.getMessageText().startsWith("No write permissions for file"));
+    }
+
+    @Test
+    void testReadSecurity() {
+        Path path = getResource("/test-read-security.ska");
+        SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
+        assertTrue(thrown.getMessageText().startsWith("No read permissions for file"));
+    }
+
+    @Test
+    void testAppendSecurity() {
+        Path path = getResource("/test-append-security.ska");
+        SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
+        assertTrue(thrown.getMessageText().startsWith("No write permissions for file"));
+    }
+
+    @Test
+    void testDeleteSecurity() {
+        Path path = getResource("/test-delete-security.ska");
+        SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
+        assertTrue(thrown.getMessage().startsWith("[2:1] No write permissions for file"));
+
+        // Even though we deleted the deletable file, it should roll back
+        File existingReadFile = new File(new File(testRoot, "disallow-read"), "existing-file.txt");
+        assertTrue(existingReadFile.exists());
+    }
+
+    @Test
+    void testMkdirSecurity() {
+        Path path = getResource("/test-mkdir-security.ska");
+        SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
+        assertTrue(thrown.getMessageText().startsWith("No write permissions for file"));
+    }
+
+    @Test
+    void testMkdirsSecurity() {
+        Path path = getResource("/test-mkdirs-security.ska");
+        SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
+        assertTrue(thrown.getMessageText().startsWith("No write permissions for file"));
+    }
+
+    @Test
+    void testMoveSecurity() {
+        Path path = getResource("/test-move-security.ska");
+        SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
+        assertTrue(thrown.getMessageText().startsWith("Insufficient permissions to move"));
     }
 }

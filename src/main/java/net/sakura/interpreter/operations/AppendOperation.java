@@ -55,6 +55,9 @@ public final class AppendOperation extends Operation {
         if (!Files.exists(path))
             throw new FileNotFoundException(path.toFile());
 
+        if (!ctx.getOperationConfig().isValidWritePath(path.toFile()))
+            throw new SakuraException("No write permissions for file \"%s\".".formatted(getFilePathStr(path.toFile())));
+
         try {
             oldContent = String.join("\n", Files.readAllLines(path));
         } catch (IOException e) {

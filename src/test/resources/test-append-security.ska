@@ -1,0 +1,1 @@
+APPEND "\nA new line." TO /disallow-write/existing-file.txt

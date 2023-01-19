@@ -1,0 +1,2 @@
+DELETE /disallow-read/existing-file.txt
+DELETE /disallow-write/existing-file.txt

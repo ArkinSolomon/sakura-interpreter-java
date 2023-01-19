@@ -52,6 +52,9 @@ public final class MkdirOperation extends Operation {
         if (performed)
             throw new SakuraException("Can not re-perform operation.");
 
+        if (!ctx.getOperationConfig().isValidWritePath(directory))
+            throw new SakuraException("No write permissions for file \"%s\".".formatted(getFilePathStr(directory)));
+
         lastNonExistentParent = directory.toPath();
         try {
             if (recursive) {

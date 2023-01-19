@@ -38,7 +38,10 @@ public final class OperationConfig {
      */
     public OperationConfig() {
         try {
-            tmpDir = Files.createTempDirectory("sakura").toFile();
+            tmpDir = Files.createTempDirectory("sakura-").toFile();
+
+            // Try to delete on JVM exit if possible
+            tmpDir.deleteOnExit();
         } catch (Throwable e) {
             throw new SakuraException("Could not initialize operation configuration.", e);
         }
@@ -118,8 +121,20 @@ public final class OperationConfig {
         if (file.exists() && !file.canRead())
             return false;
 
+
         if (allowRead.isEmpty() && disallowRead.isEmpty())
             return true;
+
+
+        for (File readable : allowRead) {
+            if (!isWithinDirectory(file, readable))
+                return false;
+        }
+
+        for (File nonReadable : disallowRead) {
+            if (isWithinDirectory(file, nonReadable))
+                return false;
+        }
 
         return false;
     }

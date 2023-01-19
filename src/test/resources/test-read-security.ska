@@ -1,0 +1,1 @@
+%content = READ /disallow-read/existing-file.txt

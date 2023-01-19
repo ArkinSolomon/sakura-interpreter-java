@@ -50,6 +50,9 @@ public final class MoveOperation extends Operation {
         if (performed)
             throw new SakuraException("Can not re-perform an operation.");
 
+        if (!ctx.getOperationConfig().isValidReadPath(file) || !ctx.getOperationConfig().isValidWritePath(target))
+            throw new SakuraException("Insufficient permissions to move \"%s\" to \"%s\".".formatted(getFilePathStr(file), getFilePathStr(target)));
+
         if (!file.exists())
             throw new FileNotFoundException(file);
 

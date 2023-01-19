@@ -1,0 +1,1 @@
+MOVE /disallow-read/existing-file.txt TO /disallow-write/new-file.txt

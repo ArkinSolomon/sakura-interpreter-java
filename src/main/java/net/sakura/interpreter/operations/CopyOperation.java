@@ -53,6 +53,9 @@ public final class CopyOperation extends Operation {
         if (target.exists())
             ctx.getFileTracker().runOperation(new DeleteOperation(ctx, target));
 
+        if (!ctx.getOperationConfig().isValidWritePath(target) || !ctx.getOperationConfig().isValidReadPath(file))
+            throw new SakuraException("Insufficient permissions to copy \"%s\" to \"%s\".".formatted(getFilePathStr(file), getFilePathStr(target)));
+
         try {
             if (file.isDirectory())
                 FileUtils.copyDirectory(file, target);

@@ -51,11 +51,15 @@ public final class RenameOperation extends Operation {
         if (performed)
             throw new SakuraException("Can not re-perform operation.");
 
+        // Even though newFile *should* be in the same directory, just in case we'll check anyway (the error will only show the original, however)
+        if (!ctx.getOperationConfig().isValidWritePath(originalFile) || !ctx.getOperationConfig().isValidReadPath(newFile.toFile()))
+            throw new SakuraException("No write permission for file \"%s\".".formatted(Operation.getFilePathStr(originalFile)));
+
         try {
             Files.move(originalFile.toPath(), newFile);
             performed = true;
         } catch (Throwable e) {
-            throw new SakuraException("Could not rename file ", e);
+            throw new SakuraException("Could not rename file \"%s\" to \"%s\".".formatted(originalFile, newFile), e);
         }
     }
 

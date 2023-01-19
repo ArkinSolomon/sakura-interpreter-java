@@ -20,6 +20,7 @@ import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
+import net.sakura.interpreter.operations.Operation;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -40,12 +41,18 @@ final class ReadCommand extends SinglePathCommand {
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        File path = getPath(ctx);
+        File fileToRead = getPath(ctx);
+
+        if (!ctx.getOperationConfig().isValidReadPath(fileToRead))
+            throw new SakuraException(token, "No read permissions for file \"%s\".".formatted(Operation.getFilePathStr(fileToRead)));
+
         try {
-            String fileContents = FileUtils.readFileToString(path, "utf-8");
+            String fileContents = FileUtils.readFileToString(fileToRead, "utf-8");
             return new Value(DataType.STRING, fileContents, false);
+        }catch (SakuraException e) {
+            throw e.setPosition(token);
         } catch (Throwable e) {
-            throw new SakuraException("Error reading file", e);
+            throw new SakuraException(token, "Error reading file.", e);
         }
     }
 }
