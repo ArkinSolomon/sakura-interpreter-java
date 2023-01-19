@@ -270,9 +270,13 @@ public final class Lexer {
 
                     // Current value must be one character long
                     if (next == null || !isIdentifierChar(nextChar)) {
-                        if (isNumeric(thisCharStr))
-                            currentType = TokenType.NUM_LITERAL;
-                        else if (!isIdentifierChar(thisChar))
+                        if (isNumeric(thisCharStr)) {
+
+                            if (nextChar != null && nextChar == '.')
+                                continue;
+                            else
+                                currentType = TokenType.NUM_LITERAL;
+                        } else if (!isIdentifierChar(thisChar))
                             throw new UnexpectedTokenException(currentLine, currentCol, "\"%c\"".formatted(thisChar));
 
                         tokens.add(new Token(currentType, currentLine, currentCol, thisCharStr));
@@ -288,7 +292,7 @@ public final class Lexer {
 
                     String value = currentValue.toString();
                     if ((currentType == TokenType.VARIABLE || currentType == TokenType.CONST_VAR || currentType == TokenType.ENV_VARIABLE) && !isValidIdentifier(value))
-                        throw new SakuraException(startLine, startCol, "The identifier \"%s\" is invalid.".formatted(value));
+                        throw new UnexpectedTokenException(startLine, startCol, "The identifier \"%s\" is invalid".formatted(value));
 
                     // Find keywords
                     switch (value) {
@@ -322,10 +326,16 @@ public final class Lexer {
                         case "COPY" -> currentType = TokenType.COPY;
                         case "RENAME" -> currentType = TokenType.RENAME;
                         default -> {
-                            if (isNumeric(value))
+                            if (isNumeric(value)){
+                                if (Character.isDigit(thisChar) && nextChar != null && nextChar == '.')
+                                    continue;
                                 currentType = TokenType.NUM_LITERAL;
+                            }
                         }
                     }
+
+                    if (currentType == TokenType.SYMBOL && !isValidIdentifier(value))
+                        throw new UnexpectedTokenException(startLine, startCol, "The identifier \"%s\" is invalid".formatted(value));
 
                     Token newToken = new Token(currentType, startLine, startCol, value);
                     tokens.add(newToken);

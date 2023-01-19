@@ -116,7 +116,7 @@ public final class Parser {
      * @param checkForStandalone True if to check for literals without operators.
      * @return The nodes from the created tree.
      */
-    List<Node> parse(boolean checkTopLevel, boolean checkForStandalone) {
+    public List<Node> parse(boolean checkTopLevel, boolean checkForStandalone) {
 
         Node root = null;
         Node currentNode = null;
@@ -152,12 +152,6 @@ public final class Parser {
                 expectNewLine = false;
                 continue;
             } else if (token.isOfType(TokenType.EOL)) {
-                //                if (root != null && root.isCompletelyFull()) {
-                //                    expressions.add(root);
-                //                    root = null;
-                //                    currentNode = null;
-                //                    exprStartToken = null;
-                //                }
                 expectNewLine = false;
                 continue;
             }

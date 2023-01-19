@@ -272,7 +272,7 @@ public class SakuraInterpreter {
             TokenStorage tokenStorage = new TokenStorage(tokens);
 
             Parser parser = new Parser(tokenStorage);
-            parser.parse();
+            parser.parse(true, true);
 
             return parser.execute(ctx).returnValue();
         } catch (Throwable e) {
