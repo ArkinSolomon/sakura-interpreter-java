@@ -1,0 +1,1 @@
+return ISDIR /disallow-read/existing-file.txt

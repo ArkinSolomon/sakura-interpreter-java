@@ -15,10 +15,12 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Token;
+import net.sakura.interpreter.operations.Operation;
 
 import java.io.File;
 
@@ -39,6 +41,10 @@ final class IsDirCommand extends SinglePathCommand {
     @Override
     public Value evaluate(ExecutionContext ctx) {
         File dir = getPath(ctx);
+
+        if (!ctx.getOperationConfig().isValidReadPath(dir))
+            throw new SakuraException("Insufficient permission to determine if \"%s\" is a file or directory.".formatted(Operation.getFilePathStr(dir)));
+
         return new Value(DataType.BOOLEAN, dir.isDirectory(), false);
     }
 }

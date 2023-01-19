@@ -24,13 +24,25 @@ import net.sakura.interpreter.lexer.Lexer;
 import net.sakura.interpreter.lexer.Token;
 import net.sakura.interpreter.lexer.TokenStorage;
 import net.sakura.interpreter.parser.Parser;
+import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.impl.Arguments;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
+import net.sourceforge.argparse4j.inf.Namespace;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * An interpreter to interpret Sakura.
@@ -56,27 +68,164 @@ public class SakuraInterpreter {
     }
 
     public static void main(String[] args) throws IOException {
+
+        ArgumentParser parser = ArgumentParsers.newFor("sakura")
+                .build()
+                .description("Sakura interpreter built on Java")
+                .version("1.0-SNAPSHOT");
+
+        MutuallyExclusiveGroup g = parser.addMutuallyExclusiveGroup("execs").required(true);
+        g.addArgument("-f", "--file")
+                .dest("file")
+                .metavar("file")
+                .type(String.class)
+                .nargs(1)
+                .help("execute a file");
+
+        g.addArgument("-e", "--execute")
+                .dest("code")
+                .metavar("code")
+                .type(String.class)
+                .nargs(1)
+                .help("execute a string of text as a script");
+
+        parser.addArgument("-c", "--config")
+                .dest("configFile")
+                .metavar("file")
+                .type(String.class)
+                .nargs(1)
+                .help("specify a configuration file");
+
+        parser.addArgument("-v", "--version")
+                .action(Arguments.version())
+                .help("print the version");
+        try {
+            Namespace res = parser.parseArgs(args);
+
+            InterpreterOptions options;
+
+            List<String> config = res.get("configFile");
+            if (config != null) {
+                String configPath = config.get(0);
+                File configFile = new File(configPath);
+                if (!configFile.exists())
+                    throw new RuntimeException("Specified configuration file \"%s\" does not exist".formatted(configPath));
+
+                options = parseConfig(configFile);
+            } else
+                options = new InterpreterOptions("sakura.java.cli");
+
+            SakuraInterpreter interpreter = new SakuraInterpreter(options);
+            Value executionValue;
+
+            List<String> runFilePath = res.get("file");
+            List<String> runText = res.get("code");
+
+            // One of these must run, argument parser guarantees -e and -f are mutually exclusive
+            if (res.getString("file") != null) {
+                File runFile = new File(runFilePath.get(0));
+                if (!runFile.exists())
+                    throw new RuntimeException("File \"%s\" does not exist".formatted(runFilePath));
+
+                executionValue = interpreter.executeFile(runFile);
+            } else
+                executionValue = interpreter.executeText(runText.get(0));
+
+            if (executionValue.type() != DataType.NULL)
+                System.out.println(executionValue);
+        } catch (ArgumentParserException e) {
+            parser.handleError(e);
+        } catch (SakuraException e) {
+            System.err.println(e.getMessage());
+            for (String call : e.getCallstack())
+                System.err.println("\tat " + call);
+        }
+    }
+
+    /**
+     * Parse a config file.
+     *
+     * @param configFile The configuration file to parse.
+     * @return Options generated from the parsed configuration file.
+     */
+    private static InterpreterOptions parseConfig(File configFile) {
         InterpreterOptions opts = new InterpreterOptions();
-        opts.setExecutor("dev-env");
+        opts.setExecutor("sakura.java.cli");
 
         try {
-            SakuraInterpreter interpreter = new SakuraInterpreter(opts);
-            Value retVal = interpreter.executeFile(Path.of(Objects.requireNonNull(SakuraInterpreter.class.getResource("/test.ska")).getFile()));
-            System.out.println("\nRETURN VALUE: " + retVal);
-        } catch (SakuraException e) {
+            JSONParser parser = new JSONParser();
+            JSONObject configObj = (JSONObject) parser.parse(new FileReader(configFile));
 
-            if (e instanceof ExitException && ((ExitException) e).getCode() == 0) {
-                System.out.println(e.getMessage());
-                for (String call : e.getCallstack())
-                    System.out.println("\tat " + call);
-            } else {
-                System.err.println(e.getMessage());
-                for (String call : e.getCallstack())
-                    System.err.println("\tat " + call);
-                System.err.println();
-                e.printStackTrace();
+            if (configObj.containsKey("executor")) {
+                Object executor = configObj.get("executor");
+                if (!(executor instanceof String))
+                    throw new RuntimeException("If provided in the configuration file, \"executor\" must be a string");
+                opts.setExecutor((String) executor);
             }
+
+            if (configObj.containsKey("root")) {
+                Object root = configObj.get("root");
+                if (!(root instanceof String))
+                    throw new RuntimeException("If provided in the configuration file, \"root\" must be a string (which represents path to a file)");
+                opts.setExecutor((String) root);
+            }
+
+            if (configObj.containsKey("allowRead")) {
+                Object allowRead = configObj.get("allowRead");
+                if (!(allowRead instanceof JSONArray))
+                    throw new RuntimeException("If provided in the configuration file, \"allowRead\" must be a list of strings (which represents paths)");
+
+                @SuppressWarnings("unchecked")
+                List<String> files = (List<String>) ((JSONArray) allowRead).stream().toList();
+                List<File> allowReadFiles = new ArrayList<>();
+                files.forEach(path -> allowReadFiles.add(new File(path)));
+                opts.allowRead(allowReadFiles);
+            }
+
+            if (configObj.containsKey("disallowRead")) {
+                Object disallowRead = configObj.get("disallowRead");
+                if (!(disallowRead instanceof JSONArray))
+                    throw new RuntimeException("If provided in the configuration file, \"disallowRead\" must be a list of strings (which represents paths)");
+
+                @SuppressWarnings("unchecked")
+                List<String> files = (List<String>) ((JSONArray) disallowRead).stream().toList();
+                List<File> disallowReadFiles = new ArrayList<>();
+                files.forEach(path -> disallowReadFiles.add(new File(path)));
+                opts.allowRead(disallowReadFiles);
+            }
+
+            if (configObj.containsKey("allowWrite")) {
+                Object allowWrite = configObj.get("allowWrite");
+                if (!(allowWrite instanceof JSONArray))
+                    throw new RuntimeException("If provided in the configuration file, \"allowWrite\" must be a list of strings (which represents paths)");
+
+                @SuppressWarnings("unchecked")
+                List<String> files = (List<String>) ((JSONArray) allowWrite).stream().toList();
+                List<File> allowWriteFiles = new ArrayList<>();
+                files.forEach(path -> allowWriteFiles.add(new File(path)));
+                opts.allowRead(allowWriteFiles);
+            }
+
+            if (configObj.containsKey("disallowWrite")) {
+                Object disallowWrite = configObj.get("disallowWrite");
+                if (!(disallowWrite instanceof JSONArray))
+                    throw new RuntimeException("If provided in the configuration file, \"disallowWrite\" must be a list of strings (which represents paths)");
+
+                @SuppressWarnings("unchecked")
+                List<String> files = (List<String>) ((JSONArray) disallowWrite).stream().toList();
+                List<File> disallowWriteFiles = new ArrayList<>();
+                files.forEach(path -> disallowWriteFiles.add(new File(path)));
+                opts.allowRead(disallowWriteFiles);
+            }
+        } catch (ParseException e) {
+            throw new RuntimeException("There was an error parsing the configuration file", e);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("Specified configuration file does not exist", e);
+        } catch (IOException e) {
+            throw new RuntimeException("An unknown error occurred while attempting to parse the specified configuration file", e);
         }
+
+        return opts;
     }
 
     /**
@@ -116,7 +265,7 @@ public class SakuraInterpreter {
      * @param lexer The lexer that performed the analysis.
      * @return The result of the analyzed tokens after execution.
      */
-    private Value execLexer(Lexer lexer) {
+    private synchronized Value execLexer(Lexer lexer) {
         ExecutionContext ctx = createContext();
         try {
             List<Token> tokens = lexer.analyze();
@@ -127,8 +276,11 @@ public class SakuraInterpreter {
 
             return parser.execute(ctx).returnValue();
         } catch (Throwable e) {
-            if (!(e instanceof ExitException) || ((ExitException) e).getCode() != 0)
+            if (!(e instanceof ExitException) || ((ExitException) e).getCode() != 0) {
                 ctx.getFileTracker().undoOperations();
+            } else
+                return ((ExitException) e).getValue();
+
             throw e;
         }
     }

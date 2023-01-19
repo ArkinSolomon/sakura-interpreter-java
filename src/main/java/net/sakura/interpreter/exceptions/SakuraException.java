@@ -164,7 +164,7 @@ public class SakuraException extends RuntimeException {
 
         // Propagate exit exceptions
         if (this instanceof ExitException)
-            return new ExitException(line, col, ((ExitException) this).getCode(), msg, cause == null ? this : cause, callstack);
+            return new ExitException(line, col, ((ExitException) this).getCode(), msg, cause == null ? this : cause, callstack, ((ExitException) this).getValue());
 
         return new SakuraException(line, col, msg, cause == null ? this : cause, callstack);
     }

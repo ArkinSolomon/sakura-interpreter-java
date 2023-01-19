@@ -33,18 +33,29 @@ import java.util.Set;
  */
 public class InterpreterOptions {
 
+    final OperationConfig operationConfig = new OperationConfig();
+    String executor;
     private final Set<File> allowRead = new HashSet<>();
     private final Set<File> disallowRead = new HashSet<>();
     private final Set<File> allowWrite = new HashSet<>();
     private final Set<File> disallowWrite = new HashSet<>();
-
-    final OperationConfig operationConfig = new OperationConfig();
-
-    String executor = "unknown";
-
     Map<String, Value> envVariables = new HashMap<>();
     Map<String, Function> functions = new HashMap<>();
-    File root = new File("/");
+    File root = null;
+
+    /**
+     * Default constructor.
+     */
+    public InterpreterOptions() {
+        this("unknown");
+    }
+
+    /**
+     * Shorthand constructor to automatically set the executor.
+     */
+    public InterpreterOptions(String executor) {
+        this.executor = executor;
+    }
 
     /**
      * Set the executor of the interpreter so that the programmer can identify where their script is running.

@@ -1,0 +1,8 @@
+recurse(10)
+
+func recurse(%n) {
+    if n == 0 {
+        exit(0, n)
+    }
+    recurse(n - 1)
+}

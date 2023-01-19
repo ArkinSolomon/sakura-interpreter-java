@@ -15,6 +15,8 @@
 
 package net.sakura.interpreter.exceptions;
 
+import net.sakura.interpreter.execution.Value;
+
 import java.util.Deque;
 
 /**
@@ -23,6 +25,7 @@ import java.util.Deque;
 public final class ExitException extends SakuraException {
 
     private final byte code;
+    private Value value = Value.NULL;
 
     /**
      * Create a new exception with a code and a message.
@@ -36,6 +39,16 @@ public final class ExitException extends SakuraException {
     }
 
     /**
+     * Create a new exception with code 0, and a value.
+     *
+     * @param returnVal The value passed as a second argument to the function (if the exit code is zero).
+     */
+    public ExitException(Value returnVal){
+        this((byte) 0, "Exit with code 0");
+        this.value = returnVal;
+    }
+
+    /**
      * Create a new exit exception and preserve parent exception properties.
      *
      * @param line The line of the exception.
@@ -44,10 +57,12 @@ public final class ExitException extends SakuraException {
      * @param msg The message of the exception.
      * @param cause The cause of the exception.
      * @param callstack The callstack of the exception.
+     * @param returnVal The return value of the function if it's code is zero.
      */
-    ExitException(int line, int col, byte code, String msg, Throwable cause, Deque<String> callstack){
+    ExitException(int line, int col, byte code, String msg, Throwable cause, Deque<String> callstack, Value returnVal){
         super(line, col, msg, cause, callstack);
         this.code = code;
+        this.value = returnVal;
     }
 
     /**
@@ -57,5 +72,14 @@ public final class ExitException extends SakuraException {
      */
     public byte getCode() {
         return code;
+    }
+
+    /**
+     * Get the exit value if the code is zero.
+     *
+     * @returns The value returned.
+     */
+    public Value getValue() {
+        return value;
     }
 }

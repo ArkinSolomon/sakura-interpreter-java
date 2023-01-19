@@ -16,18 +16,18 @@
 package net.sakura.interpreter.execution;
 
 import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.functions.ExitFunction;
 import net.sakura.interpreter.functions.Function;
 import net.sakura.interpreter.functions.ListFunction;
 import net.sakura.interpreter.functions.PrintFunction;
 import net.sakura.interpreter.functions.RangeFunction;
-import net.sakura.interpreter.functions.ExitFunction;
+import net.sakura.interpreter.functions.TypeFunction;
 import net.sakura.interpreter.operations.FileTracker;
 import net.sakura.interpreter.operations.OperationConfig;
 import net.sakura.interpreter.parser.Node;
 import org.apache.commons.lang3.SystemUtils;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +45,7 @@ public class ExecutionContext {
 
     private FileTracker fileTracker = new FileTracker();
     private final OperationConfig operationConfig;
-    private File rootPath = Paths.get("").toFile();
+    private File rootPath = new File(System.getProperty("user.dir"));
 
     /**
      * Create a new blank root execution context
@@ -244,13 +244,14 @@ public class ExecutionContext {
         identifiers.put("@root", new Value(DataType.PATH, rootPath, false));
 
         identifiers.put("@__lang_version", new Value(DataType.STRING, "1.0.0", false));
-        identifiers.put("@__interpreter", new Value(DataType.STRING, "sakura.official", false));
+        identifiers.put("@__interpreter", new Value(DataType.STRING, "sakura.java", false));
         identifiers.put("@__interpreter_version", new Value(DataType.STRING, "1.0-SNAPSHOT", false));
 
         registerFunc("print", new PrintFunction());
         registerFunc("range", new RangeFunction());
         registerFunc("exit", new ExitFunction());
         registerFunc("list", new ListFunction());
+        registerFunc("type", new TypeFunction());
     }
 
     /**

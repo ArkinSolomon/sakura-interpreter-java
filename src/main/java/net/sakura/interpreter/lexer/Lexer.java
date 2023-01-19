@@ -256,9 +256,15 @@ public final class Lexer {
                     tokens.add(new Token(TokenType.CLOSE_BRACE, currentLine, currentCol, "}"));
                 else if (thisChar == ',')
                     tokens.add(new Token(TokenType.COMMA, currentLine, currentCol, ","));
-                else if (thisChar == '.')
-                    tokens.add(new Token(TokenType.PERIOD, currentLine, currentCol, "."));
-                else {
+                else if (thisChar == '.') {
+
+                    // Allow decimals
+                    if (nextChar != null && Character.isDigit(nextChar)) {
+                        currentType = TokenType.SYMBOL;
+                        currentValue.append(thisChar);
+                    } else
+                        tokens.add(new Token(TokenType.PERIOD, currentLine, currentCol, "."));
+                } else {
                     currentType = TokenType.SYMBOL;
                     currentValue.append(thisChar);
 

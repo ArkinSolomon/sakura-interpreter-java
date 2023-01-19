@@ -45,9 +45,9 @@ final class AppendCommand extends DualArgCommand {
         Value right = rightValue(ctx);
 
         if (left.type() == DataType.NULL)
-            throw new SakuraException(token.line(), token.column(), "Can not append null values to a file.");
-        else if (right.type() == DataType.NULL)
-            throw new SakuraException(token.line(), token.column(), "Can not append to a null file.");
+            throw new SakuraException(token.line(), token.column(), "Can not write \"NULL\" to a file.");
+        else if (right.type() != DataType.PATH)
+            throw new SakuraException(token.line(), token.column(), "The right of a \"TO\" following an \"APPEND\" must be of type path.");
 
         String writeData = left.toString();
         File writeFile = (File) right.value();

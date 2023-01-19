@@ -31,14 +31,21 @@ public final class ExitFunction implements Function {
     @Override
     public Value execute(List<Value> args) {
         String reason = "<unknown reason>";
+        Value retVal = Value.NULL;
         byte code = 0;
 
         if (args.size() >= 1)
             code = (byte) ((double) args.get(0).value());
 
-        if (args.size() >= 2)
+        if (args.size() >= 2){
             reason = args.get(1).value().toString();
+            if (code == 0)
+                retVal = args.get(1);
+        }
 
-        throw new ExitException(code, "Script execution terminated (code %d): %s".formatted(code, reason));
+        if (code == 0)
+            throw new ExitException(retVal);
+        else
+            throw new ExitException(code, "Script execution terminated (code %d): %s".formatted(code, reason));
     }
 }

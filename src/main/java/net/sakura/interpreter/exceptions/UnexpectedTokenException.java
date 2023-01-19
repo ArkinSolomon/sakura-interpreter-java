@@ -103,6 +103,8 @@ public final class UnexpectedTokenException extends SakuraException {
             case CONTINUE -> "continue";
             case BACKSLASH -> "\\";
             case SLASH -> "/";
+            case PERIOD -> ".";
+            case ELLIPSIS -> "...";
             case FUNC -> "func";
             case FUNC_CALL -> ((FunctionCallData) token.value()).identifier();
             case OPEN_PARENTHESIS -> "(";

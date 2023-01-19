@@ -43,7 +43,7 @@ final class AdditionOperator extends Operator {
         Value lhs = leftChild().evaluate(ctx);
         Value rhs = rightChild().evaluate(ctx);
 
-        if (lhs.type() == DataType.STRING || rhs.value() == DataType.STRING) {
+        if (lhs.type() == DataType.STRING || rhs.type() == DataType.STRING) {
             String lVal = lhs.value().toString();
             String rVal = rhs.value().toString();
 

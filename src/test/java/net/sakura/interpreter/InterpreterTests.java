@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter;
 
+import net.sakura.interpreter.exceptions.ExitException;
 import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.Iterable;
@@ -75,8 +76,7 @@ public class InterpreterTests {
 
     @BeforeEach
     void beforeEach() throws IOException {
-        InterpreterOptions options = new InterpreterOptions();
-        options.setExecutor("sakura.tester");
+        InterpreterOptions options = new InterpreterOptions("sakura.java.tester");
 
         testRoot = new File(temp, "interpreter-test-files");
         Files.createDirectories(testRoot.toPath());
@@ -121,7 +121,7 @@ public class InterpreterTests {
     void testPrintEnvVar() throws IOException {
         Path path = getResource("/test-print-env-var.ska");
         interpreter.executeFile(path);
-        assertEquals("sakura.tester\n", printer.getOutput());
+        assertEquals("sakura.java.tester\n", printer.getOutput());
     }
 
     @Test
@@ -266,5 +266,56 @@ public class InterpreterTests {
         Path path = getResource("/test-move-security.ska");
         SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
         assertTrue(thrown.getMessageText().startsWith("Insufficient permissions to move"));
+    }
+
+    @Test
+    void testExistsSecurity() {
+        Path path = getResource("/test-exists-security.ska");
+        SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
+        assertTrue(thrown.getMessageText().startsWith("Insufficient permission"));
+    }
+
+    @Test
+    void testIsDirSecurity() {
+        Path path = getResource("/test-isdir-security.ska");
+        SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
+        assertTrue(thrown.getMessageText().startsWith("Insufficient permission"));
+    }
+
+    @Test
+    void testIsFileSecurity() {
+        Path path = getResource("/test-isfile-security.ska");
+        SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
+        assertTrue(thrown.getMessageText().startsWith("Insufficient permission"));
+    }
+
+    @Test
+    void testExitNoArgs() throws IOException {
+        Path path = getResource("/test-exit-no-args.ska");
+        Value retVal = interpreter.executeFile(path);
+        assertEquals(DataType.NULL, retVal.type());
+    }
+
+    @Test
+    void testExitException() {
+        Path path = getResource("/test-exit-exception.ska");
+        ExitException thrown = assertThrows(ExitException.class, () ->  interpreter.executeFile(path));
+        assertEquals(29, thrown.getCode());
+    }
+
+    @Test
+    void testExitReturn() throws IOException {
+        Path path = getResource("/test-exit-return.ska");
+        Value retVal = interpreter.executeFile(path);
+        assertEquals(DataType.NUMBER, retVal.type());
+        assertEquals(0d, retVal.value());
+    }
+
+    @Test
+    void testTypeFunc() throws IOException {
+        Path path = getResource("/test-type-func.ska");
+        Value retVal = interpreter.executeFile(path);
+        assertEquals(DataType.STRING, retVal.type());
+        assertEquals("string", retVal.value());
     }
 }
