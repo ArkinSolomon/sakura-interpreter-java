@@ -16,6 +16,8 @@
 package net.sakura.interpreter.functions;
 
 import net.sakura.interpreter.exceptions.ExitException;
+import net.sakura.interpreter.exceptions.SakuraException;
+import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.Value;
 
 import java.util.List;
@@ -34,8 +36,14 @@ public final class ExitFunction implements Function {
         Value retVal = Value.NULL;
         byte code = 0;
 
-        if (args.size() >= 1)
-            code = (byte) ((double) args.get(0).value());
+        if (args.size() >= 1){
+            Value firstArg  = args.get(0);
+
+            if (firstArg.type() != DataType.NUMBER)
+                throw new SakuraException("The first argument of the \"exit()\" (if provided) must be a number");
+
+            code = (byte) ((double) firstArg.value());
+        }
 
         if (args.size() >= 2){
             reason = args.get(1).value().toString();

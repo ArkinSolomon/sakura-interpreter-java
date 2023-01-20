@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The execution context of sentence.
+ * The context in which to evaluate an expression or perform an operation.
  */
 public class ExecutionContext {
 
@@ -210,7 +210,7 @@ public class ExecutionContext {
         } catch (SakuraException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("An exception occurred while executing the function \"%s\".".formatted(identifier), e);
+            throw new SakuraException("An exception occurred while executing the function \"%s\".".formatted(identifier), e);
         }
     }
 
@@ -274,7 +274,7 @@ public class ExecutionContext {
                     output = val.value().getClass().getCanonicalName();
             }
 
-            System.out.printf("%s: %s%n", k, output.replaceAll("\n", "\\\\n"));
+            System.out.printf("[%s] %s: %s%n", val.isMutable() ? "MUTABLE" : "IMMUTABLE", k, output.replaceAll("\n", "\\\\n"));
         }
 
     }

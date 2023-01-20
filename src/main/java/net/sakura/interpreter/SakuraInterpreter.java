@@ -133,12 +133,15 @@ public class SakuraInterpreter {
 
             if (executionValue.type() != DataType.NULL)
                 System.out.println(executionValue);
+            System.exit(0);
         } catch (ArgumentParserException e) {
             parser.handleError(e);
         } catch (SakuraException e) {
             System.err.println(e.getMessage());
             for (String call : e.getCallstack())
                 System.err.println("\tat " + call);
+            if (e instanceof ExitException)
+                System.exit(((ExitException) e).getCode());
         }
     }
 

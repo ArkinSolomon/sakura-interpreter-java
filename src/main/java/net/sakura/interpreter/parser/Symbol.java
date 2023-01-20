@@ -40,9 +40,9 @@ final class Symbol extends Node {
         boolean hasId = ctx.hasIdentifier(identifier);
 
         if (!hasId)
-            throw new SakuraException(token.line(), token.column(), "Identifier \"%s\"not found, did you declare it?".formatted(identifier));
+            throw new SakuraException(token, "Identifier \"%s\"not found, did you declare it?".formatted(identifier));
        else if (!ctx.getIdentifier(identifier).isMutable())
-            throw new UnsupportedOperationException("Can not assign to immutable variable");
+            throw new SakuraException(token, "Can not assign to immutable variable \"%s\".".formatted(identifier));
         ctx.modifyIdentifier(identifier, val);
     }
 

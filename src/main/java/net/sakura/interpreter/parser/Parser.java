@@ -132,9 +132,6 @@ public final class Parser {
 
             if (token.isOfType(TokenType.EOF)) {
                 if (root != null) {
-                    //                    if (expectNewLine)
-                    //                        throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
-                    // Return statements have optional children so add a return statement, even if it's not full
                     if (!root.isCompletelyFull() && !(root instanceof ReturnStatement))
                         throw new UnexpectedTokenException(exprStartToken);
                     expressions.add(root);
@@ -305,6 +302,8 @@ public final class Parser {
             for (Node expr : expressions) {
                 if (expr instanceof Literal)
                     throw new UnexpectedTokenException(expr.getToken(), "Stand-alone literals are not allowed.");
+                else if ((expr instanceof Operator && expr.getToken().isOfType(TokenType.PLUS, TokenType.MINUS, TokenType.SLASH, TokenType.MULTIPLY, TokenType.GTE, TokenType.GT, TokenType.DOUBLE_EQUALS, TokenType.LT, TokenType.LTE, TokenType.AND, TokenType.OR, TokenType.NOT)))
+                    throw new UnexpectedTokenException(expr.getToken(), "Stand-alone operators (except for the assignment operator) are not allowed.");
             }
         }
 
@@ -386,7 +385,7 @@ public final class Parser {
         }
 
         for (Node expression : expressions) {
-//            expression.print();
+            // expression.print();
             ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {

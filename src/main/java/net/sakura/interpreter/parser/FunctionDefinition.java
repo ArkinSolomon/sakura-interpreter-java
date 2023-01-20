@@ -53,7 +53,7 @@ final class FunctionDefinition extends Expression implements Function {
         @SuppressWarnings("unchecked")
         TokenStorage body = new TokenStorage((List<Token>) data.body().value());
         parsedFunc = new Parser(body);
-        parsedFunc.parse();
+        parsedFunc.parse(true, true);
 
         hasRest = false;
         for (FunctionArgData argData : data.args()) {
@@ -125,7 +125,7 @@ final class FunctionDefinition extends Expression implements Function {
             String argId = argData.identifier();
             Value val = argValues.get(i);
 
-            tempCtx.defineIdentifier(argId, val == null ? Value.NULL : new Value(val.type(), val.value(), val.isMutable()));
+            tempCtx.defineIdentifier(argId, val == null ? Value.NULL : new Value(val.type(), val.value(), !data.args().get(i).isConstant()));
         }
 
         return parsedFunc.execute(tempCtx).returnValue();

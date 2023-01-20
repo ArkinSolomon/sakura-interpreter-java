@@ -36,6 +36,7 @@ final class AssignmentOperator extends Operator {
     @Override
     public Value evaluate(ExecutionContext ctx) {
         Value assignmentValue = rightChild().evaluate(ctx);
+
         leftChild().assign(ctx, new Value(assignmentValue.type(), assignmentValue.value(), true));
 
         // Assignment operators return the value of assignment

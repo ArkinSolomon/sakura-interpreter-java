@@ -1,0 +1,11 @@
+%x = 5
+
+if x == 5 {
+  %y = 7
+  print(x + y) # Prints "12"
+
+  $x = 10
+  print(x + y) # Prints "17"
+}
+
+print(y) # Prints "NULL"

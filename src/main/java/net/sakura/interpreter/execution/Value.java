@@ -22,8 +22,8 @@ import java.io.File;
 /**
  * A single value, consisting of its type and actual value.
  *
- * @param type The type of the variable.
- * @param value The value of the variable.
+ * @param type      The type of the variable.
+ * @param value     The value of the variable.
  * @param isMutable True if the variable is mutable.
  */
 public record Value(DataType type, Object value, boolean isMutable) {
@@ -41,13 +41,18 @@ public record Value(DataType type, Object value, boolean isMutable) {
         if (type == DataType.NULL || value == null)
             return "NULL";
         else if (type == DataType.ITERABLE)
-            return  "<iterable>";
+            return "<iterable>";
         else if (type == DataType.FUNCTION)
             return "<function>";
         else if (type == DataType.__BRACE_RETURN)
             return "<_brace return_>";
         else if (type == DataType.PATH)
             return Operation.getFilePathStr((File) value);
+        else if (type == DataType.NUMBER) {
+            double val = (Double) value;
+            if ((int) val == val)
+                return String.valueOf((int) val);
+        }
         return value.toString();
     }
 
