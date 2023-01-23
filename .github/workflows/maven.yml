@@ -1,3 +1,5 @@
+# See https://medium.com/@alexander.volminger/ci-cd-for-java-maven-using-github-actions-d009a7cb4b8f
+
 name: Maven CI/CD
 
 on:
@@ -23,4 +25,4 @@ jobs:
         restore-keys: ${{ runner.os }}-m2      
       
     - name: test
-      run: mvn test
+      run: mvn -X test
