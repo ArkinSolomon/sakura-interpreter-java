@@ -1,3 +1,3 @@
 # Sakura
 
-Functional file interaction programming language
+[Documentation](https://sakura-docs.arkinsolomon.net/)
