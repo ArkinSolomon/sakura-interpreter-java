@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023. Sakura Interpreter Java Contributors.
+ * Copyright (c) 2023. Arkin Solomon.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,13 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -68,15 +70,18 @@ public class InterpreterTests {
      */
     private static Path getResource(String resourcePath) {
         try {
-            return Path.of(Objects.requireNonNull(InterpreterTests.class.getResource(resourcePath)).getFile());
+            URI uri = ClassLoader.getSystemResource(resourcePath).toURI();
+            return Paths.get(uri);
         } catch (NullPointerException e) {
             throw new RuntimeException("Could not find resource: " + resourcePath);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Invalid URI", e);
         }
     }
 
     @BeforeEach
     void beforeEach() throws IOException {
-        InterpreterOptions options = new InterpreterOptions("sakura.java.tester");
+        InterpreterOptions options = new InterpreterOptions("arkinsolomon.java.tester");
 
         testRoot = new File(temp, "interpreter-test-files");
         Files.createDirectories(testRoot.toPath());
@@ -112,21 +117,21 @@ public class InterpreterTests {
 
     @Test
     void testPrint() throws IOException {
-        Path path = getResource("/test-print.ska");
+        Path path = getResource("test-print.ska");
         interpreter.executeFile(path);
         assertEquals("Hello World!\n", printer.getOutput());
     }
 
     @Test
     void testPrintEnvVar() throws IOException {
-        Path path = getResource("/test-print-env-var.ska");
+        Path path = getResource("test-print-env-var.ska");
         interpreter.executeFile(path);
-        assertEquals("sakura.java.tester\n", printer.getOutput());
+        assertEquals("arkinsolomon.java.tester\n", printer.getOutput());
     }
 
     @Test
     void testFibonacci() throws IOException {
-        Path path = getResource("/test-fibonacci.ska");
+        Path path = getResource("test-fibonacci.ska");
         Value val = interpreter.executeFile(path);
         assertEquals(val.type(), DataType.NUMBER);
         assertEquals(val.value(), 34d);
@@ -134,14 +139,14 @@ public class InterpreterTests {
 
     @Test
     void testReturn() throws IOException {
-        Path path = getResource("/test-return.ska");
+        Path path = getResource("test-return.ska");
         Value val = interpreter.executeFile(path);
         assertEquals("A return value!", val.value());
     }
 
     @Test
     void testRangeSum() throws IOException {
-        Path path = getResource("/test-range-sum.ska");
+        Path path = getResource("test-range-sum.ska");
         Value val = interpreter.executeFile(path);
         assertEquals(val.type(), DataType.NUMBER);
         assertEquals(val.value(), 1225d);
@@ -149,7 +154,7 @@ public class InterpreterTests {
 
     @Test
     void testPathParsing() throws IOException {
-        Path path = getResource("/test-path-parsing.ska");
+        Path path = getResource("test-path-parsing.ska");
         Value val = interpreter.executeFile(path);
         assertEquals(val.type(), DataType.ITERABLE);
 
@@ -172,7 +177,7 @@ public class InterpreterTests {
 
     @Test
     void testWrite() throws IOException {
-        Path path = getResource("/test-write.ska");
+        Path path = getResource("test-write.ska");
         interpreter.executeFile(path);
 
         String content = String.join("\n", Files.readAllLines(new File(testRoot, "file.txt").toPath()));
@@ -181,7 +186,7 @@ public class InterpreterTests {
 
     @Test
     void testIterableFunc() throws IOException {
-        Path path = getResource("/test-iterable-func.ska");
+        Path path = getResource("test-iterable-func.ska");
         Value val = interpreter.executeFile(path);
 
         assertEquals(val.type(), DataType.NUMBER);
@@ -190,7 +195,7 @@ public class InterpreterTests {
 
     @Test
     void testArglessFunc() throws IOException {
-        Path path = getResource("/test-argless-func.ska");
+        Path path = getResource("test-argless-func.ska");
         interpreter.executeFile(path);
 
         String output = printer.getOutput();
@@ -199,7 +204,7 @@ public class InterpreterTests {
 
     @Test
     void testArglessParenFunc() throws IOException {
-        Path path = getResource("/test-argless-paren-func.ska");
+        Path path = getResource("test-argless-paren-func.ska");
         interpreter.executeFile(path);
 
         String output = printer.getOutput();
@@ -208,7 +213,7 @@ public class InterpreterTests {
 
     @Test
     void testPrintBothArgs() throws IOException {
-        Path path = getResource("/test-print-both-args.ska");
+        Path path = getResource("test-print-both-args.ska");
         interpreter.executeFile(path);
 
         String output = printer.getOutput();
@@ -217,28 +222,28 @@ public class InterpreterTests {
 
     @Test
     void testWriteSecurity() {
-        Path path = getResource("/test-write-security.ska");
+        Path path = getResource("test-write-security.ska");
         SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
         assertTrue(thrown.getMessageText().startsWith("No write permissions for file"));
     }
 
     @Test
     void testReadSecurity() {
-        Path path = getResource("/test-read-security.ska");
+        Path path = getResource("test-read-security.ska");
         SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
         assertTrue(thrown.getMessageText().startsWith("No read permissions for file"));
     }
 
     @Test
     void testAppendSecurity() {
-        Path path = getResource("/test-append-security.ska");
+        Path path = getResource("test-append-security.ska");
         SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
         assertTrue(thrown.getMessageText().startsWith("No write permissions for file"));
     }
 
     @Test
     void testDeleteSecurity() {
-        Path path = getResource("/test-delete-security.ska");
+        Path path = getResource("test-delete-security.ska");
         SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
         assertTrue(thrown.getMessage().startsWith("[2:1] No write permissions for file"));
 
@@ -249,63 +254,63 @@ public class InterpreterTests {
 
     @Test
     void testMkdirSecurity() {
-        Path path = getResource("/test-mkdir-security.ska");
+        Path path = getResource("test-mkdir-security.ska");
         SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
         assertTrue(thrown.getMessageText().startsWith("No write permissions for file"));
     }
 
     @Test
     void testMkdirsSecurity() {
-        Path path = getResource("/test-mkdirs-security.ska");
+        Path path = getResource("test-mkdirs-security.ska");
         SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
         assertTrue(thrown.getMessageText().startsWith("No write permissions for file"));
     }
 
     @Test
     void testMoveSecurity() {
-        Path path = getResource("/test-move-security.ska");
+        Path path = getResource("test-move-security.ska");
         SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
         assertTrue(thrown.getMessageText().startsWith("Insufficient permissions to move"));
     }
 
     @Test
     void testExistsSecurity() {
-        Path path = getResource("/test-exists-security.ska");
+        Path path = getResource("test-exists-security.ska");
         SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
         assertTrue(thrown.getMessageText().startsWith("Insufficient permission"));
     }
 
     @Test
     void testIsDirSecurity() {
-        Path path = getResource("/test-isdir-security.ska");
+        Path path = getResource("test-isdir-security.ska");
         SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
         assertTrue(thrown.getMessageText().startsWith("Insufficient permission"));
     }
 
     @Test
     void testIsFileSecurity() {
-        Path path = getResource("/test-isfile-security.ska");
+        Path path = getResource("test-isfile-security.ska");
         SakuraException thrown = assertThrows(SakuraException.class, () -> interpreter.executeFile(path));
         assertTrue(thrown.getMessageText().startsWith("Insufficient permission"));
     }
 
     @Test
     void testExitNoArgs() throws IOException {
-        Path path = getResource("/test-exit-no-args.ska");
+        Path path = getResource("test-exit-no-args.ska");
         Value retVal = interpreter.executeFile(path);
         assertEquals(DataType.NULL, retVal.type());
     }
 
     @Test
     void testExitException() {
-        Path path = getResource("/test-exit-exception.ska");
+        Path path = getResource("test-exit-exception.ska");
         ExitException thrown = assertThrows(ExitException.class, () -> interpreter.executeFile(path));
         assertEquals(29, thrown.getCode());
     }
 
     @Test
     void testExitReturn() throws IOException {
-        Path path = getResource("/test-exit-return.ska");
+        Path path = getResource("test-exit-return.ska");
         Value retVal = interpreter.executeFile(path);
         assertEquals(DataType.NUMBER, retVal.type());
         assertEquals(0d, (double) retVal.value(), 1e-12);
@@ -313,7 +318,7 @@ public class InterpreterTests {
 
     @Test
     void testTypeFunc() throws IOException {
-        Path path = getResource("/test-type-func.ska");
+        Path path = getResource("test-type-func.ska");
         Value retVal = interpreter.executeFile(path);
         assertEquals(DataType.STRING, retVal.type());
         assertEquals("string", retVal.value());
@@ -321,7 +326,7 @@ public class InterpreterTests {
 
     @Test
     void testForLoopControl() throws IOException {
-        Path path = getResource("/test-for-loop-control.ska");
+        Path path = getResource("test-for-loop-control.ska");
         interpreter.executeFile(path);
         String output = printer.getOutput();
         assertEquals("1\n2\n4\n", output);
@@ -329,7 +334,7 @@ public class InterpreterTests {
 
     @Test
     void testForLoopReturn() throws IOException {
-        Path path = getResource("/test-for-loop-return.ska");
+        Path path = getResource("test-for-loop-return.ska");
         Value retVal = interpreter.executeFile(path);
         assertEquals(DataType.NUMBER, retVal.type());
         assertEquals(5d, (double) retVal.value(), 1e-12);

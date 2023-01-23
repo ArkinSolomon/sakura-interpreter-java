@@ -1,0 +1,17 @@
+on:
+  push:
+  workflow_dispatch:
+name: Tests
+jobs:
+  test-mac:
+    uses: ./.github/workflows/test.yml
+    with: 
+      os: macos-latest
+  test-ubuntu:
+      uses: ./.github/workflows/test.yml
+      with: 
+        os: ubuntu-latest
+  test-windows:
+      uses: ./.github/workflows/test.yml
+      with: 
+        os: windows-latest

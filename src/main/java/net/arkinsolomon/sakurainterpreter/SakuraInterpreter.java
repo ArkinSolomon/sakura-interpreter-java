@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023. Sakura Interpreter Java Contributors.
+ * Copyright (c) 2022-2023. Arkin Solomon.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,9 @@ import java.util.Map;
  */
 public class SakuraInterpreter {
 
+    public static final String LANG_VERSION = "0.1.0-beta-1";
+    public static final String INTERPRETER_VERSION = "1.0.0.0-beta-2";
+
     private final InterpreterOptions options;
 
     /**
@@ -69,10 +72,10 @@ public class SakuraInterpreter {
 
     public static void main(String[] args) throws IOException {
 
-        ArgumentParser parser = ArgumentParsers.newFor("sakura")
+        ArgumentParser parser = ArgumentParsers.newFor("ska-java")
                 .build()
                 .description("Sakura interpreter built on Java")
-                .version("1.0-SNAPSHOT");
+                .version(INTERPRETER_VERSION);
 
         MutuallyExclusiveGroup g = parser.addMutuallyExclusiveGroup("execs").required(true);
         g.addArgument("-f", "--file")
@@ -153,7 +156,7 @@ public class SakuraInterpreter {
      */
     private static InterpreterOptions parseConfig(File configFile) {
         InterpreterOptions opts = new InterpreterOptions();
-        opts.setExecutor("sakura.java.cli");
+        opts.setExecutor("arkinsolomon.java.cli");
 
         try {
             JSONParser parser = new JSONParser();
