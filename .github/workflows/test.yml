@@ -1,0 +1,32 @@
+# See https://medium.com/@alexander.volminger/ci-cd-for-java-maven-using-github-actions-d009a7cb4b8f
+
+name: Test
+
+on: 
+ workflow_call:
+  inputs:
+   os: 
+    required: true
+    type: string
+
+jobs:
+  test:
+
+    runs-on: ${{ inputs.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 19
+      uses: actions/setup-java@v1
+      with:
+        java-version: 19
+        
+    - name: Cache Packages
+      uses: actions/cache@v1
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2      
+      
+    - name: test
+      run: mvn -X test
