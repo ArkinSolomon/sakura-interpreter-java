@@ -4,6 +4,7 @@ name: Maven CI/CD
 
 on:
  push:
+ workflow_call:
 
 jobs:
   test:
