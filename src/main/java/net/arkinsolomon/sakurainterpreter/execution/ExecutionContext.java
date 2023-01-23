@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023. Sakura Interpreter Java Contributors.
+ * Copyright (c) 2022-2023. Arkin Solomon.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 
 package net.arkinsolomon.sakurainterpreter.execution;
 
+import net.arkinsolomon.sakurainterpreter.SakuraInterpreter;
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
 import net.arkinsolomon.sakurainterpreter.functions.ListFunction;
 import net.arkinsolomon.sakurainterpreter.functions.RangeFunction;
@@ -243,9 +244,9 @@ public class ExecutionContext {
 
         identifiers.put("@root", new Value(DataType.PATH, rootPath, false));
 
-        identifiers.put("@__lang_version", new Value(DataType.STRING, "0.1.0-beta.1", false));
-        identifiers.put("@__interpreter", new Value(DataType.STRING, "sakura.java", false));
-        identifiers.put("@__interpreter_version", new Value(DataType.STRING, "1.0.0.0-beta-1", false));
+        identifiers.put("@__lang_version", new Value(DataType.STRING, SakuraInterpreter.LANG_VERSION, false));
+        identifiers.put("@__interpreter", new Value(DataType.STRING, "arkinsolomon.java", false));
+        identifiers.put("@__interpreter_version", new Value(DataType.STRING, SakuraInterpreter.INTERPRETER_VERSION, false));
 
         registerFunc("print", new PrintFunction());
         registerFunc("range", new RangeFunction());
