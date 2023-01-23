@@ -1,7 +1,7 @@
 on:
   push:
   workflow_dispatch:
-  
+name: Tests
 jobs:
   test-mac:
     uses: ./.github/workflows/test.yml

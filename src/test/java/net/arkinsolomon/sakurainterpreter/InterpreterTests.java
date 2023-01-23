@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023. Sakura Interpreter Java Contributors.
+ * Copyright (c) 2023. Arkin Solomon.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class InterpreterTests {
 
     @BeforeEach
     void beforeEach() throws IOException {
-        InterpreterOptions options = new InterpreterOptions("sakura.java.tester");
+        InterpreterOptions options = new InterpreterOptions("arkinsolomon.java.tester");
 
         testRoot = new File(temp, "interpreter-test-files");
         Files.createDirectories(testRoot.toPath());
@@ -126,7 +126,7 @@ public class InterpreterTests {
     void testPrintEnvVar() throws IOException {
         Path path = getResource("test-print-env-var.ska");
         interpreter.executeFile(path);
-        assertEquals("sakura.java.tester\n", printer.getOutput());
+        assertEquals("arkinsolomon.java.tester\n", printer.getOutput());
     }
 
     @Test
