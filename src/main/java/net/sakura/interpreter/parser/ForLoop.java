@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.DirectoryIterable;
 import net.sakura.interpreter.execution.ExecutionContext;
@@ -93,7 +94,7 @@ final class ForLoop extends Expression {
         else if (iterableEvalResult.type() == DataType.PATH)
             loopIterable = new DirectoryIterable((File) iterableEvalResult.value());
         else
-            throw new RuntimeException("For loops can only loop over iterables");
+            throw new SakuraException(token, "For loops can only loop over iterables, directories, or strings..");
 
         Value curr = loopIterable.next();
         while (curr != null) {

@@ -15,6 +15,7 @@
 
 package net.sakura.interpreter.parser;
 
+import net.sakura.interpreter.exceptions.SakuraException;
 import net.sakura.interpreter.execution.DataType;
 import net.sakura.interpreter.execution.ExecutionContext;
 import net.sakura.interpreter.execution.Value;
@@ -37,13 +38,13 @@ final class NumericalComparison extends Operator {
     @Override
     public Value evaluate(ExecutionContext ctx) {
         if (!isFull())
-            throw new UnsupportedOperationException("Less-than operator requires both arguments");
+            throw new SakuraException(token, "Less-than operator requires both arguments");
 
         Value lhs = leftChild().evaluate(ctx);
         Value rhs = rightChild().evaluate(ctx);
 
         if (lhs.type() != DataType.NUMBER || rhs.type() != DataType.NUMBER)
-            throw new UnsupportedOperationException("The numerical operators (>, >=, <, <=) can only compare numbers");
+            throw new SakuraException(token, "The numerical operators (>, >=, <, <=) can only compare numbers.");
 
         double leftValue = (double) lhs.value();
         double rightValue = (double) rhs.value();

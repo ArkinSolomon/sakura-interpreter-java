@@ -48,10 +48,11 @@ class EqualityOperator extends Operator {
 
         boolean isEqual = switch (lhs.type()) {
             case STRING, PATH -> lhs.value().equals(rhs.value());
-            case NUMBER -> (double) lhs.value() == (double) rhs.value();
+            case NUMBER ->
+                    Math.abs((double) lhs.value() - (double) rhs.value()) < 1e-12;
             case BOOLEAN -> (boolean) lhs.value() == (boolean) rhs.value();
             case NULL -> true;
-            case FUNCTION -> lhs.value() == rhs.value();
+            case FUNCTION, ITERABLE -> lhs.value() == rhs.value();
             default ->
                     throw new SakuraException(token.line(), token.column(), "Invalid comparison between operands both of type \"%s\".".formatted(lhs.type()));
         };
@@ -61,6 +62,6 @@ class EqualityOperator extends Operator {
 
     @Override
     public int getPrecedence() {
-        return Precedences.COMPARISON;
+        return Precedences.EQUALITY;
     }
 }

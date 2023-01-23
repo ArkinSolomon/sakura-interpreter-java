@@ -1,11 +1,11 @@
 return sum(1, 2, 3)
 
 func sum(...%vals){
-    $sum = 0
+  $sum = 0
 
-    for $val in vals {
-        sum = sum + val
-    }
+  for $val in vals {
+    sum = sum + val
+  }
 
-    return sum
+  return sum
 }

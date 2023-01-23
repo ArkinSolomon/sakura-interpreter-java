@@ -19,19 +19,21 @@ package net.sakura.interpreter.parser;
  * Precedences for every type of operator.
  */
 final class Precedences {
-    static int RETURN = 20;
-    static int ASSIGNMENT = 30;
-    static int BINARY_OR = 33;
-    static int BINARY_AND = 35;
-    static int COMPARISON = 40;
-    static int ADD_SUB = 50;
-    static int MULTIPLY_SLASH = 60;
-    static int PREFIX = 80;
-    static int PARENTHETICAL = 90;
-    static int VALUE = 100;
+    final static int RETURN = 20;
+    final static int ASSIGNMENT = 30;
+    final static int BINARY_OR = 33;
+    final static int BINARY_AND = 35;
+    final static int EQUALITY = 37;
+    final static int COMPARISON = 40;
+    final static int ADD_SUB = 50;
+    final static int MULTIPLY_SLASH = 60;
+    final static int PREFIX = 80;
+    final static int PARENTHETICAL = 90;
+    final static int VALUE = 100;
 
     /**
      * No class instances.
      */
-    private Precedences() {}
+    private Precedences() {
+    }
 }

@@ -1045,6 +1045,15 @@ public final class Lexer {
                     throw new SakuraException(token.line(), token.column(), "If-statement branch must be preceded by an if-statement");
 
                 IfData data = (IfData) lastToken.value();
+
+                // If there are more branches than conditions we've already reached the else
+                if (data.branches().size() != data.conditions().size()){
+                    if (token.isOfType(TokenType.ELIF_COND))
+                       throw new UnexpectedTokenException(token, "An else-if block can not follow an else block.");
+                    else
+                        throw new UnexpectedTokenException(token, "An if-statement can only have one else block.");
+                }
+
                 if (token.isOfType(TokenType.ELIF_COND)) {
                     @SuppressWarnings("unchecked")
                     List<Token> condition = (List<Token>) token.value();

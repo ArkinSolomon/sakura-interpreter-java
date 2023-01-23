@@ -75,7 +75,7 @@ public enum TokenType {
     PATH_OPEN_PARENTHESIS, // $(
     OPEN_PARENTHESIS, // (
     CLOSE_PARENTHESIS, // )
-    PARENTHETICAL_EXPR, // Full parentheses expression
+    PARENTHETICAL_EXPR, // Full expression wrapped in parentheses
 
     OPEN_BRACE, // {
     CLOSE_BRACE, // }

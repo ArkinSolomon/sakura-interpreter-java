@@ -27,7 +27,7 @@ import java.io.File;
 /**
  * A command to create a directory recursively.
  */
-public class MkdirsCommand extends SinglePathCommand {
+final class MkdirsCommand extends SinglePathCommand {
 
     /**
      * Create a command using a token.

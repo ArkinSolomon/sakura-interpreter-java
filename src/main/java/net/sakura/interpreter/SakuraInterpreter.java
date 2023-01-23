@@ -23,6 +23,7 @@ import net.sakura.interpreter.execution.Value;
 import net.sakura.interpreter.lexer.Lexer;
 import net.sakura.interpreter.lexer.Token;
 import net.sakura.interpreter.lexer.TokenStorage;
+import net.sakura.interpreter.parser.Node;
 import net.sakura.interpreter.parser.Parser;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
@@ -268,7 +269,7 @@ public class SakuraInterpreter {
      * @param lexer The lexer that performed the analysis.
      * @return The result of the analyzed tokens after execution.
      */
-    private synchronized Value execLexer(Lexer lexer) {
+    private Value execLexer(Lexer lexer) {
         ExecutionContext ctx = createContext();
         try {
             List<Token> tokens = lexer.analyze();

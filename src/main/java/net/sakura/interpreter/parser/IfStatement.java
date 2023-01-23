@@ -103,7 +103,6 @@ final class IfStatement extends Expression {
                 Value braceReturn = getChild(i).evaluate(tempCtx);
                 ExecutionResult result = (ExecutionResult) braceReturn.value();
                 if (result.earlyReturnType() != EarlyReturnType.NONE) {
-                    //                   if (result.earlyReturnType() == EarlyReturnType.RETURN)
                     parent.stop();
                     return braceReturn;
                 }

@@ -243,7 +243,7 @@ public class ExecutionContext {
 
         identifiers.put("@root", new Value(DataType.PATH, rootPath, false));
 
-        identifiers.put("@__lang_version", new Value(DataType.STRING, "1.0.0", false));
+        identifiers.put("@__lang_version", new Value(DataType.STRING, "1.0.0-beta.1", false));
         identifiers.put("@__interpreter", new Value(DataType.STRING, "sakura.java", false));
         identifiers.put("@__interpreter_version", new Value(DataType.STRING, "1.0-SNAPSHOT", false));
 

@@ -37,7 +37,7 @@ final class AssignmentOperator extends Operator {
     public Value evaluate(ExecutionContext ctx) {
         Value assignmentValue = rightChild().evaluate(ctx);
 
-        leftChild().assign(ctx, new Value(assignmentValue.type(), assignmentValue.value(), true));
+        leftChild().assign(ctx, assignmentValue.setMutability(true));
 
         // Assignment operators return the value of assignment
         return new Value(assignmentValue.type(), assignmentValue.value(), false);

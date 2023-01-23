@@ -1,8 +1,8 @@
 recurse(10)
 
 func recurse(%n) {
-    if n == 0 {
-        exit(29, "There was an error :(")
-    }
-    recurse(n - 1)
+  if n == 0 {
+    exit(29, "There was an error :(")
+  }
+  recurse(n - 1)
 }

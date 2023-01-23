@@ -4,5 +4,5 @@ for %i in range(1, 9) {
   } else if i == 5 {
     break
   }
-  print(i) # Prints "1" then "2" then "4" on separate lines
+  print(i)
 }

@@ -299,7 +299,7 @@ public class InterpreterTests {
     @Test
     void testExitException() {
         Path path = getResource("/test-exit-exception.ska");
-        ExitException thrown = assertThrows(ExitException.class, () ->  interpreter.executeFile(path));
+        ExitException thrown = assertThrows(ExitException.class, () -> interpreter.executeFile(path));
         assertEquals(29, thrown.getCode());
     }
 
@@ -308,7 +308,7 @@ public class InterpreterTests {
         Path path = getResource("/test-exit-return.ska");
         Value retVal = interpreter.executeFile(path);
         assertEquals(DataType.NUMBER, retVal.type());
-        assertEquals(0d, retVal.value());
+        assertEquals(0d, (double) retVal.value(), 1e-12);
     }
 
     @Test
@@ -317,5 +317,21 @@ public class InterpreterTests {
         Value retVal = interpreter.executeFile(path);
         assertEquals(DataType.STRING, retVal.type());
         assertEquals("string", retVal.value());
+    }
+
+    @Test
+    void testForLoopControl() throws IOException {
+        Path path = getResource("/test-for-loop-control.ska");
+        interpreter.executeFile(path);
+        String output = printer.getOutput();
+        assertEquals("1\n2\n4\n", output);
+    }
+
+    @Test
+    void testForLoopReturn() throws IOException {
+        Path path = getResource("/test-for-loop-return.ska");
+        Value retVal = interpreter.executeFile(path);
+        assertEquals(DataType.NUMBER, retVal.type());
+        assertEquals(5d, (double) retVal.value(), 1e-12);
     }
 }
