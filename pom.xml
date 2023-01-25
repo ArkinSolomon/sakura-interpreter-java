@@ -6,15 +6,33 @@
 
     <groupId>net.arkinsolomon</groupId>
     <artifactId>sakurainterpreter</artifactId>
-    <version>1.0.0.1</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>Sakura Interpreter</name>
     <description>Sakura Interpreter for Java</description>
+    <url>https://github.com/ArkinSolomon/sakura-interpreter-java</url>
+
+    <developers>
+        <developer>
+            <id>ArkinSolomon</id>
+            <email>arkin@arkinsolomon.net</email>
+            <name>Arkin Solomon</name>
+            <organizationUrl>https://arkinsolomon.net</organizationUrl>
+            <roles>
+                <role>Main Developer/Project Owner</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>others</id>
+            <name>Other Contributors</name>
+        </developer>
+    </developers>
 
     <scm>
         <url>https://github.com/ArkinSolomon/sakura-interpreter-java.git</url>
     </scm>
+
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
