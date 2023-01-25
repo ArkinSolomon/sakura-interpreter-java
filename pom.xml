@@ -23,10 +23,6 @@
                 <role>Main Developer/Project Owner</role>
             </roles>
         </developer>
-        <developer>
-            <id>others</id>
-            <name>Other Contributors</name>
-        </developer>
     </developers>
 
     <scm>
