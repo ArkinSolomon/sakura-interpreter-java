@@ -50,7 +50,7 @@ import java.util.Map;
 public class SakuraInterpreter {
 
     public static final String LANG_VERSION = "0.1.0-beta-1";
-    public static final String INTERPRETER_VERSION = "1.0.0.1-SNAPSHOT";
+    public static final String INTERPRETER_VERSION = "1.0.0.1";
 
     private final InterpreterOptions options;
 
