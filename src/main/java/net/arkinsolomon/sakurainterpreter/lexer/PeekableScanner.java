@@ -16,6 +16,7 @@
 package net.arkinsolomon.sakurainterpreter.lexer;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Scanner;
 
@@ -24,7 +25,7 @@ import java.util.Scanner;
  * character by character, without scanning it. See
  * <a href="http://www.javased.com/?post=4288643">source</a>.
  */
-public class PeekableScanner {
+public final class PeekableScanner {
     private final Scanner scan1;
     private final Scanner scan2;
     private String next;
@@ -35,8 +36,8 @@ public class PeekableScanner {
      * @param source The path to the file to scan.
      */
     public PeekableScanner(Path source) throws IOException {
-        scan1 = new Scanner(source);
-        scan2 = new Scanner(source);
+        scan1 = new Scanner(source, StandardCharsets.UTF_8);
+        scan2 = new Scanner(source, StandardCharsets.UTF_8);
         init();
     }
 

@@ -146,6 +146,7 @@ public class SakuraException extends RuntimeException {
      *
      * @return The stacktrace.
      */
+    @SuppressWarnings("AvoidObjectArrays")
     public final String[] getCallstack() {
         List<String> traceList = Arrays.asList(callstack.toArray(String[]::new));
         Collections.reverse(traceList);

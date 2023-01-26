@@ -96,6 +96,8 @@ final class ForLoop extends Expression {
         else
             throw new SakuraException(token, "For loops can only loop over iterables, directories, or strings..");
 
+        assert loopIterable != null;
+
         Value curr = loopIterable.next();
         while (curr != null) {
             ExecutionContext tempCtx = new ExecutionContext(ctx);

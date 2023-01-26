@@ -19,6 +19,7 @@ import net.arkinsolomon.sakurainterpreter.lexer.Token;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
 import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
+import net.arkinsolomon.sakurainterpreter.lexer.TokenType;
 
 import java.util.Objects;
 
@@ -58,6 +59,6 @@ final class BinaryBooleanOperator extends Operator {
 
     @Override
     public int getPrecedence() {
-        return token.value() == "|" ?  Precedences.BINARY_OR : Precedences.BINARY_AND;
+        return token.type() == TokenType.OR ?  Precedences.BINARY_OR : Precedences.BINARY_AND;
     }
 }

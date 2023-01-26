@@ -15,14 +15,15 @@
 
 package net.arkinsolomon.sakurainterpreter.operations;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * An instance of this class tracks all system changes.
  */
 public final class FileTracker {
 
-    private final Stack<Operation> operations = new Stack<>();
+    private final Deque<Operation> operations = new ArrayDeque<>();
 
     /**
      * Run an operation, should throw an exception if it fails.
@@ -31,7 +32,7 @@ public final class FileTracker {
      */
     public void runOperation(Operation operation) {
         operation.perform();
-        operations.add(operation);
+        operations.addFirst(operation);
     }
 
     /**
@@ -39,7 +40,7 @@ public final class FileTracker {
      */
     public void undoOperations() {
         while (!operations.isEmpty()){
-            Operation operation = operations.pop();
+            Operation operation = operations.removeFirst();
             operation.undo();
         }
     }
