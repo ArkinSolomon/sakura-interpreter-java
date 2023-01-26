@@ -6,20 +6,37 @@ on:
 
 jobs:
   Release:
-    name: Releas
+    name: Release
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+        
+      - name: Cache Packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2      
+      
       - name: Build
-        run: |
-          echo "done!"
-
+        run: | 
+          mvn clean package jar:jar appassembler:assemble -X -e
+          zip -r ska-java.zip target/appassembler
+      
+      - name: Get Tag
+        run: export LATEST_TAG=$(git describe --tags --abbrev=0) 
+      
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: true
-          title: "Development Build"
+          repo_token: ${{ secrets.GH_TOKEN }}
+          draft: true
+          title: ${{ env.LATEST_TAG }}
           files: |
-            LICENSE.txt
-            *.jar
+            ska-java.zip
+
