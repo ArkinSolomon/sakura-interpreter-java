@@ -50,7 +50,7 @@ import java.util.Map;
 public class SakuraInterpreter {
 
     public static final String LANG_VERSION = "0.1.0-beta-1";
-    public static final String INTERPRETER_VERSION = "1.0.0";
+    public static final String INTERPRETER_VERSION = "1.0.1";
 
     private final InterpreterOptions options;
 
@@ -75,7 +75,7 @@ public class SakuraInterpreter {
         ArgumentParser parser = ArgumentParsers.newFor("ska-java")
                 .build()
                 .description("Sakura interpreter built on Java")
-                .version(INTERPRETER_VERSION);
+                .version("Sakura interpreter for Java %s. (c) 2023 Arkin Solomon.\nLanguage version %s.\nContribute/Bug reports at https://github.com/ArkinSolomon/sakura-interpreter-java".formatted(INTERPRETER_VERSION, LANG_VERSION));
 
         MutuallyExclusiveGroup g = parser.addMutuallyExclusiveGroup("execs").required(true);
         g.addArgument("-f", "--file")
