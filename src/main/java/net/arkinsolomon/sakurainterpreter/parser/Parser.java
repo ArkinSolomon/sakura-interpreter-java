@@ -16,13 +16,13 @@
 package net.arkinsolomon.sakurainterpreter.parser;
 
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
-import net.arkinsolomon.sakurainterpreter.lexer.TokenStorage;
 import net.arkinsolomon.sakurainterpreter.exceptions.UnexpectedTokenException;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
 import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.ExecutionResult;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
 import net.arkinsolomon.sakurainterpreter.lexer.Token;
+import net.arkinsolomon.sakurainterpreter.lexer.TokenStorage;
 import net.arkinsolomon.sakurainterpreter.lexer.TokenType;
 
 import java.util.ArrayList;
@@ -357,7 +357,9 @@ public final class Parser {
             node.addChild(newNode);
 
             Token nextToken = tokenStorage.peek();
-            if (!nextToken.isOfType(TokenType.SLASH, TokenType.EOF))
+            if (nextToken == null)
+                throw new UnexpectedTokenException(token);
+            else if (!nextToken.isOfType(TokenType.SLASH, TokenType.EOF))
                 throw new UnexpectedTokenException(nextToken, "Path parts must be separated by forward slashes.");
 
             token = tokenStorage.consume();
@@ -385,7 +387,7 @@ public final class Parser {
         }
 
         for (Node expression : expressions) {
-//            expression.print();
+            // expression.print();
             ExecutionResult braceReturnResult = null;
             Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {
