@@ -13,12 +13,9 @@
  * either express or implied limitations under the License.
  */
 
-package net.arkinsolomon.sakurainterpreter.functions;
+package net.arkinsolomon.sakurainterpreter.execution;
 
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
-import net.arkinsolomon.sakurainterpreter.execution.DataType;
-import net.arkinsolomon.sakurainterpreter.execution.Iterable;
-import net.arkinsolomon.sakurainterpreter.execution.Value;
 
 /**
  * An iterator for a certain range.

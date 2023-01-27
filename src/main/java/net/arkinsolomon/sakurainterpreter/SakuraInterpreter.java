@@ -51,7 +51,7 @@ import java.util.Map;
 public class SakuraInterpreter {
 
     public static final String LANG_VERSION = "0.1.0-beta-2";
-    public static final String INTERPRETER_VERSION = "1.0.3";
+    public static final String INTERPRETER_VERSION = "1.0.4";
 
     private final InterpreterOptions options;
 
@@ -173,8 +173,13 @@ public class SakuraInterpreter {
             if (configObj.containsKey("root")) {
                 Object root = configObj.get("root");
                 if (!(root instanceof String))
-                    throw new RuntimeException("If provided in the configuration file, \"root\" must be a string (which represents path to a file)");
-                opts.setExecutor((String) root);
+                    throw new RuntimeException("If provided in the configuration file, \"root\" must be a string (which represents path to a directory)");
+
+                File rootFile = new File((String) root);
+
+                if (!rootFile.isDirectory())
+                    throw new RuntimeException("If provided in the configuration file, \"root\" must be a path to a directory (a path to a file was provided)");
+                opts.setRoot(rootFile);
             }
 
             if (configObj.containsKey("allowRead")) {
