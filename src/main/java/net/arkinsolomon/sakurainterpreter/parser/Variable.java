@@ -26,7 +26,7 @@ import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
  */
 class Variable extends Node {
 
-    protected String identifier;
+    protected final String identifier;
 
     /**
      * Create a new variable node.

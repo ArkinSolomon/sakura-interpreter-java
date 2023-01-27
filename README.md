@@ -4,5 +4,5 @@
 
 Sakura Interpreter written in Java.
 
-[Sakura Language Documentation](https://sakura-docs.arkinsolomon.net/)
+[Sakura Language Documentation](https://sakura-docs.arkinsolomon.net/)<br>
 [Sakura Interpreter Documentation](https://javadoc.io/doc/net.arkinsolomon/sakurainterpreter)

@@ -39,8 +39,8 @@ public class InterpreterOptions {
     private final Set<File> disallowRead = new HashSet<>();
     private final Set<File> allowWrite = new HashSet<>();
     private final Set<File> disallowWrite = new HashSet<>();
-    Map<String, Value> envVariables = new HashMap<>();
-    Map<String, Function> functions = new HashMap<>();
+    final Map<String, Value> envVariables = new HashMap<>();
+    final Map<String, Function> functions = new HashMap<>();
     File root = null;
 
     /**
