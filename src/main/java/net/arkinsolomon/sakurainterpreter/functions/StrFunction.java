@@ -12,26 +12,24 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
  * either express or implied limitations under the License.
  */
+package net.arkinsolomon.sakurainterpreter.functions;
 
-package net.arkinsolomon.sakurainterpreter.parser;
-
-import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
+import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
+import net.arkinsolomon.sakurainterpreter.execution.DataType;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
 
-/**
- * A NO-OP expression which does nothing.
- */
-final class NoOpExpression extends Expression {
+import java.util.List;
 
-    /**
-     * Create a new no-op.
-     */
-    NoOpExpression() {
-        super(null, 0);
-    }
+/**
+ * Function to get string representation of a value.
+ */
+public final class StrFunction implements Function {
 
     @Override
-    public Value evaluate(ExecutionContext ctx) {
-        return Value.NULL;
+    public Value execute(List<Value> args) {
+        if (args.size() == 0)
+            throw new SakuraException("Str function requires at least one argument");
+
+        return new Value(DataType.STRING, args.get(0).toString(), false);
     }
 }

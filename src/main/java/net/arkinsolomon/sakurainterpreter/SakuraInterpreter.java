@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023. Arkin Solomon.
+ * Copyright (c) 2022-2023 Arkin Solomon.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,8 @@ import java.util.Map;
  */
 public class SakuraInterpreter {
 
-    public static final String LANG_VERSION = "0.1.0-beta-1";
-    public static final String INTERPRETER_VERSION = "1.0.1";
+    public static final String LANG_VERSION = "0.1.0-beta-2";
+    public static final String INTERPRETER_VERSION = "1.0.3";
 
     private final InterpreterOptions options;
 
