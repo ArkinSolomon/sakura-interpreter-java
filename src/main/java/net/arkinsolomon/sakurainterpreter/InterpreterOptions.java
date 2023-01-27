@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023. Arkin Solomon.
+ * Copyright (c) 2023 Arkin Solomon.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ public class InterpreterOptions {
     private final Set<File> disallowRead = new HashSet<>();
     private final Set<File> allowWrite = new HashSet<>();
     private final Set<File> disallowWrite = new HashSet<>();
-    Map<String, Value> envVariables = new HashMap<>();
-    Map<String, Function> functions = new HashMap<>();
+    final Map<String, Value> envVariables = new HashMap<>();
+    final Map<String, Function> functions = new HashMap<>();
     File root = null;
 
     /**

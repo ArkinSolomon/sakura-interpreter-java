@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023. Arkin Solomon.
+ * Copyright (c) 2023 Arkin Solomon.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,10 @@ public final class WriteOperation extends Operation {
             throw new SakuraException("No write permissions for file \"%s\".".formatted(getFilePathStr(file.toFile())));
 
         if (Files.exists(file)) {
+
+            if (Files.isDirectory(file))
+                throw new SakuraException("Can not overwrite the directory \"%s\" with text.".formatted(getFilePathStr(file.toFile())));
+
             try {
                 oldContent = String.join("\n", Files.readAllLines(file));
             } catch (IOException e) {

@@ -1,0 +1,7 @@
+%original = PATH /file.txt
+%new = PATH /new_file.txt
+COPY $(original) TO $(new)
+%originalExists = EXISTS $(original)
+%newExists = EXISTS $(new)
+print(originalExists) # Prints "true"
+print(newExists) # Prints "true"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023. Arkin Solomon.
+ * Copyright (c) 2023 Arkin Solomon.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,9 @@ public final class UnexpectedTokenException extends SakuraException {
             case MINUS -> "-";
             case MULTIPLY -> "*";
             case QUOTE -> "\"";
-            case SYMBOL, VARIABLE, CONST_VAR, ENV_VARIABLE, PATH_LITERAL ->
+            case VARIABLE -> "$" + token.value();
+            case CONST_VAR -> "%" + token.value();
+            case SYMBOL, ENV_VARIABLE, PATH_LITERAL ->
                     (String) token.value();
             case COMMA -> ",";
             case IF -> "if";

@@ -1,0 +1,4 @@
+%path = PATH /file.txt
+WRITE "Some text!" TO $(path)
+%content = READ $(path)
+print(content) # Prints "Some text!"

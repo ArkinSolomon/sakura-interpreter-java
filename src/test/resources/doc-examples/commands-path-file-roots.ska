@@ -1,0 +1,4 @@
+%rootDirectory = PATH /some/directory/here
+MKDIRS $(rootDirectory)
+WRITE "File 1" TO $(rootDirectory)/file_1.txt
+WRITE "File 2" TO $(rootDirectory)/file_2.txt

@@ -1,5 +1,5 @@
 <component name="CopyrightManager">
-  <settings>
+  <settings default="Sakura">
     <module2copyright>
       <element module="Source &amp; Test Files" copyright="Sakura" />
     </module2copyright>

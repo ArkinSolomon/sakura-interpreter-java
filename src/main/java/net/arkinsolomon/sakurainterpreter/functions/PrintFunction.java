@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023. Arkin Solomon.
+ * Copyright (c) 2023 Arkin Solomon.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,15 +32,13 @@ public final class PrintFunction implements Function {
      */
     @Override
     public Value execute(List<Value> args) {
-        StringBuilder printStr = new StringBuilder();
+       String[] values = new String[args.size()];
         for (int i = 0; i < args.size(); i++) {
             Value arg = args.get(i);
-            printStr.append(arg);
-            if (i != args.size() - 1)
-                printStr.append(" ");
+            values[i] = arg.toString();
         }
-        String printValue = printStr.toString();
 
+        String printValue = String.join(" ", values);
         System.out.println(printValue);
         return Value.NULL;
     }

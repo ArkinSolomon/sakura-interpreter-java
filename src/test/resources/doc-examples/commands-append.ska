@@ -1,0 +1,5 @@
+%path = PATH /file.txt
+WRITE "Hello" TO $(path)
+APPEND " World!" TO $(path)
+%content = READ $(path)
+print(content) # Prints "Hello World!"
