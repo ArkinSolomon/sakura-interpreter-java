@@ -1,0 +1,9 @@
+$basePath = PATH /folder_1
+%basePathExists = EXISTS $(basePath)
+
+if !basePathExists {
+  basePath = PATH /folder_2
+  MKDIR $(basePath)
+}
+
+WRITE "new file" TO $(basePath)/new_file.txt

@@ -1,0 +1,6 @@
+%original = PATH /file.txt
+RENAME $(original) TO "renamed_file.txt"
+%originalExists = EXISTS $(original)
+%newExists = EXISTS /renamed_file.txt
+print(originalExists) # Prints "false"
+print(newExists) # Prints "true"

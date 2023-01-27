@@ -1,0 +1,4 @@
+MKDIR /some/other
+COPY /some/directory TO /some/other/directory
+WRITE "Hello World!" TO /some/other/directory/a_file.txt
+DELETE /some/directory

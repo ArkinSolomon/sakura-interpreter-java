@@ -15,15 +15,15 @@
 
 package net.arkinsolomon.sakurainterpreter;
 
-import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
-import net.arkinsolomon.sakurainterpreter.lexer.TokenStorage;
-import net.arkinsolomon.sakurainterpreter.parser.Parser;
 import net.arkinsolomon.sakurainterpreter.exceptions.ExitException;
+import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
 import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
 import net.arkinsolomon.sakurainterpreter.lexer.Lexer;
 import net.arkinsolomon.sakurainterpreter.lexer.Token;
+import net.arkinsolomon.sakurainterpreter.lexer.TokenStorage;
+import net.arkinsolomon.sakurainterpreter.parser.Parser;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;

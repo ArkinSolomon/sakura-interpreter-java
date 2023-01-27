@@ -136,6 +136,6 @@ public final class OperationConfig {
                 return false;
         }
 
-        return false;
+        return true;
     }
 }

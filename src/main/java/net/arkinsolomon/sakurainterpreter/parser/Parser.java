@@ -163,12 +163,12 @@ public final class Parser {
                 case AND, OR -> new BinaryBooleanOperator(token);
                 case NOT -> new NotOperator(token);
                 case PLUS -> {
-                    if (tokenStorage.lastNonEOLToken() == null || tokenStorage.lastNonEOLToken().isOperator())
+                    if (tokenStorage.lastNonEOLToken() == null || tokenStorage.lastNonEOLToken().isOperator() || tokenStorage.lastNonEOLToken().isOfType(TokenType.FUNC_DEF, TokenType.IF_STATEMENT, TokenType.WHILE_LOOP, TokenType.FOR_LOOP, TokenType.RETURN))
                         yield new PositiveOperator(token);
                     yield new AdditionOperator(token);
                 }
                 case MINUS -> {
-                    if (tokenStorage.lastNonEOLToken() == null || tokenStorage.lastNonEOLToken().isOperator() || tokenStorage.lastNonEOLToken().isOfType(TokenType.FUNC_DEF, TokenType.IF_STATEMENT, TokenType.WHILE_LOOP, TokenType.FOR_LOOP))
+                    if (tokenStorage.lastNonEOLToken() == null || tokenStorage.lastNonEOLToken().isOperator() || tokenStorage.lastNonEOLToken().isOfType(TokenType.FUNC_DEF, TokenType.IF_STATEMENT, TokenType.WHILE_LOOP, TokenType.FOR_LOOP, TokenType.RETURN))
                         yield new NegativeOperator(token);
                     yield new SubtractionOperator(token);
                 }

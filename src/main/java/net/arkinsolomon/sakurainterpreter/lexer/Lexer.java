@@ -960,6 +960,9 @@ public final class Lexer {
                 assert token != null;
                 toSimplify.add(new Token(TokenType.EOF, token.line(), token.column(), "<TO_STR EOF>"));
                 newTokens.add(new Token(TokenType.TO_STR, initialLine, initialCol, simplify(toSimplify)));
+
+                // Make sure we add the line termination
+                newTokens.add(token);
             } else
 
                 // Simply every other token

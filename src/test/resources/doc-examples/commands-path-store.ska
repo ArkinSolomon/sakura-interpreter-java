@@ -1,0 +1,2 @@
+%myPath = PATH /some/file
+WRITE "Some text!" TO $(myPath)

@@ -1,2 +1,0 @@
-print("Running Sakura language version " + @__lang_version + ", on the interpreter " + @__interpreter + ", version " + @__interpreter_version + " executed by " + @__executor)
-print("File root: " + @root)
