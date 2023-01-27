@@ -17,6 +17,7 @@ package net.arkinsolomon.sakurainterpreter.functions;
 
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
+import net.arkinsolomon.sakurainterpreter.execution.RangeIterable;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
 
 import java.util.List;
