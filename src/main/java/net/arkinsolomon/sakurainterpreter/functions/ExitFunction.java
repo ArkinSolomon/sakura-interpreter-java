@@ -15,13 +15,13 @@
 
 package net.arkinsolomon.sakurainterpreter.functions;
 
+import com.google.errorprone.annotations.Var;
+import java.util.List;
 import net.arkinsolomon.sakurainterpreter.exceptions.ExitException;
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
 import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
-
-import java.util.List;
 
 /**
  * A function that terminates script execution immediately.
@@ -33,9 +33,9 @@ public final class ExitFunction implements Function {
      */
     @Override
     public Value execute(List<Value> args, ExecutionContext ctx) {
-        String reason = "<unknown reason>";
-        Value retVal = Value.NULL;
-        byte code = 0;
+        @Var String reason = "<unknown reason>";
+        @Var Value retVal = Value.NULL;
+        @Var byte code = 0;
 
         if (args.size() >= 1){
             Value firstArg  = args.get(0);

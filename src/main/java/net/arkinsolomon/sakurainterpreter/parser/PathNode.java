@@ -15,15 +15,15 @@
 
 package net.arkinsolomon.sakurainterpreter.parser;
 
+import com.google.errorprone.annotations.Var;
+import java.io.File;
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
-import net.arkinsolomon.sakurainterpreter.lexer.Token;
-import net.arkinsolomon.sakurainterpreter.operations.Operation;
 import net.arkinsolomon.sakurainterpreter.exceptions.UnexpectedTokenException;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
 import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
-
-import java.io.File;
+import net.arkinsolomon.sakurainterpreter.lexer.Token;
+import net.arkinsolomon.sakurainterpreter.operations.Operation;
 
 /**
  * A node which represents a path.
@@ -51,15 +51,15 @@ final class PathNode extends Node {
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        File path = null;
-        boolean hasParsedFirstPart = false;
+        @Var File path = null;
+        @Var boolean hasParsedFirstPart = false;
         for (Node child : children) {
             Value childResult = child.evaluate(ctx);
             if (childResult.type() == DataType.STRING) {
                 if (!hasParsedFirstPart)
                     throw new SakuraException(child.token.line(), child.token.column(), "First item of a path must evaluate to be of type path");
 
-                String childPath = (String) childResult.value();
+                var childPath = (String) childResult.value();
 
                 if (childPath.contains("/"))
                     throw new UnexpectedTokenException(child.token.line(), child.token.column() + childPath.indexOf("/"), "\"/\"", "Path values can not contain slashes.");
@@ -71,7 +71,7 @@ final class PathNode extends Node {
                 else
                     path = new File(Operation.getFilePathStr(path), childPath);
             } else if (childResult.type() == DataType.PATH) {
-                File childPath = (File) childResult.value();
+                var childPath = (File) childResult.value();
 
                 if (path == null)
                     path = childPath;

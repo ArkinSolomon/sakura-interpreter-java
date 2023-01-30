@@ -50,7 +50,7 @@ final class AppendCommand extends DualArgCommand {
             throw new SakuraException(token.line(), token.column(), "The right of a \"TO\" following an \"APPEND\" must be of type path.");
 
         String writeData = left.toString();
-        File writeFile = (File) right.value();
+        var writeFile = (File) right.value();
 
         try {
             Operation appendOp = new AppendOperation(ctx, writeFile, writeData);

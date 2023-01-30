@@ -15,6 +15,10 @@
 
 package net.arkinsolomon.sakurainterpreter.parser;
 
+import com.google.errorprone.annotations.Var;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
 import net.arkinsolomon.sakurainterpreter.exceptions.UnexpectedTokenException;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
@@ -24,10 +28,6 @@ import net.arkinsolomon.sakurainterpreter.execution.Value;
 import net.arkinsolomon.sakurainterpreter.lexer.Token;
 import net.arkinsolomon.sakurainterpreter.lexer.TokenStorage;
 import net.arkinsolomon.sakurainterpreter.lexer.TokenType;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Create a new parse tree.
@@ -58,9 +58,9 @@ public final class Parser {
      * @return The tokens parsed as a path.
      */
     public static PathNode parseTokensAsPath(Token trigger, List<Token> pathTokens) {
-        TokenStorage ts = new TokenStorage(pathTokens);
+        var ts = new TokenStorage(pathTokens);
 
-        Parser pathParser = new Parser(ts);
+        var pathParser = new Parser(ts);
         return pathParser.parseAsPath(trigger);
     }
 
@@ -71,8 +71,8 @@ public final class Parser {
      * @return The tokens parsed into nodes.
      */
     public static List<Node> parseTokens(List<Token> tokens) {
-        TokenStorage ts = new TokenStorage(tokens);
-        Parser parser = new Parser(ts);
+        var ts = new TokenStorage(tokens);
+        var parser = new Parser(ts);
         return parser.parse();
     }
 
@@ -118,11 +118,11 @@ public final class Parser {
      */
     public List<Node> parse(boolean checkTopLevel, boolean checkForStandalone) {
 
-        Node root = null;
-        Node currentNode = null;
+        @Var Node root = null;
+        @Var Node currentNode = null;
 
-        boolean expectNewLine = false;
-        Token exprStartToken = null;
+        @Var boolean expectNewLine = false;
+        @Var Token exprStartToken = null;
 
         while (true) {
             Token token = tokenStorage.consume();
@@ -192,7 +192,7 @@ public final class Parser {
                 case READ -> new ReadCommand(token);
                 case PATH -> {
                     @SuppressWarnings("unchecked")
-                    List<Token> pathTokens = (List<Token>) token.value();
+                    var pathTokens = (List<Token>) token.value();
                     yield parseTokensAsPath(token, pathTokens);
                 }
                 case ISDIR -> new IsDirCommand(token);
@@ -255,8 +255,8 @@ public final class Parser {
                     throw new UnexpectedTokenException(exprStartToken, "Can not have multiple expressions on a single line.");
                 exprStartToken = token;
             } else {
-                Node insertionPoint = currentNode;
-                Node replacementChild = null;
+                @Var Node insertionPoint = currentNode;
+                @Var Node replacementChild = null;
 
                 // Climb the tree until we find somewhere to insert
                 while (insertionPoint != null && insertionPoint.getPrecedence() >= newNode.getPrecedence()) {
@@ -326,9 +326,9 @@ public final class Parser {
         if (!tokenStorage.hasNext())
             throw new SakuraException("Can not parse empty path.");
 
-        PathNode node = new PathNode(trigger);
+        var node = new PathNode(trigger);
 
-        Token token = tokenStorage.consume();
+        @Var Token token = tokenStorage.consume();
 
         // Determine what the path is relative too (the path root)
         if (token.isOfType(TokenType.SLASH))
@@ -347,7 +347,7 @@ public final class Parser {
             Node newNode = switch (token.type()) {
                 case PATH_LITERAL -> new PathLiteral(token);
                 case ENV_VARIABLE -> {
-                    Token pathLiteralToken = new Token(TokenType.PATH_LITERAL, token.line(), token.column(), '@' + (String) token.value());
+                    var pathLiteralToken = new Token(TokenType.PATH_LITERAL, token.line(), token.column(), '@' + (String) token.value());
                     yield new PathLiteral(pathLiteralToken);
                 }
                 case PARENTHETICAL_EXPR -> new ParentheticalNode(token);
@@ -379,7 +379,7 @@ public final class Parser {
     public ExecutionResult execute(ExecutionContext ctx) {
 
         // Register functions if we're executing the root context
-        final boolean isRoot = ctx.getRootContext() == ctx;
+         boolean isRoot = ctx.getRootContext() == ctx;
         if (isRoot && !registered) {
             registered = true;
             for (FunctionDefinition function : functions)
@@ -388,16 +388,16 @@ public final class Parser {
 
         for (Node expression : expressions) {
             // expression.print();
-            ExecutionResult braceReturnResult = null;
-            Value value = expression.evaluate(ctx);
+            @Var ExecutionResult braceReturnResult = null;
+            @Var Value value = expression.evaluate(ctx);
             if (value != null && value.type() == DataType.__BRACE_RETURN) {
                 braceReturnResult = (ExecutionResult) value.value();
                 value = braceReturnResult.returnValue();
             }
 
             // If the expression was a brace we want to handle it differently
-            if (expression instanceof Expression && stop || expression instanceof ReturnStatement || expression instanceof LoopControlExpression) {
-                EarlyReturnType type = EarlyReturnType.RETURN;
+            if ((expression instanceof Expression && stop) || expression instanceof ReturnStatement || expression instanceof LoopControlExpression) {
+                @Var EarlyReturnType type = EarlyReturnType.RETURN;
 
                 if (braceReturnResult != null && braceReturnResult.returner() != null) {
                     TokenType returnerType = braceReturnResult.returner().type();

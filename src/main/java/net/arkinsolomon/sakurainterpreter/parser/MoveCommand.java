@@ -47,8 +47,8 @@ final class MoveCommand extends DualArgCommand {
         if (left.type() != DataType.PATH || right.type() != DataType.PATH)
             throw new SakuraException(token, "Both the left and right hand sides of a \"TO\" following a \"MOVE\" must both be paths.");
 
-        File source = (File) left.value();
-        File dest = (File) right.value();
+        var source = (File) left.value();
+        var dest = (File) right.value();
 
         try {
             Operation moveOp = new MoveOperation(ctx, source, dest);

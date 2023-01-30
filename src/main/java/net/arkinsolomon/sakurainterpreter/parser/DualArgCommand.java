@@ -38,7 +38,7 @@ abstract class DualArgCommand extends Node {
     protected DualArgCommand(Token token, ParseType leftType, ParseType rightType) {
         super(token, 2);
 
-        DualArgCmdData data = (DualArgCmdData) token.value();
+        var data = (DualArgCmdData) token.value();
         parseChild(0, leftType, data.first());
         parseChild(1, rightType, data.second());
     }

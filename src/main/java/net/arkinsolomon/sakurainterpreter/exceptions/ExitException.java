@@ -77,7 +77,7 @@ public final class ExitException extends SakuraException {
     /**
      * Get the exit value if the code is zero.
      *
-     * @returns The value returned.
+     * @return The value returned.
      */
     public Value getValue() {
         return value;

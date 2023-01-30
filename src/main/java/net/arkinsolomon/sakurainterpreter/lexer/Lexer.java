@@ -15,17 +15,17 @@
 
 package net.arkinsolomon.sakurainterpreter.lexer;
 
-import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
-import net.arkinsolomon.sakurainterpreter.exceptions.FileEmptyException;
-import net.arkinsolomon.sakurainterpreter.exceptions.UnclosedParenthesisException;
-import net.arkinsolomon.sakurainterpreter.exceptions.UnexpectedTokenException;
-import org.apache.commons.text.StringEscapeUtils;
-
+import com.google.errorprone.annotations.Var;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import net.arkinsolomon.sakurainterpreter.exceptions.FileEmptyException;
+import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
+import net.arkinsolomon.sakurainterpreter.exceptions.UnclosedParenthesisException;
+import net.arkinsolomon.sakurainterpreter.exceptions.UnexpectedTokenException;
+import org.apache.commons.text.StringEscapeUtils;
 
 /**
  * An instance of this class performs lexical analysis on a given string input
@@ -115,17 +115,17 @@ public final class Lexer {
      * Analyze the lexer text.
      */
     public List<Token> analyze() {
-        int currentLine = 1;
-        int currentCol = 1;
+        @Var int currentLine = 1;
+        @Var int currentCol = 1;
 
-        int startLine = -1;
-        int startCol = -1;
+        @Var int startLine = -1;
+        @Var int startCol = -1;
 
-        TokenType currentType = null;
-        StringBuilder currentValue = new StringBuilder();
+        @Var TokenType currentType = null;
+        @Var StringBuilder currentValue = new StringBuilder();
 
-        boolean isInComment = false;
-        boolean incLine = false;
+        @Var boolean isInComment = false;
+        @Var boolean incLine = false;
 
         while (scanner.hasNext()) {
             String thisCharStr = scanner.next();
@@ -337,20 +337,20 @@ public final class Lexer {
                     if (currentType == TokenType.SYMBOL && !isValidIdentifier(value))
                         throw new UnexpectedTokenException(startLine, startCol, "The identifier \"%s\" is invalid".formatted(value));
 
-                    Token newToken = new Token(currentType, startLine, startCol, value);
+                    var newToken = new Token(currentType, startLine, startCol, value);
                     tokens.add(newToken);
                     currentType = null;
                     currentValue = new StringBuilder();
                 } else {
 
                     // We can use whatever char and just skip the check for the first value if the string's length is 0
-                    final char lastVal = currentValue.length() > 0 ? currentValue.charAt(currentValue.length() - 1) : 'a';
+                     char lastVal = currentValue.length() > 0 ? currentValue.charAt(currentValue.length() - 1) : 'a';
 
                     // If we're currently looking at a quote (make sure we check for escaped endings)
                     if (thisChar == '"' && lastVal != '\\') {
                         currentType = null;
 
-                        String quoteValue = currentValue.toString();
+                        @Var String quoteValue = currentValue.toString();
                         quoteValue = StringEscapeUtils.unescapeJava(quoteValue);
 
                         tokens.add(new Token(TokenType.QUOTE, startLine, startCol, quoteValue));
@@ -394,13 +394,13 @@ public final class Lexer {
                 continue;
 
             // It's easier just to create a new TokenStore when there's a FUNC token, since we'd have to handle shifting the array
-            TokenStorage ts = new TokenStorage(tokens, i);
+            var ts = new TokenStorage(tokens, i);
             Token nextToken = ts.nextNonEOLToken();
 
             if (!nextToken.isOfType(TokenType.SYMBOL))
                 throw new UnexpectedTokenException(nextToken, "Did you name your function?");
 
-            Token newToken = new Token(TokenType.FUNC, thisToken.line(), thisToken.column(), nextToken.value());
+            var newToken = new Token(TokenType.FUNC, thisToken.line(), thisToken.column(), nextToken.value());
             tokens.set(i, newToken);
             tokens.remove(nextToken);
         }
@@ -424,21 +424,21 @@ public final class Lexer {
      * @param isRoot True if this is the first time calling this method and is to enable function declarations.
      */
     private List<Token> simplify(List<Token> tokens, boolean isRoot) {
-        TokenStorage tokenStorage = new TokenStorage(tokens);
+        @Var TokenStorage tokenStorage = new TokenStorage(tokens);
 
-        List<Token> newTokens = new ArrayList<>();
-        Token token = tokenStorage.consume();
+        @Var List<Token> newTokens = new ArrayList<>();
+        @Var Token token = tokenStorage.consume();
         while (token != null && !token.isOfType(TokenType.EOF)) {
 
             // Parse a parenthetical expression
             Token lastNonEolToken = tokenStorage.lastNonEOLToken();
             if (token.isOfType(TokenType.OPEN_PARENTHESIS) && (lastNonEolToken == null || !lastNonEolToken.isOfType(TokenType.FUNC))) {
                 List<Token> toSimplify = new ArrayList<>();
-                final int startLine = token.line();
-                final int startCol = token.column();
+                 int startLine = token.line();
+                 int startCol = token.column();
 
                 token = tokenStorage.consume();
-                int depth = 0;
+                @Var int depth = 0;
                 while (token != null && !token.isOfType(TokenType.EOF)) {
                     if (token.isOfType(TokenType.CLOSE_PARENTHESIS) && depth == 0) {
                         toSimplify.add(new Token(TokenType.EOF, token.line(), token.column(), "<CLOSE PARENTHESES>"));
@@ -462,7 +462,7 @@ public final class Lexer {
             } else if (token.isOfType(TokenType.SYMBOL) && tokenStorage.peekNextNonEOLToken() != null && tokenStorage.peekNextNonEOLToken().isOfType(TokenType.OPEN_PARENTHESIS)) {
 
                 // Function calls
-                String identifier = (String) token.value();
+                var identifier = (String) token.value();
                 int callStartLine = token.line();
                 int callStartCol = token.column();
 
@@ -471,14 +471,14 @@ public final class Lexer {
                 token = tokenStorage.nextNonEOLToken();
 
                 // Parse arguments
-                int depth = 0;
-                final List<List<Token>> args = new ArrayList<>();
-                List<Token> currentArg = new ArrayList<>();
+                @Var int depth = 0;
+                 List<List<Token>> args = new ArrayList<>();
+                @Var List<Token> currentArg = new ArrayList<>();
 
-                int argStartLine = -1;
-                int argStartCol = -1;
+                @Var int argStartLine = -1;
+                @Var int argStartCol = -1;
 
-                Token lastComma = null;
+                @Var Token lastComma = null;
 
                 if (!token.isOfType(TokenType.CLOSE_PARENTHESIS)) {
                     while (token != null && !token.isOfType(TokenType.EOF)) {
@@ -522,7 +522,7 @@ public final class Lexer {
                     throw new UnexpectedTokenException(lastComma, "Extra comma in function call");
                 }
 
-                FunctionCallData data = new FunctionCallData(identifier, args);
+                var data = new FunctionCallData(identifier, args);
                 newTokens.add(new Token(TokenType.FUNC_CALL, callStartLine, callStartCol, data));
             } else if (token.isOfType(TokenType.FUNC)) {
 
@@ -530,12 +530,12 @@ public final class Lexer {
                 if (!isRoot)
                     throw new UnexpectedTokenException(token, "Functions must be defined in global scope.");
 
-                String functionIdentifier = (String) token.value();
+                var functionIdentifier = (String) token.value();
                 int funcDefStartLine = token.line();
                 int funcDefStartCol = token.column();
 
-                Token firstDefaultToken = null;
-                boolean hasAnyDefault = false;
+                @Var Token firstDefaultToken = null;
+                @Var boolean hasAnyDefault = false;
 
                 // Parse arguments if there are parentheses
                 List<FunctionArgData> args = new ArrayList<>();
@@ -545,11 +545,11 @@ public final class Lexer {
                     tokenStorage.nextNonEOLToken();
                     token = tokenStorage.nextNonEOLToken();
 
-                    Token argStartToken = null;
-                    String argId = null;
-                    boolean isConstant = false;
-                    boolean hasDefault = false;
-                    List<Token> defaultValue = new ArrayList<>();
+                    @Var Token argStartToken = null;
+                    @Var String argId = null;
+                    @Var boolean isConstant = false;
+                    @Var boolean hasDefault = false;
+                    @Var List<Token> defaultValue = new ArrayList<>();
 
                     if (!token.isOfType(TokenType.CLOSE_PARENTHESIS)) {
                         while (token != null && !token.isOfType(TokenType.EOF)) {
@@ -569,7 +569,7 @@ public final class Lexer {
                                         firstDefaultToken = argStartToken;
 
                                     token = tokenStorage.consume();
-                                    int depth = 0;
+                                    @Var int depth = 0;
                                     int defaultValueLine = token.line();
                                     int defaultValueColumn = token.column();
 
@@ -603,7 +603,7 @@ public final class Lexer {
                                     throw new SakuraException(argStartToken.line(), argStartToken.column(), "Required parameters can not follow optional parameters.");
 
                                 hasAnyDefault = hasDefault;
-                                FunctionArgData data = new FunctionArgData(argId, isConstant, false, hasDefault, defaultValue.size() == 0 ? null : simplify(defaultValue));
+                                var data = new FunctionArgData(argId, isConstant, false, hasDefault, defaultValue.size() == 0 ? null : simplify(defaultValue));
                                 args.add(data);
 
                                 argId = null;
@@ -625,7 +625,7 @@ public final class Lexer {
                                     if (firstDefaultToken != null)
                                         throw new SakuraException(firstDefaultToken.line(), firstDefaultToken.column(), "Functions with rest arguments can not have arguments with defaults.");
 
-                                    FunctionArgData argData = new FunctionArgData(argId, isConstant, true, false, null);
+                                    var argData = new FunctionArgData(argId, isConstant, true, false, null);
                                     args.add(argData);
                                     break;
                                 }
@@ -637,14 +637,14 @@ public final class Lexer {
                 }
 
                 // We can set the body of the function to null for now, it'll be fixed later
-                FunctionDefinitionData data = new FunctionDefinitionData(functionIdentifier, args, null);
+                var data = new FunctionDefinitionData(functionIdentifier, args, null);
                 newTokens.add(new Token(TokenType.FUNC_SIG, funcDefStartLine, funcDefStartCol, data));
             } else if (token.isOfType(TokenType.OPEN_BRACE)) {
 
                 // Parse braces
                 int braceStartLine = token.line();
                 int braceStartCol = token.column();
-                int depth = 0;
+                @Var int depth = 0;
 
                 List<Token> body = new ArrayList<>();
                 token = tokenStorage.consume();
@@ -673,7 +673,7 @@ public final class Lexer {
                 int statementStartCol = token.column();
 
                 token = tokenStorage.consume();
-                List<Token> condition = new ArrayList<>();
+                @Var List<Token> condition = new ArrayList<>();
                 while (token != null && !token.isOfType(TokenType.EOF) && !token.isOfType(TokenType.OPEN_BRACE)) {
                     condition.add(token);
                     token = tokenStorage.consume();
@@ -712,12 +712,12 @@ public final class Lexer {
                 int loopStartLine = token.line();
                 int loopStartCol = token.column();
 
-                boolean hasWrappingParentheses = false;
+                @Var boolean hasWrappingParentheses = false;
 
                 // Get the variable
                 token = tokenStorage.consume();
-                Token assignee = null;
-                boolean isConstVar = false;
+                @Var Token assignee = null;
+                @Var boolean isConstVar = false;
                 while (assignee == null && !token.isOfType(TokenType.EOF)) {
                     if (token.isOfType(TokenType.VARIABLE, TokenType.CONST_VAR)) {
                         assignee = token;
@@ -755,11 +755,11 @@ public final class Lexer {
                 }
 
                 if (hasWrappingParentheses && iterable.size() > 0) {
-                    int closeParenIndex = iterable.size() - 1;
+                    @Var int closeParenIndex = iterable.size() - 1;
                     if (iterable.get(closeParenIndex).isOfType(TokenType.CLOSE_PARENTHESIS))
                         iterable.remove(closeParenIndex);
                     else {
-                        Token lastToken = iterable.get(closeParenIndex);
+                        @Var Token lastToken = iterable.get(closeParenIndex);
 
                         while (closeParenIndex > 0 && lastToken.isOfType(TokenType.EOL))
                             lastToken = iterable.get(--closeParenIndex);
@@ -776,7 +776,7 @@ public final class Lexer {
                 assert token != null;
                 iterable.add(new Token(TokenType.EOF, token.line(), token.column(), "<ITERABLE END>"));
 
-                ForLoopData data = new ForLoopData((String) assignee.value(), isConstVar, simplify(iterable), null);
+                var data = new ForLoopData((String) assignee.value(), isConstVar, simplify(iterable), null);
                 newTokens.add(new Token(TokenType.FOR_ASSIGN, loopStartLine, loopStartCol, data));
 
                 // We already consumed the brace
@@ -788,10 +788,10 @@ public final class Lexer {
                 Token startToken = token;
 
                 // True if this command has a "TO" following it
-                final boolean isPathTo = token.isOfType(TokenType.COPY, TokenType.MOVE, TokenType.RENAME);
+                 boolean isPathTo = token.isOfType(TokenType.COPY, TokenType.MOVE, TokenType.RENAME);
                 token = tokenStorage.consume();
 
-                Token terminator = null;
+                @Var Token terminator = null;
 
                 List<Token> path = new ArrayList<>();
 
@@ -807,7 +807,7 @@ public final class Lexer {
 
                         // We want to treat quotes as a single path literal
                         if (token.isOfType(TokenType.QUOTE)) {
-                            String quoteVal = (String) token.value();
+                            var quoteVal = (String) token.value();
                             if (quoteVal.contains("/"))
                                 throw new UnexpectedTokenException(token.line(), token.column() + quoteVal.indexOf("/") + 1, "\"/\"", "Path can not contain slashes within quotes.");
                             else if (quoteVal.contains("\n"))
@@ -844,11 +844,11 @@ public final class Lexer {
 
                         // Parse a path parentheses (parentheses that start with a $)
                         List<Token> toSimplify = new ArrayList<>();
-                        final int startLine = token.line();
-                        final int startCol = token.column();
+                         int startLine = token.line();
+                         int startCol = token.column();
 
                         token = tokenStorage.consume();
-                        int depth = 0;
+                        @Var int depth = 0;
                         while (token != null && !token.isOfType(TokenType.EOF)) {
                             if (token.isOfType(TokenType.CLOSE_PARENTHESIS) && depth == 0) {
                                 toSimplify.add(new Token(TokenType.EOF, token.line(), token.column(), "<CLOSE PATH PARENTHESIS>"));
@@ -990,7 +990,7 @@ public final class Lexer {
                 if (!isRoot)
                     throw new UnexpectedTokenException(token, "Functions can only be declared in the global scope.");
 
-                FunctionDefinitionData data = (FunctionDefinitionData) token.value();
+                var data = (FunctionDefinitionData) token.value();
                 int funcSigLine = token.line();
                 int funcSigCol = token.column();
 
@@ -1006,7 +1006,7 @@ public final class Lexer {
                 TokenType statementType = token.type();
                 Object statementTokenValue = token.value();
 
-                List<Token> condition = null;
+                @Var List<Token> condition = null;
                 if (!token.isOfType(TokenType.FOR_ASSIGN))
 
                     //noinspection unchecked
@@ -1014,7 +1014,7 @@ public final class Lexer {
 
                 Token body = tokenStorage.consume();
                 if (!body.isOfType(TokenType.BRACE)) {
-                    String statementName = "If";
+                    @Var String statementName = "If";
                     if (statementType == TokenType.WHILE_COND)
                         statementName = "While";
                     else if (statementType == TokenType.FOR_ASSIGN)
@@ -1028,10 +1028,10 @@ public final class Lexer {
                     branches.add(body);
                     conditions.add(condition);
 
-                    IfData data = new IfData(conditions, branches);
+                    var data = new IfData(conditions, branches);
                     newTokens.add(new Token(TokenType.IF_STATEMENT, statementStartLine, statementStartCol, data));
                 } else if (statementType == TokenType.WHILE_COND) {
-                    WhileData data = new WhileData(condition, body);
+                    var data = new WhileData(condition, body);
                     newTokens.add(new Token(TokenType.WHILE_LOOP, statementStartLine, statementStartCol, data));
                 } else {
                     ForLoopData data = ((ForLoopData) statementTokenValue).addBody(body);
@@ -1041,15 +1041,15 @@ public final class Lexer {
                 if (newTokens.size() == 0)
                     throw new SakuraException(token.line(), token.column(), "If-statement branch must be preceded by an if-statement");
 
-                int lastTokenIndex = newTokens.size() - 1;
-                Token lastToken = newTokens.get(lastTokenIndex);
+                @Var int lastTokenIndex = newTokens.size() - 1;
+                @Var Token lastToken = newTokens.get(lastTokenIndex);
                 while (lastTokenIndex > 0 && lastToken.isOfType(TokenType.EOL))
                     lastToken = newTokens.get(--lastTokenIndex);
 
                 if (!lastToken.isOfType(TokenType.IF_STATEMENT))
                     throw new SakuraException(token.line(), token.column(), "If-statement branch must be preceded by an if-statement");
 
-                IfData data = (IfData) lastToken.value();
+                var data = (IfData) lastToken.value();
 
                 // If there are more branches than conditions we've already reached the else
                 if (data.branches().size() != data.conditions().size()){
@@ -1061,7 +1061,7 @@ public final class Lexer {
 
                 if (token.isOfType(TokenType.ELIF_COND)) {
                     @SuppressWarnings("unchecked")
-                    List<Token> condition = (List<Token>) token.value();
+                    var condition = (List<Token>) token.value();
                     data.conditions().add(condition);
                 }
 
@@ -1093,7 +1093,7 @@ public final class Lexer {
                     throw new UnexpectedTokenException(nextToken, "Expected a \"TO\" after a \"%s\" command.".formatted(token.type()));
 
                 @SuppressWarnings("unchecked")
-                DualArgCmdData data = new DualArgCmdData((List<Token>) token.value(), (List<Token>) nextToken.value());
+                var data = new DualArgCmdData((List<Token>) token.value(), (List<Token>) nextToken.value());
                 newTokens.add(new Token(finalType, token.line(), token.column(), data));
             } else
                 newTokens.add(token);

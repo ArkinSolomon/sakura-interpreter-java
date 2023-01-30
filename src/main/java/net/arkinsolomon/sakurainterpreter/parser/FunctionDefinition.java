@@ -51,7 +51,7 @@ final class FunctionDefinition extends Expression implements Function {
         data = (FunctionDefinitionData) token.value();
 
         @SuppressWarnings("unchecked")
-        TokenStorage body = new TokenStorage((List<Token>) data.body().value());
+        var body = new TokenStorage((List<Token>) data.body().value());
         parsedFunc = new Parser(body);
         parsedFunc.parse(true, true);
 
@@ -66,8 +66,8 @@ final class FunctionDefinition extends Expression implements Function {
                 continue;
             }
 
-            TokenStorage ts = new TokenStorage(argData.defaultValue());
-            Parser argParser = new Parser(ts);
+            var ts = new TokenStorage(argData.defaultValue());
+            var argParser = new Parser(ts);
             List<Node> argExpr = argParser.parse();
 
             if (argExpr.size() == 0)
@@ -99,7 +99,7 @@ final class FunctionDefinition extends Expression implements Function {
 
     @Override
     public Value execute(List<Value> args, ExecutionContext ctx) {
-        ExecutionContext tempCtx = new ExecutionContext(rootCtx);
+        var tempCtx = new ExecutionContext(rootCtx);
 
         @SuppressWarnings("ConstantConditions")
         List<Value> argValues = new ArrayList<>(defaultArgExpressions
