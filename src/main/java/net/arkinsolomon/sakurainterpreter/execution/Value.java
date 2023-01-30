@@ -15,9 +15,9 @@
 
 package net.arkinsolomon.sakurainterpreter.execution;
 
-import net.arkinsolomon.sakurainterpreter.operations.Operation;
-
+import com.google.errorprone.annotations.Var;
 import java.io.File;
+import net.arkinsolomon.sakurainterpreter.operations.Operation;
 
 /**
  * A single value, consisting of its type and actual value.
@@ -63,7 +63,7 @@ public record Value(DataType type, Object value, boolean isMutable) {
      * @return A new value with the same datatype and value, except with the new mutability value.
      */
     public Value setMutability(boolean isMutable) {
-        Object val = value;
+        @Var Object val = value;
         if (type == DataType.ITERABLE)
             val = ((Iterable) value).copy();
         return new Value(type, val, isMutable);

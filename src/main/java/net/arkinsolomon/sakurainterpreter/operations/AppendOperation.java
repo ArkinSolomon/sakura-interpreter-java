@@ -15,15 +15,16 @@
 
 package net.arkinsolomon.sakurainterpreter.operations;
 
-import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
-import net.arkinsolomon.sakurainterpreter.exceptions.FileNotFoundException;
-import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import net.arkinsolomon.sakurainterpreter.exceptions.FileNotFoundException;
+import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
+import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 
 /**
  * An operation to append text to a file.
@@ -65,7 +66,7 @@ public final class AppendOperation extends Operation {
         }
 
         try {
-            Files.write(path, appendContent.getBytes(), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+            Files.write(path, appendContent.getBytes(UTF_8), StandardOpenOption.WRITE, StandardOpenOption.APPEND);
         } catch (IOException e) {
             throw new SakuraException("Could not append to file \"%s\".".formatted(getFilePathStr(path.toFile())), e);
         }
@@ -79,7 +80,7 @@ public final class AppendOperation extends Operation {
             return;
 
         try {
-            Files.write(path, oldContent.getBytes());
+            Files.write(path, oldContent.getBytes(UTF_8));
         } catch (Exception e) {
             throw new SakuraException("Could not undo operation by writing old content to \"%s\"".formatted(getFilePathStr(path.toFile())));
         }

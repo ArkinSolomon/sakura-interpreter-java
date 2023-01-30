@@ -43,12 +43,12 @@ final class MultiplicationOperator extends Operator {
         if (rightVal.type() != DataType.NUMBER)
             throw new RuntimeException("Right side of multiplication operator must be a number");
 
-        double rhs = (double) rightVal.value();
+        var rhs = (double) rightVal.value();
         if (leftVal.type() == DataType.STRING) {
-            String value = (String) leftVal.value();
+            var value = (String) leftVal.value();
             return new Value(DataType.STRING, value.repeat((int) Math.floor(rhs)), false);
         } else if (leftVal.type() == DataType.NUMBER) {
-            double lhs = (double) leftVal.value();
+            var lhs = (double) leftVal.value();
             double val = lhs * rhs;
             return new Value(DataType.NUMBER, val, false);
         }

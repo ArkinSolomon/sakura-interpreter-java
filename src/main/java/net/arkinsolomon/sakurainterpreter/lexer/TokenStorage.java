@@ -15,6 +15,7 @@
 
 package net.arkinsolomon.sakurainterpreter.lexer;
 
+import com.google.errorprone.annotations.Var;
 import java.util.List;
 
 /**
@@ -112,7 +113,7 @@ public class TokenStorage {
     public Token nextNonEOLToken() {
         if (!hasNext())
             return null;
-        Token token = consume();
+        @Var Token token = consume();
         while (token != null && token.isOfType(TokenType.EOL))
             token = consume();
         return token;
@@ -138,7 +139,7 @@ public class TokenStorage {
      * @return The last token that is not an end of line token.
      */
     public Token lastNonEOLToken() {
-        int startIndex = current - 1;
+        @Var int startIndex = current - 1;
         if (startIndex < 0)
             return null;
         else if (current > tokens.size())

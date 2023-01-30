@@ -49,8 +49,8 @@ final class RenameCommand extends DualArgCommand {
         else if (right.type() != DataType.STRING)
             throw new SakuraException(getChild(1).token, "The right hand of a \"TO\" following a \"RENAME\" must be a string.");
 
-        File original = (File) left.value();
-        String newName = (String) right.value();
+        var original = (File) left.value();
+        var newName = (String) right.value();
 
         if (newName.isBlank())
             throw new SakuraException(token, "Can not rename a file to an empty name. If you are trying to delete the file, use \"DELETE\" instead.");

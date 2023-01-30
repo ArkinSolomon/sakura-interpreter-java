@@ -38,7 +38,7 @@ abstract class SinglePathCommand extends Node {
         super(token, 1);
 
         @SuppressWarnings("unchecked")
-        List<Token> pathTokens = (List<Token>) token.value();
+        var pathTokens = (List<Token>) token.value();
         insertChild(Parser.parseTokensAsPath(token, pathTokens));
     }
 
