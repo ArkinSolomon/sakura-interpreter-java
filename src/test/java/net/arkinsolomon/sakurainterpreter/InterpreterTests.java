@@ -20,6 +20,7 @@ import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
 import net.arkinsolomon.sakurainterpreter.execution.Iterable;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
+import net.arkinsolomon.sakurainterpreter.operations.Operation;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -28,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -224,11 +226,8 @@ public final class InterpreterTests extends SakuraTestBase {
     }
 
     @Test
-    void testForLoopControl() throws IOException {
-        Path path = getResource("test-for-loop-control.ska");
-        interpreter.executeFile(path);
-        String output = printer.getOutput();
-        assertEquals("1\n2\n4\n", output);
+    void testForLoopControl() {
+        assertPrints("test-for-loop-control.ska", "1\n2\n4\n");
     }
 
     @Test
@@ -249,5 +248,43 @@ public final class InterpreterTests extends SakuraTestBase {
     @Test
     void testReturnNotPrefix() {
         assertReturnValue("test-return-not-prefix.ska", false);
+    }
+
+    @Test
+    void testDotPathParsing() throws IOException {
+        Path path = getResource("test-dot-path-parsing.ska");
+        Value retVal = interpreter.executeFile(path);
+
+        assertEquals(DataType.ITERABLE, retVal.type());
+
+        Iterable iter = (Iterable) retVal.value();
+
+        Value current = iter.next();
+        assertEquals(DataType.PATH, current.type());
+        assertEquals(Operation.getFilePathStr(testRoot.getParentFile()), Operation.getFilePathStr((File) current.value()));
+
+        current = iter.next();
+        assertEquals(DataType.PATH, current.type());
+        assertEquals(Operation.getFilePathStr(testRoot), Operation.getFilePathStr((File) current.value()));
+
+        current = iter.next();
+        assertEquals(DataType.PATH, current.type());
+        assertEquals(Operation.getFilePathStr(testRoot.getParentFile()), Operation.getFilePathStr((File) current.value()));
+
+        current = iter.next();
+        assertEquals(DataType.PATH, current.type());
+        assertEquals(Operation.getFilePathStr(testRoot.getParentFile()), Operation.getFilePathStr((File) current.value()));
+
+        assertNull(iter.next());
+    }
+
+    @Test
+    void testCanReadFunc(){
+        assertReturnValue("test-can-read-func.ska", false);
+    }
+
+    @Test
+    void testCanWriteFunc(){
+        assertReturnValue("test-can-write-func.ska", false);
     }
 }

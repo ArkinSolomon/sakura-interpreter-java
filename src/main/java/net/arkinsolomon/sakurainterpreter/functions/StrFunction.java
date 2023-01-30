@@ -16,6 +16,7 @@ package net.arkinsolomon.sakurainterpreter.functions;
 
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
+import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
 
 import java.util.List;
@@ -26,7 +27,7 @@ import java.util.List;
 public final class StrFunction implements Function {
 
     @Override
-    public Value execute(List<Value> args) {
+    public Value execute(List<Value> args, ExecutionContext ctx) {
         if (args.size() == 0)
             throw new SakuraException("Str function requires at least one argument");
 

@@ -16,6 +16,7 @@
 package net.arkinsolomon.sakurainterpreter.functions;
 
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
+import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.ListIterable;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
 
@@ -24,7 +25,7 @@ import java.util.List;
 public final class ListFunction implements Function{
 
     @Override
-    public Value execute(List<Value> args) {
+    public Value execute(List<Value> args, ExecutionContext ctx) {
         return new Value(DataType.ITERABLE, new ListIterable(args), false);
     }
 }

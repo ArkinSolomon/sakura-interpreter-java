@@ -18,6 +18,7 @@ package net.arkinsolomon.sakurainterpreter.functions;
 import net.arkinsolomon.sakurainterpreter.exceptions.ExitException;
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
+import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public final class ExitFunction implements Function {
      * Throw an exception that terminates execution.
      */
     @Override
-    public Value execute(List<Value> args) {
+    public Value execute(List<Value> args, ExecutionContext ctx) {
         String reason = "<unknown reason>";
         Value retVal = Value.NULL;
         byte code = 0;

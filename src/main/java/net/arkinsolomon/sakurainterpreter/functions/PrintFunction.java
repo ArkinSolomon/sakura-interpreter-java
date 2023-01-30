@@ -15,6 +15,7 @@
 
 package net.arkinsolomon.sakurainterpreter.functions;
 
+import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public final class PrintFunction implements Function {
      * @return Always returns {@link Value#NULL}.
      */
     @Override
-    public Value execute(List<Value> args) {
+    public Value execute(List<Value> args, ExecutionContext ctx) {
        String[] values = new String[args.size()];
         for (int i = 0; i < args.size(); i++) {
             Value arg = args.get(i);

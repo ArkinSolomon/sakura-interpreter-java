@@ -17,6 +17,7 @@ package net.arkinsolomon.sakurainterpreter.functions;
 
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
+import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.RangeIterable;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
 
@@ -34,7 +35,7 @@ public final class RangeFunction implements Function {
      * @return The result of the function.
      */
     @Override
-    public Value execute(List<Value> args) {
+    public Value execute(List<Value> args, ExecutionContext ctx) {
         if (args.size() == 0)
             throw new SakuraException("Range function requires at least one argument.");
 

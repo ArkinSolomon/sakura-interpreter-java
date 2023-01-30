@@ -70,7 +70,7 @@ public final class OperationConfig {
      * @return True if {@code directory} is an ancestor of {@code testFile}.
      */
     private static boolean isWithinDirectory(File testFile, File directory) {
-        return Operation.getFilePathStr(testFile).startsWith(Operation.getFilePathStr(directory) + File.separator);
+        return Operation.getFilePathStr(testFile).startsWith(Operation.getFilePathStr(directory) + File.separator) || Operation.getFilePathStr(testFile).equals(Operation.getFilePathStr(directory));
     }
 
     /**

@@ -16,14 +16,14 @@
 package net.arkinsolomon.sakurainterpreter;
 
 import net.arkinsolomon.sakurainterpreter.execution.Value;
-import net.arkinsolomon.sakurainterpreter.functions.Function;
+import net.arkinsolomon.sakurainterpreter.functions.CustomFunction;
 
 import java.util.List;
 
 /**
  * A print function used for tests.
  */
-public class TestPrintFunction implements Function {
+public class TestPrintFunction extends CustomFunction {
 
     private String output = "";
 

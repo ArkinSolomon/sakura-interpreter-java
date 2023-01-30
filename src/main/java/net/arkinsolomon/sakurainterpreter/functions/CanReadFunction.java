@@ -20,19 +20,24 @@ import net.arkinsolomon.sakurainterpreter.execution.DataType;
 import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
 
+import java.io.File;
 import java.util.List;
 
 /**
- * A function to get the type of a value.
+ * Function to check if read permissions are enabled for a file.
  */
-public final class TypeFunction implements Function {
+public final class CanReadFunction implements Function {
 
     @Override
     public Value execute(List<Value> args, ExecutionContext ctx) {
         if (args.size() == 0)
-            throw new SakuraException("Type function requires at-least one argument.");
+            throw new SakuraException("The \"canRead()\" requires one parameter.");
+        else if (args.get(0).type() != DataType.PATH)
+            throw new SakuraException("The first parameter to \"canRead()\" needs to be of type path.");
 
-        String typeStr = args.get(0).type().toString().toLowerCase();
-        return new Value(DataType.STRING, typeStr, false);
+        File checkFile = (File) args.get(0).value();
+
+        boolean canRead = ctx.getOperationConfig().isValidReadPath(checkFile);
+        return new Value(DataType.BOOLEAN, canRead, false);
     }
 }

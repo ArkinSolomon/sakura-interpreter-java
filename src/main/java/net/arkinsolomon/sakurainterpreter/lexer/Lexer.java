@@ -379,7 +379,7 @@ public final class Lexer {
             if (thisToken.isOfType(TokenType.EOF))
                 break;
             else if (thisToken.isOfType(TokenType.PERIOD)) {
-                if (tokens.size() < i + 2)
+                if (tokens.size() <= i + 2)
                     continue;
                 Token next = tokens.get(i + 1);
                 Token after = tokens.get(i + 2);
@@ -880,8 +880,10 @@ public final class Lexer {
 
                                 if (last.isOfType(TokenType.PATH_LITERAL))
                                     path.set(path.size() - 1, new Token(TokenType.PATH_LITERAL, last.line(), last.column(), last.value() + (String) token.value()));
+                                else
+                                    path.add(new Token(TokenType.PATH_LITERAL, token.line(), token.column(), token.value()));
 
-                                // Continue without adding the token
+                                // The path is not complete
                                 token = tokenStorage.consume();
                                 continue;
                             }

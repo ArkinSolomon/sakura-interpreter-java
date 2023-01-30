@@ -1,0 +1,2 @@
+%unreadable = PATH /disallow-read
+return canRead(unreadable)

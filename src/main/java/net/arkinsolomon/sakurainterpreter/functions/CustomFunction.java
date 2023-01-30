@@ -21,16 +21,20 @@ import net.arkinsolomon.sakurainterpreter.execution.Value;
 import java.util.List;
 
 /**
- * This interface provides a basis for functions to execute. Note that this interface should not be implemented by executors, and is for internal use only. Access to the execution context is not supported. Extend the abstract class {@link CustomFunction} instead for executors.
+ * This class should be extended by the executor in order to add a custom function to the interpreter.
  */
-public interface Function {
+public abstract class CustomFunction implements Function {
 
     /**
-     * Execute a function.
+     * Hide execution context from executor.
      *
-     * @param args The argument values.
-     * @param ctx The execution context of the function.
-     * @return The result of the function.
+     * @param args The values of the arguments passed to the function.
+     * @return The return value of the function, or {@link Value#NULL} if there is none.
      */
-    Value execute(List<Value> args, ExecutionContext ctx);
+    public abstract Value execute(List<Value> args);
+
+    @Override
+    public final Value execute(List<Value> args, ExecutionContext ctx) {
+        return execute(args);
+    }
 }

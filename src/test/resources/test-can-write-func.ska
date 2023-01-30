@@ -1,0 +1,2 @@
+%unwriteable = PATH /disallow-write
+return canWrite(unwriteable)

@@ -1,0 +1,6 @@
+%path1 = PATH /..
+%path2 = PATH /.
+%path3 = PATH /.././././././
+%path4 = PATH /file.txt/.././..
+
+return list(path1, path2, path3, path4)

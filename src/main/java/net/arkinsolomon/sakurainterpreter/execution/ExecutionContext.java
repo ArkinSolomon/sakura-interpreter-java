@@ -17,8 +17,11 @@ package net.arkinsolomon.sakurainterpreter.execution;
 
 import net.arkinsolomon.sakurainterpreter.SakuraInterpreter;
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
+import net.arkinsolomon.sakurainterpreter.functions.CanReadFunction;
+import net.arkinsolomon.sakurainterpreter.functions.CanWriteFunction;
 import net.arkinsolomon.sakurainterpreter.functions.ListFunction;
 import net.arkinsolomon.sakurainterpreter.functions.RangeFunction;
+import net.arkinsolomon.sakurainterpreter.functions.StrFunction;
 import net.arkinsolomon.sakurainterpreter.functions.TypeFunction;
 import net.arkinsolomon.sakurainterpreter.operations.FileTracker;
 import net.arkinsolomon.sakurainterpreter.operations.OperationConfig;
@@ -207,7 +210,7 @@ public class ExecutionContext {
 
         try {
             Function func = (Function) functionValue.value();
-            return func.execute(args);
+            return func.execute(args, this);
         } catch (SakuraException e) {
             throw e;
         } catch (Exception e) {
@@ -253,6 +256,9 @@ public class ExecutionContext {
         registerFunc("exit", new ExitFunction());
         registerFunc("list", new ListFunction());
         registerFunc("type", new TypeFunction());
+        registerFunc("str", new StrFunction());
+        registerFunc("canWrite", new CanWriteFunction());
+        registerFunc("canRead", new CanReadFunction());
     }
 
     /**

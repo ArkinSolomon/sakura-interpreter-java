@@ -98,7 +98,7 @@ final class FunctionDefinition extends Expression implements Function {
     }
 
     @Override
-    public Value execute(List<Value> args) {
+    public Value execute(List<Value> args, ExecutionContext ctx) {
         ExecutionContext tempCtx = new ExecutionContext(rootCtx);
 
         @SuppressWarnings("ConstantConditions")

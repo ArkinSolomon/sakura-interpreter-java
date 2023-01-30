@@ -78,10 +78,15 @@ final class PathNode extends Node {
                 else
                     path = new File(Operation.getFilePathStr(path), String.valueOf(childPath));
             } else
-                throw new RuntimeException("Path parts must be strings or paths");
+                throw new SakuraException(token, "Path parts must be strings or paths.");
             hasParsedFirstPart = true;
         }
-        return new Value(DataType.PATH, path, false);
+
+        if (path == null)
+            throw new SakuraException(token, "Path can not be empty.");
+
+        // Ensure that the path is normalized which gets rid of the '..'s and '.'s
+        return new Value(DataType.PATH, path.toPath().normalize().toFile(), false);
     }
 
     @Override
