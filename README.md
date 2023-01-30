@@ -4,7 +4,7 @@
 
 Sakura Interpreter written in Java.
 
-Note that the master branch may not be stable. Refer to the (releases)[https://github.com/ArkinSolomon/sakura-interpreter-java/releases] page for stable releases.
+Note that the master branch may not be stable. Refer to the [releases](https://github.com/ArkinSolomon/sakura-interpreter-java/releases) page for stable releases.
 
 [Sakura Language Documentation](https://sakura-docs.arkinsolomon.net/)<br>
 [Sakura Interpreter Documentation](https://javadoc.io/doc/net.arkinsolomon/sakurainterpreter)
