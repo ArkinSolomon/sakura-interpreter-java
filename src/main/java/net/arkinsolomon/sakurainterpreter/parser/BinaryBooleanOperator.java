@@ -50,8 +50,8 @@ final class BinaryBooleanOperator extends Operator {
         if (lhs.type() != DataType.BOOLEAN || rhs.type() != DataType.BOOLEAN)
             throw new RuntimeException("Can not %s non-boolean operators".formatted(isOr ? "OR" : "AND"));
 
-        boolean leftValue = (boolean) lhs.value();
-        boolean rightValue = (boolean) rhs.value();
+        var leftValue = (boolean) lhs.value();
+        var rightValue = (boolean) rhs.value();
         boolean returnValue = isOr ? leftValue || rightValue : leftValue && rightValue;
 
         return new Value(DataType.BOOLEAN, returnValue, false);

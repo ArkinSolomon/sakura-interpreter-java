@@ -43,8 +43,8 @@ final class BraceExpression extends Expression {
         super(token, 0);
         this.parent = parent;
 
-        List<Token> body = (List<Token>) token.value();
-        TokenStorage ts = new TokenStorage(body);
+        var body = (List<Token>) token.value();
+        var ts = new TokenStorage(body);
         this.body = new Parser(ts);
         List<Node> nodes = this.body.parse(false, true);
 
@@ -54,7 +54,7 @@ final class BraceExpression extends Expression {
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        ExecutionContext tempCtx = new ExecutionContext(ctx);
+        var tempCtx = new ExecutionContext(ctx);
         body.resume();
         ExecutionResult result = body.execute(tempCtx);
         if (result.earlyReturnType() == EarlyReturnType.RETURN)

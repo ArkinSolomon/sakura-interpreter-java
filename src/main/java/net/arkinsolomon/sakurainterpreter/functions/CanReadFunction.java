@@ -35,7 +35,7 @@ public final class CanReadFunction implements Function {
         else if (args.get(0).type() != DataType.PATH)
             throw new SakuraException("The first parameter to \"canRead()\" needs to be of type path.");
 
-        File checkFile = (File) args.get(0).value();
+        var checkFile = (File) args.get(0).value();
 
         boolean canRead = ctx.getOperationConfig().isValidReadPath(checkFile);
         return new Value(DataType.BOOLEAN, canRead, false);

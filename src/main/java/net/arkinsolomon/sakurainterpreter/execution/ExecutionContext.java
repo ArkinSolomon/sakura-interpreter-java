@@ -15,26 +15,26 @@
 
 package net.arkinsolomon.sakurainterpreter.execution;
 
+import com.google.errorprone.annotations.Var;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import net.arkinsolomon.sakurainterpreter.SakuraInterpreter;
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
 import net.arkinsolomon.sakurainterpreter.functions.CanReadFunction;
 import net.arkinsolomon.sakurainterpreter.functions.CanWriteFunction;
+import net.arkinsolomon.sakurainterpreter.functions.ExitFunction;
+import net.arkinsolomon.sakurainterpreter.functions.Function;
 import net.arkinsolomon.sakurainterpreter.functions.ListFunction;
+import net.arkinsolomon.sakurainterpreter.functions.PrintFunction;
 import net.arkinsolomon.sakurainterpreter.functions.RangeFunction;
 import net.arkinsolomon.sakurainterpreter.functions.StrFunction;
 import net.arkinsolomon.sakurainterpreter.functions.TypeFunction;
 import net.arkinsolomon.sakurainterpreter.operations.FileTracker;
 import net.arkinsolomon.sakurainterpreter.operations.OperationConfig;
 import net.arkinsolomon.sakurainterpreter.parser.Node;
-import net.arkinsolomon.sakurainterpreter.functions.ExitFunction;
-import net.arkinsolomon.sakurainterpreter.functions.Function;
-import net.arkinsolomon.sakurainterpreter.functions.PrintFunction;
 import org.apache.commons.lang3.SystemUtils;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * The context in which to evaluate an expression or perform an operation.
@@ -183,7 +183,7 @@ public class ExecutionContext {
      * @return True if the identifier exists.
      */
     public boolean hasIdentifier(String identifier) {
-        final boolean parentHasKey = this.parent != null && this.parent.hasIdentifier(identifier);
+         boolean parentHasKey = this.parent != null && this.parent.hasIdentifier(identifier);
         return identifiers.containsKey(identifier) || parentHasKey;
     }
 
@@ -209,7 +209,7 @@ public class ExecutionContext {
             throw new SakuraException("Can not call \"%s\" of type \"%s\". Only function types are callable.".formatted(identifier, functionValue.type()));
 
         try {
-            Function func = (Function) functionValue.value();
+            var func = (Function) functionValue.value();
             return func.execute(args, this);
         } catch (SakuraException e) {
             throw e;
@@ -273,7 +273,7 @@ public class ExecutionContext {
 
         for (String k : ctxIds) {
             Value val = identifiers.get(k);
-            String output = val.toString();
+            @Var String output = val.toString();
             if (val.value() instanceof Function) {
                 if (val.value() instanceof Node)
                     output = "<defined function>";

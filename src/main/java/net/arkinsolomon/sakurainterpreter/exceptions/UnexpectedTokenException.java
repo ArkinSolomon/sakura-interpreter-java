@@ -15,10 +15,11 @@
 
 package net.arkinsolomon.sakurainterpreter.exceptions;
 
-import net.arkinsolomon.sakurainterpreter.lexer.Token;
-import net.arkinsolomon.sakurainterpreter.lexer.TokenType;
+import com.google.errorprone.annotations.Var;
 import net.arkinsolomon.sakurainterpreter.lexer.FunctionCallData;
 import net.arkinsolomon.sakurainterpreter.lexer.FunctionDefinitionData;
+import net.arkinsolomon.sakurainterpreter.lexer.Token;
+import net.arkinsolomon.sakurainterpreter.lexer.TokenType;
 
 /**
  * Create a new exception saying that a token was not expected.
@@ -72,7 +73,7 @@ public final class UnexpectedTokenException extends SakuraException {
      * @return The token character.
      */
     private static String tokenChar(Token token) {
-        String tokenStr = "\"";
+        @Var String tokenStr = "\"";
         tokenStr += switch (token.type()) {
             case SEMI -> ";";
             case DOUBLE_EQUALS -> "==";

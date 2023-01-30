@@ -45,8 +45,8 @@ final class SubtractionOperator extends Operator {
         if (leftValue.type() != DataType.NUMBER || rightValue.type() != DataType.NUMBER)
             throw new RuntimeException("Invalid operand types for subtraction operator");
 
-        double lhs = (double) leftValue.value();
-        double rhs = (double) rightValue.value();
+        var lhs = (double) leftValue.value();
+        var rhs = (double) rightValue.value();
         return new Value(DataType.NUMBER, lhs - rhs, false);
     }
 

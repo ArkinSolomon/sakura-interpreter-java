@@ -51,7 +51,7 @@ import java.util.Map;
 public class SakuraInterpreter {
 
     public static final String LANG_VERSION = "0.1.0-beta-4";
-    public static final String INTERPRETER_VERSION = "1.1.0";
+    public static final String INTERPRETER_VERSION = "1.1.1";
 
     private final InterpreterOptions options;
 
@@ -111,7 +111,7 @@ public class SakuraInterpreter {
             List<String> config = res.get("configFile");
             if (config != null) {
                 String configPath = config.get(0);
-                File configFile = new File(configPath);
+                var configFile = new File(configPath);
                 if (!configFile.exists())
                     throw new RuntimeException("Specified configuration file \"%s\" does not exist".formatted(configPath));
 
@@ -119,7 +119,7 @@ public class SakuraInterpreter {
             } else
                 options = new InterpreterOptions("sakura.java.cli");
 
-            SakuraInterpreter interpreter = new SakuraInterpreter(options);
+            var interpreter = new SakuraInterpreter(options);
             Value executionValue;
 
             List<String> runFilePath = res.get("file");
@@ -127,7 +127,7 @@ public class SakuraInterpreter {
 
             // One of these must run, argument parser guarantees -e and -f are mutually exclusive
             if (res.getString("file") != null) {
-                File runFile = new File(runFilePath.get(0));
+                var runFile = new File(runFilePath.get(0));
                 if (!runFile.exists())
                     throw new RuntimeException("File \"%s\" does not exist".formatted(runFilePath));
 
@@ -156,12 +156,12 @@ public class SakuraInterpreter {
      * @return Options generated from the parsed configuration file.
      */
     private static InterpreterOptions parseConfig(File configFile) {
-        InterpreterOptions opts = new InterpreterOptions();
+        var opts = new InterpreterOptions();
         opts.setExecutor("arkinsolomon.java.cli");
 
         try {
-            JSONParser parser = new JSONParser();
-            JSONObject configObj = (JSONObject) parser.parse(new FileReader(configFile, StandardCharsets.UTF_8));
+            var parser = new JSONParser();
+            var configObj = (JSONObject) parser.parse(new FileReader(configFile, StandardCharsets.UTF_8));
 
             if (configObj.containsKey("executor")) {
                 Object executor = configObj.get("executor");
@@ -175,7 +175,7 @@ public class SakuraInterpreter {
                 if (!(root instanceof String))
                     throw new RuntimeException("If provided in the configuration file, \"root\" must be a string (which represents path to a directory)");
 
-                File rootFile = new File((String) root);
+                var rootFile = new File((String) root);
 
                 if (!rootFile.isDirectory())
                     throw new RuntimeException("If provided in the configuration file, \"root\" must be a path to a directory (a path to a file was provided)");
@@ -188,7 +188,7 @@ public class SakuraInterpreter {
                     throw new RuntimeException("If provided in the configuration file, \"allowRead\" must be a list of strings (which represents paths)");
 
                 @SuppressWarnings("unchecked")
-                List<String> files = (List<String>) ((JSONArray) allowRead).stream().toList();
+                var files = (List<String>) ((JSONArray) allowRead).stream().toList();
                 List<File> allowReadFiles = new ArrayList<>();
                 files.forEach(path -> allowReadFiles.add(new File(path)));
                 opts.allowRead(allowReadFiles);
@@ -200,7 +200,7 @@ public class SakuraInterpreter {
                     throw new RuntimeException("If provided in the configuration file, \"disallowRead\" must be a list of strings (which represents paths)");
 
                 @SuppressWarnings("unchecked")
-                List<String> files = (List<String>) ((JSONArray) disallowRead).stream().toList();
+                var files = (List<String>) ((JSONArray) disallowRead).stream().toList();
                 List<File> disallowReadFiles = new ArrayList<>();
                 files.forEach(path -> disallowReadFiles.add(new File(path)));
                 opts.allowRead(disallowReadFiles);
@@ -212,7 +212,7 @@ public class SakuraInterpreter {
                     throw new RuntimeException("If provided in the configuration file, \"allowWrite\" must be a list of strings (which represents paths)");
 
                 @SuppressWarnings("unchecked")
-                List<String> files = (List<String>) ((JSONArray) allowWrite).stream().toList();
+                var files = (List<String>) ((JSONArray) allowWrite).stream().toList();
                 List<File> allowWriteFiles = new ArrayList<>();
                 files.forEach(path -> allowWriteFiles.add(new File(path)));
                 opts.allowRead(allowWriteFiles);
@@ -224,7 +224,7 @@ public class SakuraInterpreter {
                     throw new RuntimeException("If provided in the configuration file, \"disallowWrite\" must be a list of strings (which represents paths)");
 
                 @SuppressWarnings("unchecked")
-                List<String> files = (List<String>) ((JSONArray) disallowWrite).stream().toList();
+                var files = (List<String>) ((JSONArray) disallowWrite).stream().toList();
                 List<File> disallowWriteFiles = new ArrayList<>();
                 files.forEach(path -> disallowWriteFiles.add(new File(path)));
                 opts.allowRead(disallowWriteFiles);
@@ -247,7 +247,7 @@ public class SakuraInterpreter {
      * @return The value returned by the file. Will be {@link Value#NULL} if the file does not return anything.
      */
     public Value executeFile(Path path) throws IOException {
-        Lexer lexer = new Lexer(path);
+        var lexer = new Lexer(path);
         return execLexer(lexer);
     }
 
@@ -267,7 +267,7 @@ public class SakuraInterpreter {
      * @return The value returned by the code.
      */
     public Value executeText(String text) {
-        Lexer lexer = new Lexer(text);
+        var lexer = new Lexer(text);
         return execLexer(lexer);
     }
 
@@ -281,9 +281,9 @@ public class SakuraInterpreter {
         ExecutionContext ctx = createContext();
         try {
             List<Token> tokens = lexer.analyze();
-            TokenStorage tokenStorage = new TokenStorage(tokens);
+            var tokenStorage = new TokenStorage(tokens);
 
-            Parser parser = new Parser(tokenStorage);
+            var parser = new Parser(tokenStorage);
             parser.parse(true, true);
 
             return parser.execute(ctx).returnValue();

@@ -15,14 +15,15 @@
 
 package net.arkinsolomon.sakurainterpreter.operations;
 
-import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
-import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
+import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 
 /**
  * An operation to overwrite the contents of a file with new contents, or to create the file if it doesn't exist.
@@ -67,7 +68,7 @@ public final class WriteOperation extends Operation {
         }
 
         try {
-            Files.write(file, newContent.getBytes(), StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(file, newContent.getBytes(UTF_8), StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             String msg;
             if (!Files.exists(file.getParent()))
@@ -90,7 +91,7 @@ public final class WriteOperation extends Operation {
             if (oldContent == null)
                 Files.delete(file);
             else
-                Files.write(file, oldContent.getBytes());
+                Files.write(file, oldContent.getBytes(UTF_8));
         } catch (IOException e) {
             throw new SakuraException("Could not undo write operation.", e);
         }

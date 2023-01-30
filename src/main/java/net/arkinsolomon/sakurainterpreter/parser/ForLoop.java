@@ -15,22 +15,22 @@
 
 package net.arkinsolomon.sakurainterpreter.parser;
 
+import com.google.errorprone.annotations.Var;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
-import net.arkinsolomon.sakurainterpreter.execution.Iterable;
-import net.arkinsolomon.sakurainterpreter.execution.StringIterable;
-import net.arkinsolomon.sakurainterpreter.lexer.Token;
-import net.arkinsolomon.sakurainterpreter.lexer.TokenStorage;
-import net.arkinsolomon.sakurainterpreter.lexer.TokenType;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
 import net.arkinsolomon.sakurainterpreter.execution.DirectoryIterable;
 import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.ExecutionResult;
+import net.arkinsolomon.sakurainterpreter.execution.Iterable;
+import net.arkinsolomon.sakurainterpreter.execution.StringIterable;
 import net.arkinsolomon.sakurainterpreter.execution.Value;
 import net.arkinsolomon.sakurainterpreter.lexer.ForLoopData;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import net.arkinsolomon.sakurainterpreter.lexer.Token;
+import net.arkinsolomon.sakurainterpreter.lexer.TokenStorage;
+import net.arkinsolomon.sakurainterpreter.lexer.TokenType;
 
 /**
  * A node which represents a for loop.
@@ -50,12 +50,12 @@ final class ForLoop extends Expression {
         super(token, 2);
         this.parent = parent;
 
-        ForLoopData data = (ForLoopData) token.value();
+        var data = (ForLoopData) token.value();
         isAssigneeConst = data.isConstant();
         identifier = data.loopVar();
 
-        TokenStorage iterableTS = new TokenStorage(data.iterable());
-        Parser iterableParser = new Parser(iterableTS);
+        var iterableTS = new TokenStorage(data.iterable());
+        var iterableParser = new Parser(iterableTS);
         List<Node> iterableNodes = iterableParser.parse(false);
 
         if (iterableNodes.size() > 1)
@@ -69,12 +69,12 @@ final class ForLoop extends Expression {
         bodyList.add(data.body());
 
         @SuppressWarnings("unchecked")
-        List<Token> bodyTokens = (List<Token>) data.body().value();
+        var bodyTokens = (List<Token>) data.body().value();
         int eofLine = bodyTokens.get(bodyTokens.size() - 1).line();
         int eofCol = bodyTokens.get(bodyTokens.size() - 1).column();
 
         bodyList.add(new Token(TokenType.EOF, eofLine, eofCol, "<WHILE BODY END>"));
-        TokenStorage branchTokenStorage = new TokenStorage(bodyList);
+        var branchTokenStorage = new TokenStorage(bodyList);
         List<Node> bodyNodes = new Parser(branchTokenStorage).parse(false);
 
         if (bodyNodes.size() != 1)
@@ -98,13 +98,13 @@ final class ForLoop extends Expression {
 
         assert loopIterable != null;
 
-        Value curr = loopIterable.next();
+        @Var Value curr = loopIterable.next();
         while (curr != null) {
-            ExecutionContext tempCtx = new ExecutionContext(ctx);
+            var tempCtx = new ExecutionContext(ctx);
             tempCtx.defineIdentifier(identifier, curr.setMutability(isAssigneeConst));
 
             Value braceReturn = getChild(1).evaluate(tempCtx);
-            ExecutionResult result = (ExecutionResult) braceReturn.value();
+            var result = (ExecutionResult) braceReturn.value();
             if (result.earlyReturnType() != EarlyReturnType.NONE) {
                 if (result.earlyReturnType() == EarlyReturnType.CONTINUE) {
                     curr = loopIterable.next();
