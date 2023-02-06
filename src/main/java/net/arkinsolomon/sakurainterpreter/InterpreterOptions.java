@@ -124,6 +124,16 @@ public class InterpreterOptions {
     }
 
     /**
+     * Define an environment variable of type path for the interpreter.
+     *
+     * @param identifier The identifier for the variable, without the "@" prefix.
+     * @param value      The value of the path.
+     */
+    public void defineEnvVar(String identifier, File value) {
+        envVariables.put("@" + identifier, new Value(DataType.PATH, value, false));
+    }
+
+    /**
      * Override a default function, or define one.
      *
      * @param identifier The identifier of the function.
