@@ -53,7 +53,7 @@ public class DirectoryIterable implements Iterable {
         if (current >= files.length)
             return null;
 
-        Value returnVal = new Value(DataType.PATH, files[current], false);
+        var returnVal = new Value(DataType.PATH, files[current], false);
         current++;
         return returnVal.setMutability(false);
     }

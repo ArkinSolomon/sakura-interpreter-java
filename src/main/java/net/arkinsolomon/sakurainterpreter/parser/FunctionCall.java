@@ -39,15 +39,15 @@ final class FunctionCall extends Node {
      */
     public FunctionCall(Token token) {
         super(token, ((FunctionCallData) token.value()).args().size());
-        FunctionCallData data = (FunctionCallData) token.value();
+        var data = (FunctionCallData) token.value();
 
         identifier = data.identifier();
 
         List<List<Token>> args = data.args();
         for (int i = 0; i < args.size(); i++) {
             List<Token> tokens = args.get(i);
-            TokenStorage storage = new TokenStorage(tokens);
-            Parser parser = new Parser(storage);
+            var storage = new TokenStorage(tokens);
+            var parser = new Parser(storage);
 
             List<Node> argument = parser.parse(false, false);
 

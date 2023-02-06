@@ -15,6 +15,9 @@
 
 package net.arkinsolomon.sakurainterpreter.parser;
 
+import com.google.errorprone.annotations.Var;
+import java.util.ArrayList;
+import java.util.List;
 import net.arkinsolomon.sakurainterpreter.execution.DataType;
 import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
 import net.arkinsolomon.sakurainterpreter.execution.ExecutionResult;
@@ -23,9 +26,6 @@ import net.arkinsolomon.sakurainterpreter.lexer.IfData;
 import net.arkinsolomon.sakurainterpreter.lexer.Token;
 import net.arkinsolomon.sakurainterpreter.lexer.TokenStorage;
 import net.arkinsolomon.sakurainterpreter.lexer.TokenType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An if-statement node.
@@ -46,13 +46,13 @@ final class IfStatement extends Expression {
         super(token, 0);
         this.parent = parent;
 
-        IfData data = (IfData) token.value();
+        var data = (IfData) token.value();
         int conditionsLen = data.conditions().size();
         resize(conditionsLen + 1);
 
         for (List<Token> condition : data.conditions()) {
-            TokenStorage ts = new TokenStorage(condition);
-            Parser parser = new Parser(ts);
+            var ts = new TokenStorage(condition);
+            var parser = new Parser(ts);
             List<Node> conditions = parser.parse();
 
             if (conditions.size() != 1)
@@ -66,12 +66,12 @@ final class IfStatement extends Expression {
             branchBody.add(branchToken);
 
             @SuppressWarnings("unchecked")
-            List<Token> branchBodyTokens = (List<Token>) branchToken.value();
+            var branchBodyTokens = (List<Token>) branchToken.value();
             int eofLine = branchBodyTokens.get(branchBodyTokens.size() - 1).line();
             int eofCol = branchBodyTokens.get(branchBodyTokens.size() - 1).column();
 
             branchBody.add(new Token(TokenType.EOF, eofLine, eofCol, "<BRANCH BODY END>"));
-            TokenStorage branchTokenStorage = new TokenStorage(branchBody);
+            var branchTokenStorage = new TokenStorage(branchBody);
             List<Node> branches = new Parser(branchTokenStorage).parse();
 
             if (branches.size() != 1)
@@ -90,10 +90,10 @@ final class IfStatement extends Expression {
 
     @Override
     public Value evaluate(ExecutionContext ctx) {
-        ExecutionContext tempCtx = new ExecutionContext(ctx);
+        var tempCtx = new ExecutionContext(ctx);
         parent.resume();
 
-        int i;
+        @Var int i;
         for (i = 0; i < conditions.size(); i++) {
             Value conditionValue = conditions.get(i).evaluate(tempCtx);
 
@@ -101,7 +101,7 @@ final class IfStatement extends Expression {
                 throw new RuntimeException("If-statement conditions must return booleans");
             if ((boolean) conditionValue.value()) {
                 Value braceReturn = getChild(i).evaluate(tempCtx);
-                ExecutionResult result = (ExecutionResult) braceReturn.value();
+                var result = (ExecutionResult) braceReturn.value();
                 if (result.earlyReturnType() != EarlyReturnType.NONE) {
                     parent.stop();
                     return braceReturn;
@@ -112,7 +112,7 @@ final class IfStatement extends Expression {
 
         if (i == conditions.size()) {
             Value elseReturn = getChild(i).evaluate(tempCtx);
-            ExecutionResult elseResult = (ExecutionResult) elseReturn.value();
+            var elseResult = (ExecutionResult) elseReturn.value();
 
             // elseResult may be null since it can be a no-op
             if (elseResult != null && elseResult.earlyReturnType() != EarlyReturnType.NONE) {

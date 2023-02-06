@@ -44,10 +44,10 @@ final class WhileLoop extends Expression{
         super(token, 2);
         this.parent = parent;
 
-        WhileData data = (WhileData) token.value();
+        var data = (WhileData) token.value();
 
-        TokenStorage conditionTS = new TokenStorage(data.condition());
-        Parser conditionParser = new Parser(conditionTS);
+        var conditionTS = new TokenStorage(data.condition());
+        var conditionParser = new Parser(conditionTS);
         List<Node> parsedConditions = conditionParser.parse();
         if (parsedConditions.size() != 1)
             throw new RuntimeException("While loop conditions can only be one statement");
@@ -57,13 +57,13 @@ final class WhileLoop extends Expression{
         bodyList.add(data.body());
 
         @SuppressWarnings("unchecked")
-        List<Token> bodyTokens = (List<Token>) data.body().value();
+        var bodyTokens = (List<Token>) data.body().value();
         int eofLine = bodyTokens.get(bodyTokens.size() - 1).line();
         int eofCol = bodyTokens.get(bodyTokens.size() - 1).column();
 
 
         bodyList.add(new Token(TokenType.EOF, eofLine, eofCol, "<WHILE BODY END>"));
-        TokenStorage branchTokenStorage = new TokenStorage(bodyList);
+        var branchTokenStorage = new TokenStorage(bodyList);
         List<Node> bodyNodes = new Parser(branchTokenStorage).parse();
 
         if (bodyNodes.size() != 1)
@@ -75,10 +75,10 @@ final class WhileLoop extends Expression{
     @Override
     public Value evaluate(ExecutionContext ctx) {
         while (evalCondition(ctx)) {
-            ExecutionContext tempCtx = new ExecutionContext(ctx);
+            var tempCtx = new ExecutionContext(ctx);
 
             Value braceReturn = getChild(1).evaluate(tempCtx);
-            ExecutionResult result = (ExecutionResult) braceReturn.value();
+            var result = (ExecutionResult) braceReturn.value();
             if (result.earlyReturnType() != EarlyReturnType.NONE){
                 if (result.earlyReturnType() == EarlyReturnType.CONTINUE)
                     continue;

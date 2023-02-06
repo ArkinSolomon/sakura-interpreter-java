@@ -35,7 +35,7 @@ public final class CanWriteFunction implements Function {
         else if (args.get(0).type() != DataType.PATH)
             throw new SakuraException("The first parameter to \"canWrite()\" needs to be of type path.");
 
-        File checkFile = (File) args.get(0).value();
+        var checkFile = (File) args.get(0).value();
 
         boolean canWrite = ctx.getOperationConfig().isValidWritePath(checkFile);
         return new Value(DataType.BOOLEAN, canWrite, false);

@@ -15,15 +15,15 @@
 
 package net.arkinsolomon.sakurainterpreter.operations;
 
-import net.arkinsolomon.sakurainterpreter.exceptions.FileExistsException;
-import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
-import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
-import org.apache.commons.io.FileUtils;
-
+import com.google.errorprone.annotations.Var;
 import java.io.File;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import net.arkinsolomon.sakurainterpreter.exceptions.FileExistsException;
+import net.arkinsolomon.sakurainterpreter.exceptions.SakuraException;
+import net.arkinsolomon.sakurainterpreter.execution.ExecutionContext;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Create a directory (or directories).
@@ -60,7 +60,7 @@ public final class MkdirOperation extends Operation {
             if (recursive) {
 
                 // Find the first directory that is created (so that we can delete it on undo)
-                Path lastExistingParent = directory.toPath();
+                @Var Path lastExistingParent = directory.toPath();
                 while (!Files.exists(lastExistingParent)) {
                     lastNonExistentParent = lastExistingParent;
                     lastExistingParent = lastExistingParent.getParent();

@@ -46,8 +46,8 @@ final class NumericalComparison extends Operator {
         if (lhs.type() != DataType.NUMBER || rhs.type() != DataType.NUMBER)
             throw new SakuraException(token, "The numerical operators (>, >=, <, <=) can only compare numbers.");
 
-        double leftValue = (double) lhs.value();
-        double rightValue = (double) rhs.value();
+        var leftValue = (double) lhs.value();
+        var rightValue = (double) rhs.value();
 
         boolean value = switch ((String) token.value()){
             case ">" -> leftValue > rightValue;

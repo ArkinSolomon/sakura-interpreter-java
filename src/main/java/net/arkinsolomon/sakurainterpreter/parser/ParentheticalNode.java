@@ -35,8 +35,8 @@ final class ParentheticalNode extends Node {
         super(token, 1);
 
         @SuppressWarnings("unchecked")
-        TokenStorage content = new TokenStorage((List<Token>) token.value());
-        Parser parser = new Parser(content);
+        var content = new TokenStorage((List<Token>) token.value());
+        var parser = new Parser(content);
         List<Node> childExpressions = parser.parse();
         if (childExpressions.size() > 1)
             throw new SakuraException(token.line(), token.column(), "Parentheses can not have more than one expression.");

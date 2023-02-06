@@ -50,7 +50,7 @@ final class WriteCommand extends DualArgCommand {
             throw new SakuraException(token.line(), token.column(), "Can not write to a null file.");
 
         String writeData = left.toString();
-        File writeFile = (File) right.value();
+        var writeFile = (File) right.value();
 
         try {
             Operation writeOp = new WriteOperation(ctx, writeFile, writeData);
