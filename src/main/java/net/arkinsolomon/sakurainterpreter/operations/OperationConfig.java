@@ -95,12 +95,12 @@ public final class OperationConfig {
             return false;
 
         if (allowWrite.isEmpty() && disallowWrite.isEmpty())
-            return true;
+            return false;
 
-
+        boolean canWrite = false;
         for (File writeable : allowWrite) {
-            if (!isWithinDirectory(file, writeable))
-                return false;
+            if (isWithinDirectory(file, writeable))
+                canWrite = true;
         }
 
         for (File nonWriteable : disallowWrite) {
@@ -108,7 +108,7 @@ public final class OperationConfig {
                 return false;
         }
 
-        return true;
+        return canWrite;
     }
 
     /**
@@ -121,14 +121,13 @@ public final class OperationConfig {
         if (file.exists() && !file.canRead())
             return false;
 
-
         if (allowRead.isEmpty() && disallowRead.isEmpty())
-            return true;
+            return false;
 
-
+        boolean canRead = false;
         for (File readable : allowRead) {
-            if (!isWithinDirectory(file, readable))
-                return false;
+            if (isWithinDirectory(file, readable))
+                canRead = true;
         }
 
         for (File nonReadable : disallowRead) {
@@ -136,6 +135,6 @@ public final class OperationConfig {
                 return false;
         }
 
-        return true;
+        return canRead;
     }
 }
